@@ -1,9 +1,12 @@
 from collections import defaultdict
+import itertools
+
+from contracts import contract
+
 from compmake import Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
-from contracts import contract
 from quickapp import QuickApp, iterate_context_names
-import itertools
+
 
 __all__ = ['get_comptests_app', 'comptests_for_all', 'comptests_for_all_pairs']
 

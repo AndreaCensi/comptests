@@ -1,10 +1,14 @@
+import os
+from os.path import dirname, join
+
+from contracts import contract
+
 from compmake.utils import describe_type
 from conf_tools import GlobalConfig, import_name
 from conf_tools.utils import locate_files
-from contracts import contract
-from os.path import dirname, join
 from quickapp import QuickApp
-import os
+
+
 # from compmake.utils.describe import  describe_value
 # from compmake.utils.safe_pickle import safe_pickle_load
 # from nose.case import FunctionTestCase
@@ -13,7 +17,6 @@ import os
 # from nose.plugins.testid import TestId
 # from nose.suite import ContextSuite
 # import nose
-
 __all__ = ['CompTests', 'main_comptests']
 
 
