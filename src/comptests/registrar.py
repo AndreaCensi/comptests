@@ -138,22 +138,24 @@ def run_test(function, id_ob, ob):
 def run_test_pair(function, id_ob, ob, id_ob2, ob2):
     return function(id_ob, ob, id_ob2, ob2)
 
+@contract(objspec='str', id_object='str')
+def instance_test_object(context, master, objspec, id_object):
+    return context.comp_config(instance_object, master, objspec, id_object,
+                               job_id='i')
+
 def recipe_instance_objects(context):
-    @contract(objspec='str', id_object='str')
-    def instance_test_object(context, master, objspec, id_object):
-        return context.comp_config(instance_object, master, objspec, id_object,
-                                   job_id='i')
         
     rm = context.get_resource_manager()        
     rm.set_resource_provider(INSTANCE_TEST_OBJECT, instance_test_object)
     rm.set_resource_prefix_function(INSTANCE_TEST_OBJECT, _make_prefix)
 
 
+@contract(objspec='str', id_object='str')
+def get_the_spec(context, master, objspec, id_object):
+    return context.comp_config(get_spec, master, objspec, id_object,
+                               job_id='s')
+
 def recipe_get_spec(context):
-    @contract(objspec='str', id_object='str')
-    def get_the_spec(context, master, objspec, id_object):
-        return context.comp_config(get_spec, master, objspec, id_object,
-                                   job_id='s')
         
     rm = context.get_resource_manager()        
     rm.set_resource_provider(GETSPEC_TEST_OBJECT, get_the_spec)
