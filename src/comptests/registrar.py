@@ -8,7 +8,11 @@ from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from quickapp import QuickApp, iterate_context_names
 
 
-__all__ = ['get_comptests_app', 'comptests_for_all', 'comptests_for_all_pairs']
+__all__ = [
+    'get_comptests_app',
+    'comptests_for_all',
+    'comptests_for_all_pairs',
+]
 
 INSTANCE_TEST_OBJECT = 'instance'
 GETSPEC_TEST_OBJECT = 'getspec'
