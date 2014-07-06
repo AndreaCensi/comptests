@@ -1,12 +1,11 @@
 import os
 
 from contracts import contract
-
-from compmake.utils import describe_type
 from conf_tools import GlobalConfig, import_name
 from quickapp import QuickApp
 
 from .find_modules_imp import find_modules_main, find_modules
+from quickapp.app_utils.subcontexts import iterate_context_names
 
 
 # from compmake.utils.describe import  describe_value
@@ -34,15 +33,10 @@ class CompTests(QuickApp):
     def define_options(self, params):
         params.add_string('exclude', default='', help='exclude these modules (comma separated)')
         params.add_flag('nosetests', help='Use nosetests')
-        params.add_flag('nocomptests', help='Do not use get_comptests()')
         params.accept_extra()
          
     def define_jobs_context(self, context):
-        from .registrar import recipe_get_spec, recipe_instance_objects
-
         GlobalConfig.global_load_dir('default')
-        recipe_instance_objects(context)
-        recipe_get_spec(context)
         
         modules = list(self.interpret_extras_as_modules())
         # only get the main ones
@@ -57,34 +51,40 @@ class CompTests(QuickApp):
             for m in modules:
                 self.load_nosetests(context, m)
             
-        self.try_importing_modules(modules)
+#         self.try_importing_modules(modules)
         
-        if not self.options.nocomptests:
-            self.instance_comptests_jobs(context, modules)
-      
+        self.instance_comptests_jobs2(context, modules)
+
+
     @contract(modules='list(str)')
-    def instance_comptests_jobs(self, context, modules):
-        apps = []
-        names2m = {}
-        for m in modules:
-            # c = context.child(m)
-            mapps = self.get_jobs_module(m)
-            self.info('m apps: %s' % m)
-            for a in mapps:
-                id_app = a.__name__
-                if id_app in names2m:
-                    self.info('%s: App %s already used by %s' % 
-                              (m, id_app, names2m[id_app]))
-                else:
-                    apps.append(a)
-                    names2m[id_app] = m
-        
-        
-        self.info('Found %d apps: %s' % (len(apps), apps))
-        
-        for a in apps:
-            # print('Subtasking %r' % a)
-            context.subtask(a)
+    def instance_comptests_jobs2(self, context, modules):
+        for c, module in iterate_context_names(context, modules):
+            c.comp_config_dynamic(instance_comptests_jobs2_m, module)
+
+#
+#     @contract(modules='list(str)')
+#     def instance_comptests_jobs(self, context, modules):
+#         apps = []
+#         names2m = {}
+#         for m in modules:
+#             # c = context.child(m)
+#             mapps = self.get_jobs_module(m)
+#             self.info('m apps: %s' % m)
+#             for a in mapps:
+#                 id_app = a.__name__
+#                 if id_app in names2m:
+#                     self.info('%s: App %s already used by %s' %
+#                               (m, id_app, names2m[id_app]))
+#                 else:
+#                     apps.append(a)
+#                     names2m[id_app] = m
+#
+#
+#         self.info('Found %d apps: %s' % (len(apps), apps))
+#
+#         for a in apps:
+#             # print('Subtasking %r' % a)
+#             context.subtask(a)
             
     def load_nosetests(self, context, module_name):
 #         argv = ['-vv', module_name]
@@ -211,37 +211,63 @@ class CompTests(QuickApp):
             else:
                 self.info('Interpreting %r as module.' % m)
                 yield m
-                
-    @contract(returns='seq')
-    def get_jobs_module(self, module_name):
-        """ Returns list of QuickApp subclasses """
-        is_first = not '.' in module_name
-        warn_errors = is_first
-        
-        try:            
-            module = import_name(module_name)
-        except ValueError as e:
-            if warn_errors:
-                self.error(e)  # 'Could not import %r: %s' % (module_name, e))
-                raise Exception(e)
-            return []
-        
-        f = CompTests.function_name
-        if not f in module.__dict__:
-            msg = 'Module %s does not have function %s().' % (module_name, f)
-            if warn_errors: 
-                self.warn(msg)
-            return []
-        
-        ff = module.__dict__[f]
-        apps = ff()
-        if not isinstance(apps, list):
-            msg = 'Unexpected value: %s' % describe_type(apps)
-            raise Exception(msg)
-        return apps
-             
+#
+#     @contract(returns='seq')
+#     def get_jobs_module(self, module_name):
+#         """ Returns list of QuickApp subclasses """
+#         is_first = not '.' in module_name
+#         warn_errors = is_first
+#
+#         try:
+#             module = import_name(module_name)
+#         except ValueError as e:
+#             if warn_errors:
+#                 self.error(e)  # 'Could not import %r: %s' % (module_name, e))
+#                 raise Exception(e)
+#             return []
+#
+#         f = CompTests.function_name
+#         if not f in module.__dict__:
+#             msg = 'Module %s does not have function %s().' % (module_name, f)
+#             if warn_errors:
+#                 self.warn(msg)
+#             return []
+#
+#         ff = module.__dict__[f]
+#         apps = ff()
+#         if not isinstance(apps, list):
+#             msg = 'Unexpected value: %s' % describe_type(apps)
+#             raise Exception(msg)
+#         return apps
+#
 
 def run_testcase(x):
     print(x)
+
+
+def instance_comptests_jobs2_m(context, module_name):
+    is_first = not '.' in module_name
+    warn_errors = is_first
+
+    try:
+        module = import_name(module_name)
+    except ValueError as e:
+        if warn_errors:
+            print(e)  # 'Could not import %r: %s' % (module_name, e))
+            raise Exception(e)
+        return []
+
+    f = 'jobs_comptests'
+    if not f in module.__dict__:
+        msg = 'Module %s does not have function %s().' % (module_name, f)
+        if warn_errors:
+            print(msg)
+        return []
+
+    ff = module.__dict__[f]
+
+    context.comp_config_dynamic(ff)
+
+
     
 main_comptests = CompTests.get_sys_main()

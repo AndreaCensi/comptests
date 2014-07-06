@@ -3,19 +3,16 @@ import itertools
 
 from contracts import contract
 
-from compmake import Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
-from quickapp import QuickApp, iterate_context_names
+from quickapp import iterate_context_names
+import warnings
 
 
 __all__ = [
-    'get_comptests_app',
     'comptests_for_all',
     'comptests_for_all_pairs',
+    'jobs_registrar',
 ]
-
-INSTANCE_TEST_OBJECT = 'instance'
-GETSPEC_TEST_OBJECT = 'getspec'
 
 class ComptestsRegistrar(object):
     """ Static storage """
@@ -54,87 +51,72 @@ def comptests_for_all_pairs(objspec1, objspec2):
     
     return register    
 
-
 @contract(cm=ConfigMaster)
-def get_comptests_app(cm):
-    """ 
-        Returns a class subtype of QuickApp for instantiating tests
-        corresponding to all types of objects defined in the ConfigMaster
-        instance 
-    """
+def jobs_registrar(context, cm):
+    names = sorted(cm.specs.keys())
     
-    class ComptestApp(QuickApp):
-        cmd = 'test-%s' % cm.name
-        
-        def define_options(self, params):
-            pass
-        
-        def define_jobs_context(self, context):
-            names = cm.specs.keys()
-            for c, name in iterate_context_names(context, names):
-                self.define_tests_for(c, cm.specs[name])
-        
-        @contract(objspec=ObjectSpec)
-        def define_tests_for(self, context, objspec):
-            # load default
-            self.define_tests_single(context, objspec)
-            self.define_tests_pairs(context, objspec)
+    # str -> (str -> object promise)
+    names2test_objects = get_testobjects_promises(context, cm, names)
+    
+    res = []
+    for c, name in iterate_context_names(context, names):
+        r = define_tests_for(c, cm.specs[name], names2test_objects)
+        res.append(r)
+    return res
 
-        def define_tests_single(self, context, objspec):            
-            test_objects = self.get_test_objects(context, objspec)
-            
-            if not test_objects:
-                msg = 'No test_objects for objects of kind %r.' % objspec.name
-                self.error(msg)
-            
-            functions = ComptestsRegistrar.objspec2tests[objspec.name]
-            if not functions:
-                msg = 'No tests specified for objects of kind %r.' % objspec.name
-                self.error(msg)
-                
-            for id_object, ob in test_objects.items():    
-                for f in functions:
-                    job_id = '%s-%s' % (f.__name__, id_object)
-                    context.comp_config(run_test, f, id_object, ob, job_id=job_id)
-            
-        def define_tests_pairs(self, context, objspec1):
-            objs1 = self.get_test_objects(context, objspec1)
-            
-            pairs = ComptestsRegistrar.objspec2pairs[objspec1.name]
-            if not pairs:
-                self.warn('No %s+x pairs tests.' % (objspec1.name))
-            else:
-                self.info('%d %s+x pairs tests.' % (len(pairs), objspec1.name))
-            for objspec2, func in pairs:
-                objs2 = self.get_test_objects(context, objspec2)
-                if not objs2:
-                    self.error('No objects %r for pairs' % objspec2.name)
-                combinations = itertools.product(objs1.items(), objs2.items()) 
-                for (id_ob1, ob1), (id_ob2, ob2) in combinations:
-                    job_id = '%s-%s-%s' % (func.__name__, id_ob1, id_ob2)
-                    context.comp_config(run_test_pair, func, id_ob1, ob1, id_ob2, ob2,
-                                 job_id=job_id)
-            
-        @contract(returns='dict(str:*)')
-        def get_test_objects(self, context, objspec):
-            objspec.master.load()
-            objects = list(objspec.keys())
-            return dict([(x, self.get_test_object_promise(context, objspec, x))
-                         for x in objects])
-                
-        @contract(returns=Promise)
-        def get_test_object_promise(self, context, objspec, id_object):
-            if objspec.instance_method is None:
-                resource = GETSPEC_TEST_OBJECT
-            else:
-                resource = INSTANCE_TEST_OBJECT
-            rm = context.get_resource_manager()
-            return rm.get_resource(resource,
-                                   master=objspec.master.name,
-                                   objspec=objspec.name, id_object=id_object)
-                    
-    ComptestApp.__name__ = 'ComptestApp%s' % cm.name
-    return ComptestApp 
+@contract(names='list(str)', cm=ConfigMaster, returns='dict(str:dict(str:isinstance(Promise)))')
+def get_testobjects_promises(context, cm, names):
+    names2test_objects = {}
+    for name in names:
+        objspec = cm.specs[name]
+        names2test_objects[name] = get_testobjects_promises_for_objspec(context, objspec)
+    return names2test_objects 
+
+
+@contract(objspec=ObjectSpec, names2test_objects='dict(str:dict(str:isinstance(Promise)))')
+def define_tests_for(context, objspec, names2test_objects):
+    define_tests_single(context, objspec, names2test_objects)
+    define_tests_pairs(context, objspec, names2test_objects)
+
+@contract(names2test_objects='dict(str:dict(str:isinstance(Promise)))')
+def define_tests_single(context, objspec, names2test_objects):
+    test_objects = names2test_objects[objspec.name]
+    if not test_objects:
+        msg = 'No test_objects for objects of kind %r.' % objspec.name
+        print(msg)
+
+    functions = ComptestsRegistrar.objspec2tests[objspec.name]
+    if not functions:
+        msg = 'No tests specified for objects of kind %r.' % objspec.name
+        print(msg)
+
+    for id_object, ob in test_objects.items():
+        for f in functions:
+            job_id = '%s-%s' % (f.__name__, id_object)
+            context.comp_config(run_test, f, id_object, ob, job_id=job_id)
+
+@contract(names2test_objects='dict(str:dict(str:isinstance(Promise)))')
+def define_tests_pairs(context, objspec1, names2test_objects):
+    objs1 = names2test_objects[objspec1.name]
+
+    pairs = ComptestsRegistrar.objspec2pairs[objspec1.name]
+    if not pairs:
+        print('No %s+x pairs tests.' % (objspec1.name))
+    else:
+        print('%d %s+x pairs tests.' % (len(pairs), objspec1.name))
+    for objspec2, func in pairs:
+        objs2 = names2test_objects[objspec2.name]
+        if not objs2:
+            print('No objects %r for pairs' % objspec2.name)
+        combinations = itertools.product(objs1.items(), objs2.items())
+
+        results = {}
+        for (id_ob1, ob1), (id_ob2, ob2) in combinations:
+            job_id = '%s-%s-%s' % (func.__name__, id_ob1, id_ob2)
+            res = context.comp_config(run_test_pair,
+                                      func, id_ob1, ob1, id_ob2, ob2,
+                                      job_id=job_id)
+            results[(id_ob1, id_ob2)] = res
 
 def run_test(function, id_ob, ob):
     return function(id_ob, ob)
@@ -142,29 +124,32 @@ def run_test(function, id_ob, ob):
 def run_test_pair(function, id_ob, ob, id_ob2, ob2):
     return function(id_ob, ob, id_ob2, ob2)
 
-@contract(objspec='str', id_object='str')
-def instance_test_object(context, master, objspec, id_object):
-    return context.comp_config(instance_object, master, objspec, id_object,
-                               job_id='i')
+@contract(objspec=ObjectSpec, returns='dict(str:isinstance(Promise))')
+def get_testobjects_promises_for_objspec(context, objspec):
+    warnings.warn('Need to be smarter here.')
+    objspec.master.load()
+    warnings.warn('Select test objects here.')
+    objects = sorted(objspec.keys())
+    promises = {}
+    for id_object in objects:
+        if objspec.instance_method is None:
+            job = context.comp_config(get_spec, master_name=objspec.master.name,
+                                  objspec_name=objspec.name, id_object=id_object,
+                                  job_id='%s-%s' % (objspec.name, id_object))
+        else:
+            job = context.comp_config(instance_object, master_name=objspec.master.name,
+                                  objspec_name=objspec.name, id_object=id_object,
+                                  job_id='%s-%s' % (objspec.name, id_object))
+        promises[id_object] = job
+    return promises
 
-def recipe_instance_objects(context):
-        
-    rm = context.get_resource_manager()        
-    rm.set_resource_provider(INSTANCE_TEST_OBJECT, instance_test_object)
-    rm.set_resource_prefix_function(INSTANCE_TEST_OBJECT, _make_prefix)
+def get_spec(master_name, objspec_name, id_object):
+    objspec = get_objspec(master_name, objspec_name)
+    return objspec[id_object]
 
-
-@contract(objspec='str', id_object='str')
-def get_the_spec(context, master, objspec, id_object):
-    return context.comp_config(get_spec, master, objspec, id_object,
-                               job_id='s')
-
-def recipe_get_spec(context):
-        
-    rm = context.get_resource_manager()        
-    rm.set_resource_provider(GETSPEC_TEST_OBJECT, get_the_spec)
-    rm.set_resource_prefix_function(GETSPEC_TEST_OBJECT, _make_prefix)
-
+def instance_object(master_name, objspec_name, id_object):
+    objspec = get_objspec(master_name, objspec_name)
+    return objspec.instance(id_object)
 
 def get_objspec(master_name, objspec_name):
     master = GlobalConfig._masters[master_name]
@@ -177,17 +162,89 @@ def get_objspec(master_name, objspec_name):
     return objspec
 
 
-def get_spec(master_name, objspec_name, id_object):
-    objspec = get_objspec(master_name, objspec_name)
-    return objspec[id_object]
+
+#
+# @contract(returns=Promise)
+# def get_test_object_promise(context, objspec, id_object):
+#     warnings.warn('Disabled reusing of instances for now.')
+#
+#     if False:
+#         if objspec.instance_method is None:
+#             resource = GETSPEC_TEST_OBJECT
+#         else:
+#             resource = INSTANCE_TEST_OBJECT
+#         rm = context.get_resource_manager()
+#         return rm.get_resource(resource,
+#                                master=objspec.master.name,
+#                                objspec=objspec.name, id_object=id_object)
+#     else:
+#         if objspec.instance_method is None:
+#             job =
+#         else:
+#             job = context.comp_config(instance_object, master=objspec.master.name,
+#                                   objspec=objspec.name, id_object=id_object,
+#                                   job_id='inst-%s' % id_object)
+#         return job
+
+#
+# @contract(returns='dict(str:*)')
+# def get_test_objects(context, objspec):
+#     objspec.master.load()
+#     warnings.warn('Select test objects here')
+#     objects = list(objspec.keys())
+#     return dict([(x, get_test_object_promise(context, objspec, x))
+#                  for x in objects])
 
 
-def _make_prefix(rtype, master, objspec, id_object):  # @UnusedVariable
-    return 'instance-%s-%s' % (objspec, id_object)
-    
-    
-def instance_object(master_name, objspec_name, id_object):
-    objspec = get_objspec(master_name, objspec_name)
-    return objspec.instance(id_object)
+
+# 
+# @contract(objspec='str', id_object='str')
+# def instance_test_object(context, master, objspec, id_object):
+#     return context.comp_config(instance_object, master, objspec, id_object,
+#                                job_id='i')
+# 
+# def recipe_instance_objects(context):
+#         
+#     rm = context.get_resource_manager()        
+#     rm.set_resource_provider(INSTANCE_TEST_OBJECT, instance_test_object)
+#     rm.set_resource_prefix_function(INSTANCE_TEST_OBJECT, _make_prefix)
+# 
+# 
+# @contract(objspec='str', id_object='str')
+# def get_the_spec(context, master, objspec, id_object):
+#     return context.comp_config(get_spec, master, objspec, id_object,
+#                                job_id='s')
+
+# def recipe_get_spec(context):
+#         
+#     rm = context.get_resource_manager()        
+#     rm.set_resource_provider(GETSPEC_TEST_OBJECT, get_the_spec)
+#     rm.set_resource_prefix_function(GETSPEC_TEST_OBJECT, _make_prefix)
 
 
+# def _make_prefix(rtype, master, objspec, id_object):  # @UnusedVariable
+#     return 'instance-%s-%s' % (objspec, id_object)
+
+
+#
+# @contract(cm=ConfigMaster)
+# def get_comptests_app(cm):
+#     """
+#         Returns a class subtype of QuickApp for instantiating tests
+#         corresponding to all types of objects defined in the ConfigMaster
+#         instance
+#     """
+#
+#     class ComptestApp(QuickApp):
+#         cmd = 'test-%s' % cm.name
+#
+#         def define_options(self, params):
+#             pass
+#
+#         def define_jobs_context(self, context):
+#             names = cm.specs.keys()
+#             for c, name in iterate_context_names(context, names):
+#                 define_tests_for(c, cm.specs[name])
+#
+#     ComptestApp.__name__ = 'ComptestApp%s' % cm.name
+#     return ComptestApp
