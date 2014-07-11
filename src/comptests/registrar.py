@@ -1,11 +1,12 @@
 from collections import defaultdict
 import itertools
+import warnings
 
 from contracts import contract
 
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from quickapp import iterate_context_names
-import warnings
+from reprep import Report
 
 
 __all__ = [
@@ -48,7 +49,6 @@ def comptests_for_all_pairs(objspec1, objspec2):
     def register(f):
         register_pair(objspec1, objspec2, f)  
         return f
-    
     return register    
 
 @contract(cm=ConfigMaster)
@@ -90,10 +90,33 @@ def define_tests_single(context, objspec, names2test_objects):
         msg = 'No tests specified for objects of kind %r.' % objspec.name
         print(msg)
 
-    for id_object, ob in test_objects.items():
-        for f in functions:
+    for f in functions:
+        results = {}
+
+        for id_object, ob in test_objects.items():
             job_id = '%s-%s' % (f.__name__, id_object)
-            context.comp_config(run_test, f, id_object, ob, job_id=job_id)
+            res = context.comp_config(run_test, f, id_object, ob, job_id=job_id)
+            results[id_object] = res
+
+        r = context.comp_config(report_results_single, f, objspec.name, results)
+        context.add_report(r, 'single', func=f.__name__, objspec=objspec.name)
+
+
+@contract(results='dict(str:*)')
+def report_results_single(func, objspec_name, results):
+    r = Report()
+    if not results:
+        r.text('warning', 'no test objects defined')
+        return
+    rows = []
+    data = []
+    for id_object, res in results.items():
+        rows.append(id_object)
+        data.append([str(res)])
+
+    r.table('summary', rows=rows, data=data)
+    return r
+
 
 @contract(names2test_objects='dict(str:dict(str:isinstance(Promise)))')
 def define_tests_pairs(context, objspec1, names2test_objects):
@@ -118,11 +141,38 @@ def define_tests_pairs(context, objspec1, names2test_objects):
                                       job_id=job_id)
             results[(id_ob1, id_ob2)] = res
 
+        r = context.comp_config(report_results_pairs, func, objspec1.name, objspec2.name, results)
+        context.add_report(r, 'pairs', func=func.__name__,
+                           objspec1=objspec1.name, objspec2=objspec2.name)
+
+
+@contract(results='dict(tuple(str,str):*)')
+def report_results_pairs(func, objspec1_name, objspec2_name, results):
+    r = Report()
+    if not results:
+        r.text('warning', 'no test objects defined')
+        return r
+    
+    rows = sorted(set([a for a, _ in results]))
+    cols = sorted(set([b for _, b in results]))
+    data = [[None] * len(cols)] * len(rows)
+    
+    for ((i, id_object1), (j, id_object2)) in itertools.product(enumerate(rows), enumerate(cols)):
+        res = results[(id_object1, id_object2)]
+        data[i][j] = str(res)
+
+    r.table('summary', rows=rows, data=data, cols=cols)
+    return r
+
+
+
 def run_test(function, id_ob, ob):
     return function(id_ob, ob)
 
+
 def run_test_pair(function, id_ob, ob, id_ob2, ob2):
     return function(id_ob, ob, id_ob2, ob2)
+
 
 @contract(objspec=ObjectSpec, returns='dict(str:isinstance(Promise))')
 def get_testobjects_promises_for_objspec(context, objspec):

@@ -36,6 +36,8 @@ class CompTests(QuickApp):
         params.accept_extra()
          
     def define_jobs_context(self, context):
+        self.activate_dynamic_reports()
+
         GlobalConfig.global_load_dir('default')
         
         modules = list(self.interpret_extras_as_modules())
