@@ -1,11 +1,10 @@
+from .find_modules_imp import find_modules, find_modules_main
+from conf_tools import GlobalConfig, import_name
+from contracts import contract
+from quickapp import QuickApp, iterate_context_names
 import os
 
-from contracts import contract
-from conf_tools import GlobalConfig, import_name
-from quickapp import QuickApp
 
-from .find_modules_imp import find_modules_main, find_modules
-from quickapp.app_utils.subcontexts import iterate_context_names
 
 
 # from compmake.utils.describe import  describe_value
@@ -61,6 +60,7 @@ class CompTests(QuickApp):
     @contract(modules='list(str)')
     def instance_comptests_jobs2(self, context, modules):
         for c, module in iterate_context_names(context, modules):
+            c.add_extra_report_keys(module=module)
             c.comp_config_dynamic(instance_comptests_jobs2_m, module)
 
 #
