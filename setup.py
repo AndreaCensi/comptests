@@ -36,7 +36,10 @@ setup(name='comptests',
       entry_points={
         'console_scripts': [
             'comptests = comptests:main_comptests'
-       ]
+       ],
+#         'nose.plugins.0.10': [
+#             'xunitext = xunitext:XUnitExt'
+#             ]
       },
       package_dir={'':'src'},
       packages=find_packages('src'),

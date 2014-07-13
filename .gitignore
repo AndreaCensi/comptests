@@ -36,3 +36,4 @@ nosetests.xml
 .noseids
 out-compmake-tests
 .compmake_history.txt
+out-comptests
