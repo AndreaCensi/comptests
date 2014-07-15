@@ -31,7 +31,8 @@ def report_results_single(func, objspec_name, results):
     r = Report()
     if not results:
         r.text('warning', 'no test objects defined')
-        return
+        return r
+    
     rows = []
     data = []
     for id_object, res in results.items():

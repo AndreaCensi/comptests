@@ -1,10 +1,9 @@
 from .find_modules_imp import find_modules, find_modules_main
-from .nose import jobs_nosetests
+from .nose import jobs_nosetests, jobs_nosetests_single
 from conf_tools import GlobalConfig, import_name
 from contracts import contract
 from quickapp import QuickApp, iterate_context_names
 import os
-from .nose import jobs_nosetests_single
 
 
 __all__ = [
@@ -26,7 +25,10 @@ class CompTests(QuickApp):
     def define_options(self, params):
         params.add_string('exclude', default='', 
                           help='exclude these modules (comma separated)')
-        # params.add_flag('nosetests', help='Use nosetests')
+        
+        params.add_flag('nonose', help='Disable nosetests')
+        params.add_flag('nocomp', help='Disable comptests hooks')
+        
         params.accept_extra()
          
     def define_jobs_context(self, context):
@@ -35,10 +37,18 @@ class CompTests(QuickApp):
         GlobalConfig.global_load_dir('default')
         
         modules = self.get_modules()
+
+        if not modules:
+            raise Exception('No modules found.') # XXX: what's the nicer way?
+
+        options = self.get_options()        
+        if not options.nonose:
+            self.instance_nosetests_jobs(context, modules)
         
-        self.instance_nosetests_jobs(context, modules)
         #self.instance_nosesingle_jobs(context, modules)
-        self.instance_comptests_jobs(context, modules)
+        
+        if not options.nocomp:
+            self.instance_comptests_jobs(context, modules)
 
     @contract(returns='list(str)')
     def get_modules(self):

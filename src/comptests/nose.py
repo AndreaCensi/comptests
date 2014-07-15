@@ -1,8 +1,9 @@
+from compmake.utils import safe_pickle_load
 from contextlib import contextmanager
+from contracts import contract
 from system_cmd import system_cmd_result
 import os
 import tempfile
-from compmake.utils.safe_pickle import safe_pickle_load
 
 
 __all__ = ['jobs_nosetests']
@@ -16,6 +17,7 @@ def create_tmp_dir():
         yield dirname
     except:
         raise
+    
 # from nose.case import FunctionTestCase
 # from nose.core import TestProgram
 # from nose.plugins.collect import CollectOnly
@@ -27,7 +29,17 @@ def create_tmp_dir():
 
 def jobs_nosetests(context, module):
     """ Instances the tests for the given module. """
-    context.comp(call_nosetests, module, job_id='nosetests')
+    try: 
+        import coverage  # @UnusedImport
+    except ImportError as e:
+        print('No coverage module found: %s' % e)
+        context.comp(call_nosetests, module, 
+                     job_id='nosetests')
+    else:
+        covdata = context.comp(call_nosetests_plus_coverage, module, 
+                               job_id='nosetests')
+        outdir = context.get_output_dir()
+        context.comp(write_coverage_report, outdir, covdata, module)
 
 def call_nosetests(module):
     with create_tmp_dir() as cwd:
@@ -37,6 +49,64 @@ def call_nosetests(module):
             display_stdout=True,
             display_stderr=True,
             raise_on_error=True)
+
+def call_nosetests_plus_coverage(module):
+    """ 
+        This also calls the coverage module. 
+        It returns the .coverage file as a string. 
+    """
+    with create_tmp_dir() as cwd:
+        prog = find_command_path('nosetests')
+        cmd = [prog, module]
+        cmd = ['coverage', 'run'] + cmd
+        system_cmd_result(
+            cwd=cwd, cmd=cmd,
+            display_stdout=True,
+            display_stderr=True,
+            raise_on_error=True)
+        coverage_file = os.path.join(cwd, '.coverage')
+        with open(coverage_file) as f:
+            res = f.read()
+        print('read %d bytes in %s' % (len(res), coverage_file))
+        return res
+
+def find_command_path(prog):
+    res = system_cmd_result(cwd=os.getcwd(), 
+                             cmd=['which', prog],
+                             display_stdout=False,
+                            display_stderr=False,
+                            raise_on_error=True)
+    prog = res.stdout
+    return prog
+ 
+    
+@contract(covdata='str')
+def write_coverage_report(outdir,  covdata, module):
+    print('Writing coverage data to %s' % outdir)
+    outdir = os.path.abspath(outdir)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    with create_tmp_dir() as cwd:
+        coverage_file = os.path.join(cwd, '.coverage')
+        with open(coverage_file, 'wb') as f:
+            f.write(covdata)
+            
+        cmd = ['coverage', 'html', '-d', outdir,
+               '--include=*/%s/*' % module]
+        res = system_cmd_result(
+            cwd=cwd, cmd=cmd,
+            display_stdout=True,
+            display_stderr=True,
+            raise_on_error=True)
+        print(res.stdout)
+        print(res.stderr)
+        
+        system_cmd_result(
+            cwd=cwd, cmd=['find', '.'],
+            display_stdout=True,
+            display_stderr=True,
+            raise_on_error=True)
+
         
         
 def jobs_nosetests_single(context, module):

@@ -56,3 +56,29 @@ This looks for the ``get_comptests()`` function in ``<module>``:
         app = get_comptests_app(get_boot_config())
         return [app]
 
+Finding coverage information
+============================
+
+It's very usuful to use the ``coverage`` tool together with comptests.
+
+Install the ``coverage`` tool:
+
+    pip install coverage
+
+Run like this (ZSH):
+
+    coverage run =comptests -c "make recurse=1" <package>
+
+Note that you cannot use parallel testing (using ``parmake``) otherwise
+coverage gets confused.
+
+This displays the results:
+
+    coverage report -m 
+
+Then create the HTML report:
+
+    coverage html 
+
+
+
