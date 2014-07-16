@@ -29,6 +29,8 @@ class CompTests(QuickApp):
         params.add_flag('nonose', help='Disable nosetests')
         params.add_flag('nocomp', help='Disable comptests hooks')
         
+        params.add_flag('reports', help='Create reports jobs')
+        
         params.accept_extra()
          
     def define_jobs_context(self, context):
@@ -48,7 +50,8 @@ class CompTests(QuickApp):
         #self.instance_nosesingle_jobs(context, modules)
         
         if not options.nocomp:
-            self.instance_comptests_jobs(context, modules)
+            self.instance_comptests_jobs(context, modules,
+                                         create_reports=options.reports)
 
     @contract(returns='list(str)')
     def get_modules(self):
@@ -94,18 +97,18 @@ class CompTests(QuickApp):
         for c, module in iterate_context_names(context, modules):
             c.comp_dynamic(jobs_nosetests_single, module, job_id='nosesingle')
             
-                    
     
-    @contract(modules='list(str)')
-    def instance_comptests_jobs(self, context, modules):
+    @contract(modules='list(str)', create_reports='bool')
+    def instance_comptests_jobs(self, context, modules, create_reports):
         for c, module in iterate_context_names(context, modules):
             c.add_extra_report_keys(module=module)
-            c.comp_config_dynamic(instance_comptests_jobs2_m, module,
+            c.comp_config_dynamic(instance_comptests_jobs2_m, module_name=module,
+                                  create_reports=create_reports,
                                   job_id='comptests')
 
 
 
-def instance_comptests_jobs2_m(context, module_name):
+def instance_comptests_jobs2_m(context, module_name, create_reports):
     is_first = not '.' in module_name
     warn_errors = is_first
 

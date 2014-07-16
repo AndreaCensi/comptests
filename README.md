@@ -65,7 +65,10 @@ Install the ``coverage`` tool:
 
     pip install coverage
 
-Run like this (ZSH):
+If ``coverage`` is installed then comptests automatically computes
+the coverage information for nosetests execution.
+
+To do the coverage information for the comptests, run like this:
 
     coverage run =comptests -c "make recurse=1" <package>
 
@@ -78,7 +81,7 @@ This displays the results:
 
 Then create the HTML report:
 
-    coverage html 
+    coverage html -d outdir 
 
 
 
