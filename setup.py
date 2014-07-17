@@ -13,7 +13,7 @@ long_description = read('README.md')
 
 setup(name='comptests',
       author="Andrea Censi",
-      author_email="andrea@cds.caltech.edu",
+      author_email="censi@mit.edu",
       url='http://github.com/AndreaCensi/comptests',
       
       description=description,
