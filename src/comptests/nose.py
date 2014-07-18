@@ -67,7 +67,7 @@ def call_nosetests_plus_coverage(module):
         coverage_file = os.path.join(cwd, '.coverage')
         with open(coverage_file) as f:
             res = f.read()
-        print('read %d bytes in %s' % (len(res), coverage_file))
+        #print('read %d bytes in %s' % (len(res), coverage_file))
         return res
 
 def find_command_path(prog):
