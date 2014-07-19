@@ -152,13 +152,13 @@ def get_testobjects_promises_for_objspec(context, objspec):
         if objspec.instance_method is None:
             job = context.comp_config(get_spec, master_name=objspec.master.name,
                                   objspec_name=objspec.name, id_object=id_object,
-                                  job_id='%s-%s' % (objspec.name, id_object))
+                                  job_id='%s-instance-%s' % (objspec.name, id_object))
         else:
             # Cannot change name, otherwise cannot be pickled
             # instance_object.__name__ = 'instance_%s' % objspec.name
             job = context.comp_config(instance_object, master_name=objspec.master.name,
                                   objspec_name=objspec.name, id_object=id_object,
-                                  job_id='%s-%s' % (objspec.name, id_object))
+                                  job_id='%s-instance-%s' % (objspec.name, id_object))
         promises[id_object] = job
     return promises
 
