@@ -53,7 +53,7 @@ def comptests_for_all_pairs(objspec1, objspec2):
     return register    
 
 @contract(cm=ConfigMaster)
-def jobs_registrar(context, cm, create_reports=False):
+def jobs_registrar(context, cm, create_reports=True):
     names = sorted(cm.specs.keys())
     
     # str -> (str -> object promise)
