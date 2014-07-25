@@ -17,15 +17,6 @@ def create_tmp_dir():
         yield dirname
     except:
         raise
-    
-# from nose.case import FunctionTestCase
-# from nose.core import TestProgram
-# from nose.plugins.collect import CollectOnly
-# from nose.plugins.testid import TestId
-# from nose.suite import ContextSuite
-# import nose
-
-
 
 def jobs_nosetests(context, module):
     """ Instances the tests for the given module. """
@@ -38,7 +29,7 @@ def jobs_nosetests(context, module):
     else:
         covdata = context.comp(call_nosetests_plus_coverage, module, 
                                job_id='nosetests')
-        outdir = context.get_output_dir()
+        outdir = os.path.join(context.get_output_dir(), 'coverage')
         context.comp(write_coverage_report, outdir, covdata, module)
 
 def call_nosetests(module):
@@ -227,3 +218,14 @@ if False:
 #             print k
 #             print v
 #         
+
+
+    
+# from nose.case import FunctionTestCase
+# from nose.core import TestProgram
+# from nose.plugins.collect import CollectOnly
+# from nose.plugins.testid import TestId
+# from nose.suite import ContextSuite
+# import nose
+
+
