@@ -4,6 +4,7 @@ from contracts import contract
 from system_cmd import system_cmd_result
 import os
 import tempfile
+import warnings
 
 
 __all__ = ['jobs_nosetests']
@@ -12,6 +13,7 @@ __all__ = ['jobs_nosetests']
 
 @contextmanager
 def create_tmp_dir():
+    # TODO: delete dir
     dirname = tempfile.mkdtemp()
     try:
         yield dirname
@@ -29,8 +31,11 @@ def jobs_nosetests(context, module):
     else:
         covdata = context.comp(call_nosetests_plus_coverage, module, 
                                job_id='nosetests')
-        outdir = os.path.join(context.get_output_dir(), 'coverage')
-        context.comp(write_coverage_report, outdir, covdata, module)
+        if False:
+            outdir = os.path.join(context.get_output_dir(), 'coverage')
+            context.comp(write_coverage_report, outdir, covdata, module)
+        else:
+            warnings.warn('Skipping coverage report.')
 
 def call_nosetests(module):
     with create_tmp_dir() as cwd:

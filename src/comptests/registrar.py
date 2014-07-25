@@ -163,7 +163,7 @@ def define_tests_pairs(context, objspec1, names2test_objects, create_reports):
         jobs = {}
         
         combinations = iterate_context_names_pair(cx, objs1, objs2)
-        for c, (id_ob1, id_ob2) in combinations:
+        for c, id_ob1, id_ob2 in combinations:
             ob1 = objs1[id_ob1]
             ob2 = objs2[id_ob2]
             

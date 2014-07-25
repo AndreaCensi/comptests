@@ -37,3 +37,7 @@ def report_class2(ob2):
     r = Report()
     r.text('ob2', ob2)
     return r
+
+# normal test
+def test_dummy():
+    pass

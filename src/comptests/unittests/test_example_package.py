@@ -10,15 +10,17 @@ def test_example_package():
         print('Working in %r ' % cwd)
         cmd = ['comptests',
                '--contracts',
-               '--nonose', 
+               #'--nonose', 
                'example_package']
         system_cmd_result(cwd, cmd, 
                           display_stdout=True,
                           display_stderr=True,
                           raise_on_error=True)
         
-        fs = ['out-comptests/report/single/single-checkclass1dynamic-examplepackage-exampleclass1.html',
-              'out-comptests/report/reportclass1single/reportclass1single-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',
+        fs = ['out-comptests/report/single/single-checkclass1dynamic'
+              '-examplepackage-exampleclass1.html',
+              'out-comptests/report/reportclass1single/reportclass1single'
+              '-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',
               'out-comptests/report.html'
               ]
     
