@@ -122,7 +122,7 @@ def define_tests_single(context, objspec, names2test_objects, create_reports):
 
         for cc, id_object in iterate_context_names(c, test_objects, key='id_object'):
             ob = test_objects[id_object]
-            job_id = '%s-%s' % (f.__name__, id_object)
+            job_id = 'f'
             if dynamic:
                 res = cc.comp_config_dynamic(f, id_object, ob, job_id=job_id)
             else:
@@ -167,7 +167,7 @@ def define_tests_pairs(context, objspec1, names2test_objects, create_reports):
             ob1 = objs1[id_ob1]
             ob2 = objs2[id_ob2]
             
-            job_id = '%s-%s-%s' % (func.__name__, id_ob1, id_ob2)
+            job_id = 'f'
             if dynamic:
                 res = c.comp_config_dynamic(func, id_ob1, ob1, id_ob2, ob2,
                                                   job_id=job_id)
