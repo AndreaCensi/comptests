@@ -85,7 +85,8 @@ def jobs_registrar(context, cm, create_reports=True):
         res.append(r)
     return res
 
-@contract(names='list(str)', cm=ConfigMaster, returns='dict(str:dict(str:isinstance(Promise)))')
+@contract(names='list(str)', cm=ConfigMaster, 
+          returns='dict(str:dict(str:isinstance(Promise)))')
 def get_testobjects_promises(context, cm, names):
     names2test_objects = {}
     for name in names:
@@ -94,7 +95,8 @@ def get_testobjects_promises(context, cm, names):
     return names2test_objects 
 
 
-@contract(objspec=ObjectSpec, names2test_objects='dict(str:dict(str:isinstance(Promise)))')
+@contract(objspec=ObjectSpec, 
+          names2test_objects='dict(str:dict(str:isinstance(Promise)))')
 def define_tests_for(context, objspec, names2test_objects, create_reports):
     define_tests_single(context, objspec, names2test_objects, create_reports=create_reports)
     define_tests_pairs(context, objspec, names2test_objects, create_reports=create_reports)
@@ -208,13 +210,16 @@ def get_testobjects_promises_for_objspec(context, objspec):
         promises[id_object] = job
     return promises
 
+
 def get_spec(master_name, objspec_name, id_object):
     objspec = get_objspec(master_name, objspec_name)
     return objspec[id_object]
 
+
 def instance_object(master_name, objspec_name, id_object):
     objspec = get_objspec(master_name, objspec_name)
     return objspec.instance(id_object)
+
 
 def get_objspec(master_name, objspec_name):
     master = GlobalConfig._masters[master_name]

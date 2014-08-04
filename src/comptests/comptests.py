@@ -27,6 +27,7 @@ class CompTests(QuickApp):
                           help='exclude these modules (comma separated)')
         
         params.add_flag('nonose', help='Disable nosetests')
+        params.add_flag('coverage', help='Enable coverage module')
         params.add_flag('nocomp', help='Disable comptests hooks')
         
         params.add_flag('reports', help='Create reports jobs')
@@ -43,7 +44,8 @@ class CompTests(QuickApp):
 
         options = self.get_options()        
         if not options.nonose:
-            self.instance_nosetests_jobs(context, modules)
+            do_coverage = options.coverage
+            self.instance_nosetests_jobs(context, modules, do_coverage)
         
         #self.instance_nosesingle_jobs(context, modules)
         
@@ -87,9 +89,9 @@ class CompTests(QuickApp):
                 self.info('Interpreting %r as module.' % m)
                 yield m
 
-    def instance_nosetests_jobs(self, context, modules):
+    def instance_nosetests_jobs(self, context, modules, do_coverage):
         for c, module in iterate_context_names(context, modules):
-            jobs_nosetests(c, module)
+            jobs_nosetests(c, module, do_coverage = do_coverage)
     
     def instance_nosesingle_jobs(self, context, modules):
         for c, module in iterate_context_names(context, modules):
@@ -129,7 +131,6 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
     ff = module.__dict__[fname]
 
     context.comp_config_dynamic(ff)
-
 
     
 main_comptests = CompTests.get_sys_main()

@@ -20,7 +20,7 @@ def create_tmp_dir():
     except:
         raise
 
-def jobs_nosetests(context, module):
+def jobs_nosetests(context, module, do_coverage=False):
     """ Instances the tests for the given module. """
     try: 
         import coverage  # @UnusedImport
@@ -31,7 +31,7 @@ def jobs_nosetests(context, module):
     else:
         covdata = context.comp(call_nosetests_plus_coverage, module, 
                                job_id='nosetests')
-        if False:
+        if do_coverage:
             outdir = os.path.join(context.get_output_dir(), 'coverage')
             context.comp(write_coverage_report, outdir, covdata, module)
         else:
