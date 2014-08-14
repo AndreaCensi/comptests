@@ -6,6 +6,9 @@ import os
 def test_example_package():
     from system_cmd import system_cmd_result
 
+    # make sure it's installed
+    import example_package
+
     with create_tmp_dir() as cwd:
         print('Working in %r ' % cwd)
         cmd = ['comptests',
