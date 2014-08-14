@@ -14,6 +14,3 @@ install:
 script:
   - nosetests comptests 
   
-notifications:
-  email:
-   - censi@mit.edu
