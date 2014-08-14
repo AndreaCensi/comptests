@@ -1,9 +1,10 @@
 from setuptools import setup, find_packages
 import os
 
-version = "1.0dev1"
+version = "1.1"
 
-description = """ Testing utilities for projects that use ConfTools for handling configuration. """ 
+description = """ Testing utilities for projects that use ConfTools 
+for handling their configuration. """ 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -43,7 +44,12 @@ setup(name='comptests',
       },
       package_dir={'':'src'},
       packages=find_packages('src'),
-      install_requires=['PyContracts', 'compmake', 'ConfTools', 'quickapp'],
+      install_requires=[
+        'PyContracts', 
+        'compmake', 
+        'ConfTools', 
+        'quickapp',
+      ],
       tests_require=['nose'],
 )
 

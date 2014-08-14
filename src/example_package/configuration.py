@@ -1,6 +1,5 @@
 from conf_tools import ConfigMaster
 
-
 __all__ = [
     'get_example_package_config',
     'get_conftools_example_class1',

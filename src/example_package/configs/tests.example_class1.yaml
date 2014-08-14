@@ -3,9 +3,3 @@
   code:
   - example_package.ExampleClass1
   - param1: 10
-
-- id: c2a
-  desc: Test object
-  code:
-  - example_package.ExampleClass2
-  - param1: 20

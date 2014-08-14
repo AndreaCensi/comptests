@@ -50,7 +50,7 @@ from xml.sax import saxutils
 from nose.plugins.base import Plugin
 from nose.exc import SkipTest
 from traceback import format_exception
-from bootstrapping_olympics.utils.safe_pickle import safe_pickle_dump
+# from bootstrapping_olympics.utils.safe_pickle import safe_pickle_dump
 from nose.case import FunctionTestCase
 # from nose.pyversion import force_unicode, format_exception
 
