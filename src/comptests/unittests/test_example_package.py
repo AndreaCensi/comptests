@@ -7,7 +7,7 @@ def test_example_package():
     from system_cmd import system_cmd_result
 
     # make sure it's installed
-    import example_package
+    import example_package  # @UnusedImport
 
     with create_tmp_dir() as cwd:
         print('Working in %r ' % cwd)
