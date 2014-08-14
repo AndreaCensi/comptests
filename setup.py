@@ -9,8 +9,7 @@ for handling their configuration. """
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
     
-long_description = read('README.md')
-    
+long_description = read('README.md')    
 
 setup(name='comptests',
       author="Andrea Censi",
@@ -38,9 +37,9 @@ setup(name='comptests',
         'console_scripts': [
             'comptests = comptests:main_comptests'
        ],
-#         'nose.plugins.0.10': [
-#             'xunitext = xunitext:XUnitExt'
-#             ]
+      #         'nose.plugins.0.10': [
+      #             'xunitext = xunitext:XUnitExt'
+      #             ]
       },
       package_dir={'':'src'},
       packages=find_packages('src'),
