@@ -1,31 +1,19 @@
 language: python
+reset_minion: true
 
 python:
   - 2.7
-  - 3.2
-  - 3.3
-  - 3.4
+  # - 3.2
+  # - 3.3
+  # - 3.4
   - pypy
   
 install:
-  - pip install -r requirements.txt
-
-branches:
-  only:
-    - master
-    - env_fault
-
-# # Make folders for the reports
-# before_script:
-#   - mkdir -p shippable/testresults
-#   - mkdir -p shippable/codecoverage
+  - pip install -r requirements.txt 
 
 script:
-  - nosetests comptests
-  #  test.py --with-xunit --xunit-file=shippable/testresults/nosetests.xml
-  # - which python && coverage run --branch test.py
-  # - which python && coverage xml -o shippable/codecoverage/coverage.xml test.py
-
+  - nosetests comptests 
+  
 notifications:
   email:
    - censi@mit.edu
