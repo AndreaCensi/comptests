@@ -22,21 +22,25 @@ def create_tmp_dir():
 
 def jobs_nosetests(context, module, do_coverage=False):
     """ Instances the tests for the given module. """
-    try: 
-        import coverage  # @UnusedImport
-    except ImportError as e:
-        print('No coverage module found: %s' % e)
+    if do_coverage:
+        try: 
+            import coverage  # @UnusedImport
+        except ImportError as e:
+            print('No coverage module found: %s' % e)
+            context.comp(call_nosetests, module, 
+                         job_id='nosetests')
+        else:
+            covdata = context.comp(call_nosetests_plus_coverage, module, 
+                                   job_id='nosetests')
+            if do_coverage:
+                outdir = os.path.join(context.get_output_dir(), 'coverage')
+                context.comp(write_coverage_report, outdir, covdata, module)
+            else:
+                warnings.warn('Skipping coverage report.')
+    else:
         context.comp(call_nosetests, module, 
                      job_id='nosetests')
-    else:
-        covdata = context.comp(call_nosetests_plus_coverage, module, 
-                               job_id='nosetests')
-        if do_coverage:
-            outdir = os.path.join(context.get_output_dir(), 'coverage')
-            context.comp(write_coverage_report, outdir, covdata, module)
-        else:
-            warnings.warn('Skipping coverage report.')
-
+        
 def call_nosetests(module):
     with create_tmp_dir() as cwd:
         cmd = ['nosetests', module]
@@ -54,6 +58,8 @@ def call_nosetests_plus_coverage(module):
     with create_tmp_dir() as cwd:
         prog = find_command_path('nosetests')
         cmd = [prog, module]
+        
+        # note: coverage -> python-coverage in Ubuntu14
         cmd = ['coverage', 'run'] + cmd
         system_cmd_result(
             cwd=cwd, cmd=cmd,
