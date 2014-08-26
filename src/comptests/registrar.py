@@ -5,6 +5,7 @@ from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from contracts import contract
 from quickapp import iterate_context_names, iterate_context_names_pair
 import warnings
+from contracts.interface import describe_value
 
 __all__ = [
     'comptests_for_all',
@@ -23,10 +24,12 @@ class ComptestsRegistrar(object):
     
 @contract(objspec=ObjectSpec, dynamic=bool)
 def register_single(objspec, f, dynamic):
-    ComptestsRegistrar.objspec2tests[objspec.name].append(dict(function=f, dynamic=dynamic))
+    ts = ComptestsRegistrar.objspec2tests[objspec.name]
+    ts.append(dict(function=f, dynamic=dynamic))
 
 def register_pair(objspec1, objspec2, f, dynamic):
-    ComptestsRegistrar.objspec2pairs[objspec1.name].append(dict(objspec2=objspec2, function=f, dynamic=dynamic))
+    ts = ComptestsRegistrar.objspec2pairs[objspec1.name]
+    ts.append(dict(objspec2=objspec2, function=f, dynamic=dynamic))
 
 
 @contract(objspec=ObjectSpec)
@@ -75,13 +78,19 @@ def comptests_for_all_pairs(objspec1, objspec2):
 def jobs_registrar(context, cm, create_reports=True):
     assert isinstance(cm, ConfigMaster)
     names = sorted(cm.specs.keys())
-    
+
     # str -> (str -> object promise)
+    
+    context = context.child(cm.name)
+    
     names2test_objects = get_testobjects_promises(context, cm, names)
     
     res = []
     for c, name in iterate_context_names(context, names):
-        r = define_tests_for(c, cm.specs[name], names2test_objects, create_reports=create_reports)
+#         r = c.comp_config_dynamic(define_tests_for, cm.specs[name], 
+#                                   names2test_objects, create_reports=create_reports)
+        r = define_tests_for(c, cm.specs[name], 
+                             names2test_objects, create_reports=create_reports)
         res.append(r)
     return res
 
@@ -126,9 +135,13 @@ def define_tests_single(context, objspec, names2test_objects, create_reports):
             ob = test_objects[id_object]
             job_id = 'f'
             if dynamic:
-                res = cc.comp_config_dynamic(f, id_object, ob, job_id=job_id)
+                res = cc.comp_config_dynamic(wrap_func_dyn, 
+                                             f, id_object, ob, 
+                                             job_id=job_id, command_name=f.__name__)
             else:
-                res = cc.comp_config(f, id_object, ob, job_id=job_id)
+                res = cc.comp_config(wrap_func,
+                                     f, id_object, ob, 
+                                     job_id=job_id, command_name=f.__name__)
             results[id_object] = res
 
         if create_reports:
@@ -171,11 +184,15 @@ def define_tests_pairs(context, objspec1, names2test_objects, create_reports):
             
             job_id = 'f'
             if dynamic:
-                res = c.comp_config_dynamic(func, id_ob1, ob1, id_ob2, ob2,
-                                                  job_id=job_id)
+                res = c.comp_config_dynamic(wrap_func_pair_dyn,
+                                            func, id_ob1, ob1, id_ob2, ob2,
+                                              job_id=job_id,
+                                              command_name=func.__name__)
             else:
-                res = c.comp_config(func, id_ob1, ob1, id_ob2, ob2,
-                                      job_id=job_id)
+                res = c.comp_config(wrap_func_pair,
+                                    func, id_ob1, ob1, id_ob2, ob2,
+                                      job_id=job_id,
+                                      command_name=func.__name__)
             results[(id_ob1, id_ob2)] = res
             jobs[(id_ob1,id_ob2)] = res.job_id
 
@@ -187,7 +204,24 @@ def define_tests_pairs(context, objspec1, names2test_objects, create_reports):
             r = cx.comp(report_results_pairs, 
                              func, objspec1.name, objspec2.name, results)
             cx.add_report(r, 'pairs')
+
+def wrap_func(func, id_ob1, ob1):
+    print('%20s: %s' % (id_ob1, describe_value(ob1)))
+    return func(id_ob1, ob1)
+
+def wrap_func_dyn(context, func, id_ob1, ob1):
+    print('%20s: %s' % (id_ob1, describe_value(ob1)))
+    return func(context, id_ob1,ob1)
+  
+def wrap_func_pair_dyn(context, func, id_ob1, ob1, id_ob2, ob2):
+    print('%20s: %s' % (id_ob1, describe_value(ob1)))
+    print('%20s: %s' % (id_ob2, describe_value(ob2)))
+    return func(context, id_ob1,ob1,id_ob2,ob2)
  
+def wrap_func_pair(func, id_ob1, ob1, id_ob2, ob2):
+    print('%20s: %s' % (id_ob1, describe_value(ob1)))
+    print('%20s: %s' % (id_ob2, describe_value(ob2)))
+    return func(id_ob1,ob1,id_ob2,ob2)
 
 @contract(objspec=ObjectSpec, returns='dict(str:isinstance(Promise))')
 def get_testobjects_promises_for_objspec(context, objspec):

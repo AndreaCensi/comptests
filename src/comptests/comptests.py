@@ -90,11 +90,13 @@ class CompTests(QuickApp):
                 yield m
 
     def instance_nosetests_jobs(self, context, modules, do_coverage):
-        for c, module in iterate_context_names(context, modules):
+        for module in modules:
+            c = context.child(module)
             jobs_nosetests(c, module, do_coverage = do_coverage)
     
     def instance_nosesingle_jobs(self, context, modules):
-        for c, module in iterate_context_names(context, modules):
+        for module in modules:
+            c = context.child(module)
             c.comp_dynamic(jobs_nosetests_single, module, job_id='nosesingle')
             
     
