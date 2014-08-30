@@ -1,11 +1,12 @@
 from .reports import (report_results_pairs, report_results_pairs_jobs, 
     report_results_single)
 from collections import defaultdict
+from compmake.jobs import job_exists
+from compmake import Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from contracts import contract, describe_value
 from quickapp import iterate_context_names, iterate_context_names_pair
 import warnings
-from compmake.structures import Promise
 
 __all__ = [
     'comptests_for_all',
@@ -82,8 +83,9 @@ def jobs_registrar(context, cm, create_reports=True):
     
     names = sorted(cm.specs.keys())
     res = []
-    names2test_objects = context.comp_config_dynamic(get_testobjects_promises, cm)
     
+    names2test_objects = context.comp_config_dynamic(get_testobjects_promises, cm)
+#                                                      job_id='promises')
     
     for c, name in iterate_context_names(context, names):
         pairs = ComptestsRegistrar.objspec2pairs[name]
@@ -134,7 +136,8 @@ def define_tests_single(context, objspec, names2test_objects, functions, create_
         c.add_extra_report_keys(objspec=objspec.name, function=f.__name__)
 
         for cc, id_object in iterate_context_names(c, test_objects, key='id_object'):
-            ob = Promise(test_objects[id_object])
+            ob_job = test_objects[id_object]
+            ob = Promise(ob_job)
             job_id = 'f'
             if dynamic:
                 res = cc.comp_config_dynamic(wrap_func_dyn, 
@@ -180,6 +183,9 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
         
         combinations = iterate_context_names_pair(cx, objs1, objs2)
         for c, id_ob1, id_ob2 in combinations:
+            db = context.get_compmake_db()
+            assert job_exists(objs1[id_ob1], db), objs1[id_ob1] 
+            assert job_exists(objs2[id_ob2], db), objs2[id_ob2]
             ob1 = Promise(objs1[id_ob1])
             ob2 = Promise(objs2[id_ob2])
             
@@ -195,7 +201,7 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
                                       job_id=job_id,
                                       command_name=func.__name__)
             results[(id_ob1, id_ob2)] = res
-            jobs[(id_ob1,id_ob2)] = res.job_id
+            jobs[(id_ob1, id_ob2)] = res.job_id
 
         if create_reports:
             r = cx.comp_dynamic(report_results_pairs_jobs, 
@@ -244,6 +250,10 @@ def get_testobjects_promises_for_objspec(context, objspec):
                                       objspec_name=objspec.name, id_object=id_object,
                                       job_id='%s-instance-%s' % (objspec.name, id_object))
         promises[id_object] = job.job_id
+        
+        db = context.get_compmake_db()
+        assert job_exists(job.job_id, db)
+        print('defined %r -> %s' % (id_object, job.job_id))
     return promises
 
 
