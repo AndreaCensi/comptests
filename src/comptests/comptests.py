@@ -1,6 +1,6 @@
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
-from conf_tools import GlobalConfig, import_name
+from conf_tools import GlobalConfig, import_name, reset_config
 from contracts import contract
 from quickapp import QuickApp, iterate_context_names
 import os
@@ -132,7 +132,10 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
 
     ff = module.__dict__[fname]
 
-    context.comp_config_dynamic(ff)
+    context.comp_dynamic(comptests_jobs_wrap, ff)
 
+def comptests_jobs_wrap(context, ff):
+    reset_config()
+    ff(context)
     
 main_comptests = CompTests.get_sys_main()

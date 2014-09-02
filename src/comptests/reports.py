@@ -1,10 +1,10 @@
 from .results import PartiallySkipped, Skipped
+from compmake.jobs.storage import get_job_cache, get_job_userobject
+from compmake.structures import Cache
 from contracts import contract
 from contracts.utils import describe_value
 from reprep import Report
 import itertools
-from compmake.jobs.storage import get_job_cache, get_job_userobject
-from compmake.structures import Cache
 
 __all__ = [
     'report_results_single',

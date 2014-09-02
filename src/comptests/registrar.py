@@ -1,8 +1,8 @@
 from .reports import (report_results_pairs, report_results_pairs_jobs, 
     report_results_single)
 from collections import defaultdict
-from compmake.jobs import job_exists
 from compmake import Promise
+from compmake.jobs import assert_job_exists
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from contracts import contract, describe_value
 from quickapp import iterate_context_names, iterate_context_names_pair
@@ -76,29 +76,25 @@ def comptests_for_all_pairs(objspec1, objspec2):
     return register    
 
 @contract(cm=ConfigMaster)
-def jobs_registrar(context, cm, create_reports=True):
+def jobs_registrar(context, cm, create_reports=False):
     assert isinstance(cm, ConfigMaster)
     
     context = context.child(cm.name)
     
     names = sorted(cm.specs.keys())
-    res = []
     
     names2test_objects = context.comp_config_dynamic(get_testobjects_promises, cm)
-#                                                      job_id='promises')
     
     for c, name in iterate_context_names(context, names):
         pairs = ComptestsRegistrar.objspec2pairs[name]
         functions = ComptestsRegistrar.objspec2tests[name]
-        r = c.comp_config_dynamic(define_tests_for, 
-                                  cm=cm,
-                                  name=name,
-                                  names2test_objects=names2test_objects, 
-                                  pairs=pairs,functions=functions,
-                                  create_reports=create_reports)
-        res.append(r)
-    # If we return then we trigger making of the children automatically
-    # return res
+        c.comp_config_dynamic(define_tests_for, 
+                              cm=cm,
+                              name=name,
+                              names2test_objects=names2test_objects, 
+                              pairs=pairs,functions=functions,
+                              create_reports=create_reports)
+        
  
 @contract(cm=ConfigMaster, 
           returns='dict(str:dict(str:str))')
@@ -106,17 +102,23 @@ def get_testobjects_promises(context, cm):
     names2test_objects = {}
     for name in sorted(cm.specs.keys()):
         objspec = cm.specs[name]
-        names2test_objects[name] = get_testobjects_promises_for_objspec(context, objspec)
+        its = get_testobjects_promises_for_objspec(context, objspec)
+        names2test_objects[name] = its
     return names2test_objects 
 
-@contract(name=str, create_reports='bool', names2test_objects='dict(str:dict(str:str))') 
-def define_tests_for(context, cm, name, names2test_objects, pairs, functions, create_reports):
+@contract(name=str, create_reports='bool', 
+          names2test_objects='dict(str:dict(str:str))') 
+def define_tests_for(context, cm, name, names2test_objects, 
+                     pairs, functions, create_reports):
     objspec = cm.specs[name]
-    define_tests_single(context, objspec, names2test_objects, functions=functions, create_reports=create_reports)
-    define_tests_pairs(context, objspec, names2test_objects, pairs=pairs,create_reports=create_reports)
+    define_tests_single(context, objspec, names2test_objects, 
+                        functions=functions, create_reports=create_reports)
+    define_tests_pairs(context, objspec, names2test_objects, 
+                       pairs=pairs,create_reports=create_reports)
 
 @contract(names2test_objects='dict(str:dict(str:str))')
-def define_tests_single(context, objspec, names2test_objects, functions, create_reports):
+def define_tests_single(context, objspec, names2test_objects, 
+                        functions, create_reports):
     test_objects = names2test_objects[objspec.name]
     if not test_objects:
         msg = 'No test_objects for objects of kind %r.' % objspec.name
@@ -126,6 +128,8 @@ def define_tests_single(context, objspec, names2test_objects, functions, create_
     if not functions:
         msg = 'No tests specified for objects of kind %r.' % objspec.name
         print(msg)
+        
+    db = context.cc.get_compmake_db()
 
     for x in functions:
         f = x['function']
@@ -135,18 +139,20 @@ def define_tests_single(context, objspec, names2test_objects, functions, create_
         c = context.child(f.__name__)
         c.add_extra_report_keys(objspec=objspec.name, function=f.__name__)
 
-        for cc, id_object in iterate_context_names(c, test_objects, key='id_object'):
-            ob_job = test_objects[id_object]
-            ob = Promise(ob_job)
+        it = iterate_context_names(c, test_objects, key='id_object')
+        for cc, id_object in it:
+            ob_job_id = test_objects[id_object]
+            assert_job_exists(ob_job_id, db)
+            ob = Promise(ob_job_id)
             job_id = 'f'
+            
+            params = dict(job_id=job_id, command_name=f.__name__)
             if dynamic:
-                res = cc.comp_config_dynamic(wrap_func_dyn, 
-                                             f, id_object, ob, 
-                                             job_id=job_id, command_name=f.__name__)
+                res = cc.comp_config_dynamic(wrap_func_dyn, f, id_object, ob, 
+                                             **params)
             else:
-                res = cc.comp_config(wrap_func,
-                                     f, id_object, ob, 
-                                     job_id=job_id, command_name=f.__name__)
+                res = cc.comp_config(wrap_func, f, id_object, ob, 
+                                     **params)
             results[id_object] = res
 
         if create_reports:
@@ -181,25 +187,24 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
         results = {}
         jobs = {}
         
+        db = context.cc.get_compmake_db()
+        
         combinations = iterate_context_names_pair(cx, objs1, objs2)
         for c, id_ob1, id_ob2 in combinations:
-            db = context.get_compmake_db()
-            assert job_exists(objs1[id_ob1], db), objs1[id_ob1] 
-            assert job_exists(objs2[id_ob2], db), objs2[id_ob2]
+            assert_job_exists(objs1[id_ob1], db) 
+            assert_job_exists(objs2[id_ob2], db)
             ob1 = Promise(objs1[id_ob1])
             ob2 = Promise(objs2[id_ob2])
             
-            job_id = 'f'
+            params=dict(job_id='f', command_name=func.__name__)
             if dynamic:
                 res = c.comp_config_dynamic(wrap_func_pair_dyn,
                                             func, id_ob1, ob1, id_ob2, ob2,
-                                              job_id=job_id,
-                                              command_name=func.__name__)
+                                            **params)
             else:
                 res = c.comp_config(wrap_func_pair,
                                     func, id_ob1, ob1, id_ob2, ob2,
-                                      job_id=job_id,
-                                      command_name=func.__name__)
+                                    **params)
             results[(id_ob1, id_ob2)] = res
             jobs[(id_ob1, id_ob2)] = res.job_id
 
@@ -238,22 +243,24 @@ def get_testobjects_promises_for_objspec(context, objspec):
     objects = sorted(objspec.keys())
     promises = {}
     for id_object in objects:
+        params = dict(job_id='%s-instance-%s' % (objspec.name, id_object),
+                      command_name='instance_%s' %objspec.name)
         if objspec.instance_method is None:
             job = context.comp_config(get_spec, master_name=objspec.master.name,
                                   objspec_name=objspec.name, id_object=id_object,
-                                  job_id='%s-instance-%s' % (objspec.name, id_object))
+                                  **params)
         else:
-            # Cannot change name, otherwise cannot be pickled
-            # instance_object.__name__ = 'instance_%s' % objspec.name
             job = context.comp_config(instance_object, 
                                       master_name=objspec.master.name,
                                       objspec_name=objspec.name, id_object=id_object,
-                                      job_id='%s-instance-%s' % (objspec.name, id_object))
+                                      **params)
         promises[id_object] = job.job_id
-        
-        db = context.get_compmake_db()
-        assert job_exists(job.job_id, db)
+        db = context.cc. get_compmake_db()
+        assert_job_exists(job.job_id, db)
         print('defined %r -> %s' % (id_object, job.job_id))
+        if not job.job_id.endswith(params['job_id']):   
+            msg = 'Wanted %r but got %r' % (params['job_id'], job.job_id)
+            raise ValueError(msg)
     return promises
 
 

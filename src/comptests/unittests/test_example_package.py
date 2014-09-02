@@ -1,4 +1,3 @@
-
 from contextlib import contextmanager
 import tempfile
 import os
@@ -20,17 +19,30 @@ def test_example_package():
                           display_stderr=True,
                           raise_on_error=True)
         
-        fs = ['out-comptests/report/single/single-checkclass1dynamic'
-              '-examplepackage-exampleclass1.html',
-              'out-comptests/report/reportclass1single/reportclass1single'
-              '-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',
-              'out-comptests/report.html'
+        fs = [
+              'out-comptests/report.html',
+              'out-comptests/report/reportclass1single/'
+              'reportclass1single-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',
               ]
+
+        if False:
+            # these are for reports
+            fs += ['out-comptests/report/single/single-checkclass1dynamic'
+                  '-examplepackage-exampleclass1.html',
+                  'out-comptests/report/reportclass1single/reportclass1single'
+                  '-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',]
+        
     
+        errors = []
         for f in fs:
             fn = os.path.join(cwd, f)
             print('Testing %r' % f)
-            assert os.path.exists(fn)
+            if not os.path.exists(fn):
+                errors.append(fn)
+                
+        if errors:
+            msg = 'Files not found:\n' + '\n'.join(errors)
+            raise Exception(msg)
 
 @contextmanager
 def create_tmp_dir():
