@@ -142,8 +142,8 @@ def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs)
             s = 'FAIL'
         elif cache.state == Cache.BLOCKED:
             s = 'blocked'
-        elif cache.state == Cache.IN_PROGRESS:
-            s = '(in progress)'
+#         elif cache.state == Cache.IN_PROGRESS:
+#             s = '(in progress)'
         elif cache.state == Cache.NOT_STARTED:
             s = ' '
             
