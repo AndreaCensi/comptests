@@ -22,15 +22,15 @@ def test_example_package():
         fs = [
               'out-comptests/report.html',
               'out-comptests/report/reportclass1single/'
-              'reportclass1single-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',
+              'reportclass1single-c1a-checkclass1dynamic-examplepackage-exampleclass1.html',
               ]
-
-        if False:
-            # these are for reports
-            fs += ['out-comptests/report/single/single-checkclass1dynamic'
-                  '-examplepackage-exampleclass1.html',
-                  'out-comptests/report/reportclass1single/reportclass1single'
-                  '-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',]
+#
+#         if False:
+#             # these are for reports
+#             fs += ['out-comptests/report/single/single-checkclass1dynamic'
+#                   '-examplepackage-exampleclass1.html',
+#                   'out-comptests/report/reportclass1single/reportclass1single'
+#                   '-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',]
         
     
         errors = []

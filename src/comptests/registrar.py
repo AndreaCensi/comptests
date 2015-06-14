@@ -39,7 +39,8 @@ def register_pair(objspec1, objspec2, f, dynamic):
 
 def register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic):
     ts = ComptestsRegistrar.objspec2testsomepairs[objspec1.name]
-    ts.append(dict(objspec2=objspec2, function=f, dynamic=dynamic, which1=which1, which2=which2))
+    ts.append(dict(objspec2=objspec2, function=f, dynamic=dynamic,
+                   which1=which1, which2=which2))
 
 @contract(objspec=ObjectSpec, dynamic=bool)
 def register_for_some(objspec, f, which, dynamic):
@@ -129,12 +130,12 @@ def jobs_registrar(context, cm, create_reports=False):
         some = ComptestsRegistrar.objspec2testsome[name]
         some_pairs = ComptestsRegistrar.objspec2testsomepairs[name]
 
-        c.comp_config_dynamic(define_tests_for, 
-                              cm=cm,
-                              name=name,
-                              names2test_objects=names2test_objects, 
-                              pairs=pairs, functions=functions, some=some, some_pairs=some_pairs,
-                              create_reports=create_reports)
+        c.comp_config_dynamic(define_tests_for,
+                          cm=cm,
+                          name=name,
+                          names2test_objects=names2test_objects,
+                          pairs=pairs, functions=functions, some=some, some_pairs=some_pairs,
+                          create_reports=create_reports)
         
  
 @contract(cm=ConfigMaster, 
@@ -209,7 +210,7 @@ def define_tests_some(context, objspec, names2test_objects,
             ob_job_id = test_objects[id_object]
             assert_job_exists(ob_job_id, db)
             ob = Promise(ob_job_id)
-            job_id = 'f'  # XXX
+            # bjob_id = 'f'  # XXX
             job_id = '%s-%s' % (f.__name__, id_object)
 
             params = dict(job_id=job_id, command_name=f.__name__)
@@ -221,9 +222,9 @@ def define_tests_some(context, objspec, names2test_objects,
                                      **params)
             results[id_object] = res
 
-#         if create_reports:
-#             r = c.comp(report_results_single, f, objspec.name, results)
-#             c.add_report(r, 'some')
+        if create_reports:
+            r = c.comp(report_results_single, f, objspec.name, results)
+            c.add_report(r, 'some')
 
 
 @contract(names2test_objects='dict(str:dict(str:str))')
