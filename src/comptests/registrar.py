@@ -1,13 +1,13 @@
-from .reports import (report_results_pairs, report_results_pairs_jobs, 
+from .reports import (report_results_pairs, report_results_pairs_jobs,
     report_results_single)
 from collections import defaultdict
 from compmake import Promise
 from compmake.jobs import assert_job_exists
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
+from conf_tools.utils import expand_string
 from contracts import contract, describe_value
 from quickapp import iterate_context_names, iterate_context_names_pair
 import warnings
-from conf_tools.utils.wildcards import expand_string
 
 __all__ = [
     'comptests_for_all',
@@ -94,6 +94,16 @@ def comptests_for_some_pairs(objspec1, objspec2):
     def dec(which1, which2):
         def register(f):
             register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic=False)
+            return f
+        return register
+    return dec
+
+@contract(objspec1=ObjectSpec, objspec2=ObjectSpec)
+def comptests_for_some_pairs_dynamic(objspec1, objspec2):
+    """ Returns a decorator for a test involving only a subset of objects. """
+    def dec(which1, which2):
+        def register(f):
+            register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic=True)
             return f
         return register
     return dec
@@ -250,7 +260,7 @@ def define_tests_single(context, objspec, names2test_objects,
         c = context.child(f.__name__)
         c.add_extra_report_keys(objspec=objspec.name, function=f.__name__)
 
-        it = iterate_context_names(c, test_objects, key=objspec.name)
+        it = iterate_context_names(c, list(test_objects), key=objspec.name)
         for cc, id_object in it:
             ob_job_id = test_objects[id_object]
             assert_job_exists(ob_job_id, db)
@@ -300,7 +310,7 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
         
         db = context.cc.get_compmake_db()
         
-        combinations = iterate_context_names_pair(cx, objs1, objs2,
+        combinations = iterate_context_names_pair(cx, list(objs1), list(objs2),
                                                   key1=objspec1.name, key2=objspec2.name)
         for c, id_ob1, id_ob2 in combinations:
             assert_job_exists(objs1[id_ob1], db) 
@@ -361,16 +371,29 @@ def define_tests_some_pairs(context, objspec1, names2test_objects, some_pairs, c
             msg = 'No objects %r in %r.' % (which2, list(allobjs2))
             raise ValueError(msg)
 
+        for x in objs1:
+            if not x in allobjs1:
+                msg = '%r expanded to %r but %r is not in universe %r.' % (which1, objs1, x, list(allobjs1))
+                raise ValueError(msg)
+
+        for x in objs2:
+            if not x in allobjs2:
+                msg = '%r expanded to %r but %r is not in universe %r.' % (which2, objs2, x, list(allobjs2))
+                raise ValueError(msg)
+
         cx = context.child(func.__name__)
         cx.add_extra_report_keys(objspec1=objspec1.name, objspec2=objspec2.name,
                                  function=func.__name__, type='some')
         db = context.cc.get_compmake_db()
-        define_tests_some_pairs_(cx, db, objspec1, objspec2, allobjs1, allobjs2, func, dynamic, create_reports)
+
+        use_objs1 = dict((k, allobjs1[k]) for k in objs1)
+        use_objs2 = dict((k, allobjs2[k]) for k in objs2)
+        define_tests_some_pairs_(cx, db, objspec1, objspec2, use_objs1, use_objs2, func, dynamic, create_reports)
 
 def define_tests_some_pairs_(cx, db, objspec1, objspec2, objs1, objs2, func, dynamic, create_reports):
     results = {}
     jobs = {}
-    combinations = iterate_context_names_pair(cx, objs1, objs2,
+    combinations = iterate_context_names_pair(cx, list(objs1), list(objs2),
                                               key1=objspec1.name, key2=objspec2.name)
     for c, id_ob1, id_ob2 in combinations:
         assert_job_exists(objs1[id_ob1], db)
@@ -425,9 +448,13 @@ def get_testobjects_promises_for_objspec(context, objspec):
     objspec.master.load()
     warnings.warn('Select test objects here.')
     objects = sorted(objspec.keys())
-    if not objects:
-        msg = 'Could not find any test objects for %r.' % objspec
-        raise ValueError(msg)
+
+    if False:
+        warnings.warn("Maybe warn here.")
+        if not objects:
+            msg = 'Could not find any test objects for %r.' % objspec
+            raise ValueError(msg)
+
     promises = {}
     for id_object in objects:
         params = dict(job_id='%s-instance-%s' % (objspec.name, id_object),
