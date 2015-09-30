@@ -2,7 +2,7 @@ from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
 from conf_tools import GlobalConfig, import_name, reset_config
 from contracts import contract
-from quickapp import QuickApp, iterate_context_names
+from quickapp import QuickApp
 import os
 
 
@@ -102,7 +102,14 @@ class CompTests(QuickApp):
     
     @contract(modules='list(str)', create_reports='bool')
     def instance_comptests_jobs(self, context, modules, create_reports):
-        for c, module in iterate_context_names(context, modules):
+
+        for module in modules:
+
+            if False:
+                c = context.child(module)
+            else:
+                c = context.child("")
+
             c.add_extra_report_keys(module=module)
             c.comp_config_dynamic(instance_comptests_jobs2_m, module_name=module,
                                   create_reports=create_reports,

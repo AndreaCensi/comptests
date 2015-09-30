@@ -88,6 +88,16 @@ def comptests_for_some(objspec):
     return dec
 
 
+@contract(objspec=ObjectSpec)
+def comptests_for_some_dynamic(objspec):
+    """ Returns a decorator for a test involving one object only. """
+    def dec(which):
+        def register(f):
+            register_for_some(objspec=objspec, f=f, which=which, dynamic=True)
+            return f
+        return register
+    return dec
+
 @contract(objspec1=ObjectSpec, objspec2=ObjectSpec)
 def comptests_for_some_pairs(objspec1, objspec2):
     """ Returns a decorator for a test involving only a subset of objects. """
@@ -127,7 +137,9 @@ def comptests_for_all_pairs(objspec1, objspec2):
 def jobs_registrar(context, cm, create_reports=False):
     assert isinstance(cm, ConfigMaster)
     
-    context = context.child(cm.name)
+    # Sep 15: remove name
+#     context = context.child(cm.name)
+    context = context.child("")
     
     names = sorted(cm.specs.keys())
     
@@ -425,21 +437,21 @@ def define_tests_some_pairs_(cx, db, objspec1, objspec2, objs1, objs2, func, dyn
 
 
 def wrap_func(func, id_ob1, ob1):
-    print('%20s: %s' % (id_ob1, describe_value(ob1)))
+    # print('%20s: %s' % (id_ob1, describe_value(ob1)))
     return func(id_ob1, ob1)
 
 def wrap_func_dyn(context, func, id_ob1, ob1):
-    print('%20s: %s' % (id_ob1, describe_value(ob1)))
+    # print('%20s: %s' % (id_ob1, describe_value(ob1)))
     return func(context, id_ob1,ob1)
   
 def wrap_func_pair_dyn(context, func, id_ob1, ob1, id_ob2, ob2):
-    print('%20s: %s' % (id_ob1, describe_value(ob1)))
-    print('%20s: %s' % (id_ob2, describe_value(ob2)))
+    # print('%20s: %s' % (id_ob1, describe_value(ob1)))
+    # print('%20s: %s' % (id_ob2, describe_value(ob2)))
     return func(context, id_ob1,ob1,id_ob2,ob2)
  
 def wrap_func_pair(func, id_ob1, ob1, id_ob2, ob2):
-    print('%20s: %s' % (id_ob1, describe_value(ob1)))
-    print('%20s: %s' % (id_ob2, describe_value(ob2)))
+    # print('%20s: %s' % (id_ob1, describe_value(ob1)))
+    # print('%20s: %s' % (id_ob2, describe_value(ob2)))
     return func(id_ob1,ob1,id_ob2,ob2)
 
 @contract(objspec=ObjectSpec, returns='dict(str:str)')
@@ -471,7 +483,7 @@ def get_testobjects_promises_for_objspec(context, objspec):
         promises[id_object] = job.job_id
         db = context.cc. get_compmake_db()
         assert_job_exists(job.job_id, db)
-        print('defined %r -> %s' % (id_object, job.job_id))
+        # print('defined %r -> %s' % (id_object, job.job_id))
         if not job.job_id.endswith(params['job_id']):   
             msg = 'Wanted %r but got %r' % (params['job_id'], job.job_id)
             raise ValueError(msg)
