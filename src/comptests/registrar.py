@@ -22,12 +22,14 @@ __all__ = [
 
 class ComptestsRegistrar(object):
     """ Static storage """
+    regular = []  # list of dict(function=f, dynamic=dynamic))
+
     objspec2tests = defaultdict(list)
     objspec2pairs = defaultdict(list)  # -> (objspec2, f)
     objspec2testsome = defaultdict(list)  # -> dict(function, id_object, dynamic=False)
     objspec2testsomepairs = defaultdict(list)
-
     
+
 @contract(objspec=ObjectSpec, dynamic=bool)
 def register_single(objspec, f, dynamic):
     ts = ComptestsRegistrar.objspec2tests[objspec.name]
@@ -46,6 +48,17 @@ def register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic):
 def register_for_some(objspec, f, which, dynamic):
     ts = ComptestsRegistrar.objspec2testsome[objspec.name]
     ts.append(dict(function=f, which=which, dynamic=dynamic))
+
+def register_indep(f, dynamic):
+    ComptestsRegistrar.regular.append(dict(function=f, dynamic=dynamic))
+
+def comptest(f):
+    register_indep(f, dynamic=False)
+    return f
+
+def comptest_dynamic(f):
+    register_indep(f, dynamic=True)
+    return f
 
 
 @contract(objspec=ObjectSpec)
@@ -158,8 +171,19 @@ def jobs_registrar(context, cm, create_reports=False):
                           names2test_objects=names2test_objects,
                           pairs=pairs, functions=functions, some=some, some_pairs=some_pairs,
                           create_reports=create_reports)
-        
  
+    # now register single
+    for x in ComptestsRegistrar.regular:
+        function = x['function']
+        dynamic = x['dynamic']
+        
+        if not dynamic:
+            res = context.comp(function)
+        else:
+            res = context.comp_dynamic(function)
+      
+
+
 @contract(cm=ConfigMaster, 
           returns='dict(str:dict(str:str))')
 def get_testobjects_promises(context, cm):

@@ -2,6 +2,16 @@ from .generation import (for_all_class1, for_all_class1_class2,
     for_all_class1_class2_dynamic, for_all_class1_dynamic)
 from example_package.unittests.generation import for_some_class1, \
     for_some_class1_class2
+from comptests.registrar import comptest, comptest_dynamic
+
+
+@comptest
+def simple_check():
+    pass
+
+@comptest_dynamic
+def dyn_simple_check(context):
+    pass
 
 
 @for_all_class1
