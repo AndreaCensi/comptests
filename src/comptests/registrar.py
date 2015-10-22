@@ -5,7 +5,7 @@ from compmake import Promise
 from compmake.jobs import assert_job_exists
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
-from contracts import contract, describe_value
+from contracts import contract
 from quickapp import iterate_context_names, iterate_context_names_pair
 import warnings
 
@@ -49,15 +49,28 @@ def register_for_some(objspec, f, which, dynamic):
     ts = ComptestsRegistrar.objspec2testsome[objspec.name]
     ts.append(dict(function=f, which=which, dynamic=dynamic))
 
-def register_indep(f, dynamic):
-    ComptestsRegistrar.regular.append(dict(function=f, dynamic=dynamic))
+def register_indep(f, dynamic, args, kwargs):
+    ComptestsRegistrar.regular.append(dict(function=f, dynamic=dynamic, args=args, kwargs=kwargs))
 
 def comptest(f):
-    register_indep(f, dynamic=False)
+    register_indep(f, dynamic=False, args=(), kwargs={})
+    return f
+
+def check_fails(f, *args, **kwargs):
+    try:
+        f(*args, **kwargs)
+    except:
+        pass
+    else:
+        msg = 'Function was supposed to fail'
+        raise Exception(msg)
+
+def comptest_fails(f):
+    register_indep(check_fails, dynamic=False, args=(f,), kwargs={})
     return f
 
 def comptest_dynamic(f):
-    register_indep(f, dynamic=True)
+    register_indep(f, dynamic=True, args=(), kwargs={})
     return f
 
 
@@ -176,11 +189,14 @@ def jobs_registrar(context, cm, create_reports=False):
     for x in ComptestsRegistrar.regular:
         function = x['function']
         dynamic = x['dynamic']
+        args  = x['args']
+        kwargs = x['kwargs']
         
+        # print('registering %s' % x)
         if not dynamic:
-            res = context.comp(function)
+            res = context.comp_config(function, *args, **kwargs)
         else:
-            res = context.comp_dynamic(function)
+            res = context.comp_config_dynamic(function, *args, **kwargs)
       
 
 

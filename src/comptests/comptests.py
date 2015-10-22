@@ -139,7 +139,7 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
 
     ff = module.__dict__[fname]
 
-    context.comp_dynamic(comptests_jobs_wrap, ff)
+    context.comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
 
 def comptests_jobs_wrap(context, ff):
     reset_config()
