@@ -65,8 +65,17 @@ def check_fails(f, *args, **kwargs):
         msg = 'Function was supposed to fail'
         raise Exception(msg)
 
+class Wrap():
+    """ Need to assign name """
+    def __init__(self, f):
+        self.f = f
+    def __call__(self, *args, **kwargs):
+        return self.f(*args, **kwargs)
+
 def comptest_fails(f):
-    register_indep(check_fails, dynamic=False, args=(f,), kwargs={})
+    check_fails_wrap = Wrap(check_fails)
+    check_fails_wrap.__name__ = f.__name__
+    register_indep(check_fails_wrap, dynamic=False, args=(f,), kwargs={})
     return f
 
 def comptest_dynamic(f):
@@ -195,6 +204,7 @@ def jobs_registrar(context, cm, create_reports=False):
         # print('registering %s' % x)
         if not dynamic:
             res = context.comp_config(function, *args, **kwargs)
+
         else:
             res = context.comp_config_dynamic(function, *args, **kwargs)
       

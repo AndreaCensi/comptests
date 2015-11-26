@@ -1,4 +1,3 @@
-
 from contracts import contract
 
 __all__ = [
