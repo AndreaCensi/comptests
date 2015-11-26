@@ -1,0 +1,4 @@
+PyContracts
+compmake
+ConfTools
+quickapp
