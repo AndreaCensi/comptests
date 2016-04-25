@@ -1,0 +1,6 @@
+
+- id: c2a
+  desc: Test object
+  code:
+  - example_package.ExampleClass2
+  - param1: 20
