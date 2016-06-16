@@ -7,7 +7,7 @@ __all__ = [
 
 class Skipped():
     """ 
-        Can be returned by tests to mean that the test
+        Can be returned by mcdp_lang_tests to mean that the test
         was skipped for some reason.
     """
     @contract(reason='str')

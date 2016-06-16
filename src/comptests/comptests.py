@@ -14,7 +14,7 @@ __all__ = [
 
 class CompTests(QuickApp):
     """ 
-        Runs the modules tests using compmake as a backend. 
+        Runs the modules mcdp_lang_tests using compmake as a backend. 
         
     """ 
 

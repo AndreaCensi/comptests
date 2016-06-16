@@ -7,7 +7,7 @@ def jobs_comptests(context):
     from conf_tools import GlobalConfig
     GlobalConfig.global_load_dir("example_package.configs")
     
-    # tests
+    # mcdp_lang_tests
     from . import unittests
     
     # instantiation

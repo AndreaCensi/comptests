@@ -21,7 +21,7 @@ def create_tmp_dir():
         raise
 
 def jobs_nosetests(context, module, do_coverage=False):
-    """ Instances the tests for the given module. """
+    """ Instances the mcdp_lang_tests for the given module. """
     if do_coverage:
         try: 
             import coverage  # @UnusedImport
@@ -81,7 +81,7 @@ def find_command_path(prog):
     prog = res.stdout
     return prog
  
-    
+
 @contract(covdata='str')
 def write_coverage_report(outdir,  covdata, module):
     print('Writing coverage data to %s' % outdir)
@@ -128,7 +128,7 @@ def jobs_nosetests_single(context, module):
             raise_on_error=True)
         
         tests = safe_pickle_load(out)
-        print('found %d tests ' % len(tests))
+        print('found %d mcdp_lang_tests ' % len(tests))
         
         for t in tests:
             context.comp(execute, t)
@@ -206,7 +206,7 @@ if False:
 # #         
 # #         print describe_value(tp.test, clip=100)
 # #         suite = tp.test
-#         for tc in suite.tests:
+#         for tc in suite.mcdp_lang_tests:
 #             print describe_value(tc, clip=100)
 #             
         
@@ -221,7 +221,7 @@ if False:
 #         print collect
 #         
 #         if not os.path.exists(ids):
-#             msg = 'module %r did not produce tests' % module_name
+#             msg = 'module %r did not produce mcdp_lang_tests' % module_name
 #             raise Exception(msg)
 #         d = safe_pickle_load(ids)
 #         for k, v in d['ids'].items():

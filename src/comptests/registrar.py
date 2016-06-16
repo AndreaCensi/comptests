@@ -86,7 +86,7 @@ def comptest_dynamic(f):
 @contract(objspec=ObjectSpec)
 def comptests_for_all(objspec):
     """ 
-        Returns a decorator for tests, which should take two parameters:
+        Returns a decorator for mcdp_lang_tests, which should take two parameters:
         id and object. 
     """
     
@@ -95,15 +95,20 @@ def comptests_for_all(objspec):
     # @decorator
     def register(f):
         register_single(objspec, f, dynamic=False)  
+
+        register.registered.append(f)
+
         return f
     
+    register.registered = []
+
     return register    
 
 
 @contract(objspec=ObjectSpec)
 def comptests_for_all_dynamic(objspec):
     """ 
-        Returns a decorator for tests, which should take three parameters:
+        Returns a decorator for mcdp_lang_tests, which should take three parameters:
         context, id_object and object. 
     """
     def register(f):
@@ -191,9 +196,16 @@ def jobs_registrar(context, cm, create_reports=False):
                           cm=cm,
                           name=name,
                           names2test_objects=names2test_objects,
-                          pairs=pairs, functions=functions, some=some, some_pairs=some_pairs,
+                          pairs=pairs,
+                          functions=functions,
+                          some=some,
+                          some_pairs=some_pairs,
                           create_reports=create_reports)
  
+    jobs_registrar_simple(context)
+
+def jobs_registrar_simple(context):
+    """ Registers the simple "comptest" """
     # now register single
     for x in ComptestsRegistrar.regular:
         function = x['function']
@@ -255,7 +267,7 @@ def define_tests_some(context, objspec, names2test_objects,
         return
 
     if not some:
-        msg = 'No tests specified for objects of kind %r.' % objspec.name
+        msg = 'No mcdp_lang_tests specified for objects of kind %r.' % objspec.name
         print(msg)
         return
 
@@ -309,7 +321,7 @@ def define_tests_single(context, objspec, names2test_objects,
         return
 
     if not functions:
-        msg = 'No tests specified for objects of kind %r.' % objspec.name
+        msg = 'No mcdp_lang_tests specified for objects of kind %r.' % objspec.name
         print(msg)
         
     db = context.cc.get_compmake_db()
@@ -348,10 +360,10 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
     objs1 = names2test_objects[objspec1.name]
 
     if not pairs:
-        print('No %s+x pairs tests.' % (objspec1.name))
+        print('No %s+x pairs mcdp_lang_tests.' % (objspec1.name))
         return
     else:
-        print('%d %s+x pairs tests.' % (len(pairs), objspec1.name))
+        print('%d %s+x pairs mcdp_lang_tests.' % (len(pairs), objspec1.name))
         
     for x in pairs:
         objspec2 = x['objspec2']
@@ -407,10 +419,10 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
 @contract(names2test_objects='dict(str:dict(str:str))', create_reports='bool')
 def define_tests_some_pairs(context, objspec1, names2test_objects, some_pairs, create_reports):
     if not some_pairs:
-        print('No %s+x pairs tests.' % (objspec1.name))
+        print('No %s+x pairs mcdp_lang_tests.' % (objspec1.name))
         return
     else:
-        print('%d %s+x pairs tests.' % (len(some_pairs), objspec1.name))
+        print('%d %s+x pairs mcdp_lang_tests.' % (len(some_pairs), objspec1.name))
 
     for x in some_pairs:
         objspec2 = x['objspec2']
