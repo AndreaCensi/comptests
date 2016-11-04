@@ -1,13 +1,17 @@
-from .reports import (report_results_pairs, report_results_pairs_jobs,
-    report_results_single)
 from collections import defaultdict
+import warnings
+
 from compmake import Promise
 from compmake.jobs import assert_job_exists
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from contracts import contract
 from quickapp import iterate_context_names, iterate_context_names_pair
-import warnings
+from quickapp import logger
+
+from .reports import (report_results_pairs, report_results_pairs_jobs,
+    report_results_single)
+
 
 __all__ = [
     'comptests_for_all',
@@ -59,10 +63,12 @@ def comptest(f):
 def check_fails(f, *args, **kwargs):
     try:
         f(*args, **kwargs)
-    except:
+    except BaseException as e:
+        logger.warn('Known failure for %s ' % f)
+        logger.warn('Fails with error %s' % e)
         pass
     else:
-        msg = 'Function was supposed to fail'
+        msg = 'Function was supposed to fail.'
         raise Exception(msg)
 
 class Wrap():
