@@ -578,3 +578,17 @@ def get_objspec(master_name, objspec_name):
     objspec = master.specs[objspec_name]
     return objspec
 
+
+def run_module_tests():
+    """ 
+        Runs directly the tests defined in this module.
+    
+        if __name__ == '__main__':
+            run_module_tests()
+    """
+    for x in reversed(ComptestsRegistrar.regular):
+        function = x['function']
+        if function.__module__ == '__main__':
+            function()
+            
+            
