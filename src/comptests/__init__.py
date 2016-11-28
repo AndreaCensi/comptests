@@ -1,4 +1,4 @@
-__version__ = '1.3.4'
+__version__ = '1.3.5'
 
 from .registrar import *
 from .comptests import *
