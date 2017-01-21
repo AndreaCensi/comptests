@@ -11,6 +11,9 @@ from quickapp import logger
 
 from .reports import (report_results_pairs, report_results_pairs_jobs,
     report_results_single)
+import os
+import traceback
+from compmake.jobs.job_execution import JobCompute
 
 
 __all__ = [
@@ -64,9 +67,19 @@ def check_fails(f, *args, **kwargs):
     try:
         f(*args, **kwargs)
     except BaseException as e:
-        logger.warn('Known failure for %s ' % f)
+        logger.error('Known failure for %s ' % f)
         logger.warn('Fails with error %s' % e)
-        pass
+        #comptest_fails = kwargs.get('comptest_fails', f.__name__)
+        d = 'out/compttests-failures'
+        if not os.path.exists(d):
+            os.makedirs(d)
+        job_id = JobCompute.current_job_id
+        out = os.path.join(d, job_id + '.txt')
+#         for i in range(1000):
+#             outi = out % i
+#             if not os.path.exists(outi):
+        with open(out, 'w') as f:
+            f.write(traceback.format_exc(e))
     else:
         msg = 'Function was supposed to fail.'
         raise Exception(msg)
@@ -589,6 +602,7 @@ def run_module_tests():
     for x in reversed(ComptestsRegistrar.regular):
         function = x['function']
         if function.__module__ == '__main__':
+            logger.info('run_module_tests: %s' % function.__name__)
             function()
             
             
