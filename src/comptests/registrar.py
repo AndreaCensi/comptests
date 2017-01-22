@@ -70,7 +70,7 @@ def check_fails(f, *args, **kwargs):
         logger.error('Known failure for %s ' % f)
         logger.warn('Fails with error %s' % e)
         #comptest_fails = kwargs.get('comptest_fails', f.__name__)
-        d = 'out/compttests-failures'
+        d = 'out/comptests-failures'
         if not os.path.exists(d):
             os.makedirs(d)
         job_id = JobCompute.current_job_id
