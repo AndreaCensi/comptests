@@ -57,7 +57,8 @@ def register_for_some(objspec, f, which, dynamic):
     ts.append(dict(function=f, which=which, dynamic=dynamic))
 
 def register_indep(f, dynamic, args, kwargs):
-    ComptestsRegistrar.regular.append(dict(function=f, dynamic=dynamic, args=args, kwargs=kwargs))
+    d = dict(function=f, dynamic=dynamic, args=args, kwargs=kwargs)
+    ComptestsRegistrar.regular.append(d)
 
 def comptest(f):
     register_indep(f, dynamic=False, args=(), kwargs={})
