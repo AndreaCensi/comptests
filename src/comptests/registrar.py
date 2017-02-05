@@ -1,19 +1,20 @@
 from collections import defaultdict
+import os
+import traceback
 import warnings
 
 from compmake import Promise
 from compmake.jobs import assert_job_exists
+from compmake.jobs.job_execution import JobCompute
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from contracts import contract
+from contracts.utils import raise_desc
 from quickapp import iterate_context_names, iterate_context_names_pair
 from quickapp import logger
 
 from .reports import (report_results_pairs, report_results_pairs_jobs,
     report_results_single)
-import os
-import traceback
-from compmake.jobs.job_execution import JobCompute
 
 
 __all__ = [
@@ -75,6 +76,8 @@ def check_fails(f, *args, **kwargs):
         if not os.path.exists(d):
             os.makedirs(d)
         job_id = JobCompute.current_job_id
+        if job_id is None:
+            job_id = 'nojob-%s' % f.__name__
         out = os.path.join(d, job_id + '.txt')
 #         for i in range(1000):
 #             outi = out % i
@@ -83,7 +86,7 @@ def check_fails(f, *args, **kwargs):
             f.write(traceback.format_exc(e))
     else:
         msg = 'Function was supposed to fail.'
-        raise Exception(msg)
+        raise_desc(Exception, msg, f=f, args=args, kwargs=kwargs)
 
 class Wrap():
     """ Need to assign name """
@@ -95,6 +98,7 @@ class Wrap():
 def comptest_fails(f):
     check_fails_wrap = Wrap(check_fails)
     check_fails_wrap.__name__ = f.__name__
+    check_fails_wrap.__module__ = f.__module__
     register_indep(check_fails_wrap, dynamic=False, args=(f,), kwargs={})
     return f
 
@@ -604,6 +608,6 @@ def run_module_tests():
         function = x['function']
         if function.__module__ == '__main__':
             logger.info('run_module_tests: %s' % function.__name__)
-            function()
+            function(*x['args'], **x['kwargs'])
             
             
