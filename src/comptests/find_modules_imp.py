@@ -26,11 +26,24 @@ def find_modules(root):
         This will yield ['module', 'module.module2']
     """
     setups = locate_files(root, 'setup.py')
+    
+    found = []
     for s in setups:
-        # look for '__init__.py'
-        base = join(dirname(s), 'src')
+        # s = <d>/setup.py
+        d = os.path.dirname(s)
+        # <d>/src
+        src = os.path.join(d, 'src')
+        if os.path.exists(src):
+            base = src
+        else:
+            base = d
+    
         for i in locate_files(base, '__init__.py'):
             p = os.path.relpath(i, base)
             components = p.split('/')[:-1]  # remove __init__
             module = ".".join(components)
-            yield module
+            found.append(module)
+    if not found:
+        msg = 'Could not find any module in \nroot = %s ' % root
+        raise Exception(msg)
+    return found

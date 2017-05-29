@@ -9,12 +9,13 @@ from compmake.jobs.job_execution import JobCompute
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from contracts import contract
-from contracts.utils import raise_desc
+from contracts.utils import raise_desc, indent
 from quickapp import iterate_context_names, iterate_context_names_pair
 from quickapp import logger
 
 from .reports import (report_results_pairs, report_results_pairs_jobs,
     report_results_single)
+import sys
 
 
 __all__ = [
@@ -604,10 +605,64 @@ def run_module_tests():
         if __name__ == '__main__':
             run_module_tests()
     """
-    for x in reversed(ComptestsRegistrar.regular):
+    
+    args = list(sys.argv[1:])
+    if args:
+        logger.info('Only running tests %s' % args)
+     
+    seen = []
+    errors = {}
+    all_tests_regular= list(ComptestsRegistrar.regular)
+    logger.debug('all_tests_regular: %s' % all_tests_regular)
+    for x in reversed(all_tests_regular):
         function = x['function']
+        name = function.__name__
         if function.__module__ == '__main__':
-            logger.info('run_module_tests: %s' % function.__name__)
-            function(*x['args'], **x['kwargs'])
+            if args:
+                if name not in  args:
+                    #logger.info('skipping %s because not in %s' % (name, args))
+                    continue
+            logger.info('run_module_tests: %s' % name)
+            try:
+                seen.append(name)
+                function(*x['args'], **x['kwargs'])
+            except Exception as e:
+                s = traceback.format_exc(e)
+                logger.error(s)
+                errors[name] = e
+        else:
+            pass
+#             logger.debug('skipping %s because not in module __main__ (%s)' %
+#                           (name, function.__module__))
+
+                
+    if errors and (len(seen) > 1):
+        logger.error('There were %d errors' % len(errors))
+        for k in seen:
+            if k in errors:
+                s = '%s: Failed with %s' % (k, type(e).__name__)
+                s += '\n' + indent(traceback.format_exc(e), '%s | ' % k)
+                logger.error(s)
+
+        for k in seen:
+            if k in errors:
+                s = '%s: Failed with %s' % (k, type(e).__name__)
+                logger.error(s)
+            else:
+                logger.info('%s: OK' % k)
+        
+    if not errors:
+        if args and not seen:
+            logger.error('run_module_tests: no tests found matching %r' % args)
+            sys.exit(2)
+        logger.info('run_module_tests: run these tests successfully: %s' % seen)
+    else:
+        sys.exit(1) 
+            
+            
+            
+            
+            
+            
             
             
