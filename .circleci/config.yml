@@ -16,7 +16,7 @@ jobs:
             name: Install 
             command: |
                 # remove if it exists
-                pip uninstall comptests
+                pip uninstall -y comptests
                 python setup.py develop
                 python -c "import comptests; print comptests.__version__"
  
