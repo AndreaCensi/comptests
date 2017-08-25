@@ -108,7 +108,7 @@ class CompTests(QuickApp):
 
         for module in modules:
 
-            if False:
+            if True:
                 c = context.child(module)
             else:
                 c = context.child("")

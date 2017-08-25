@@ -2,7 +2,7 @@ from .generation import (for_all_class1, for_all_class1_class2,
     for_all_class1_class2_dynamic, for_all_class1_dynamic)
 from example_package.unittests.generation import for_some_class1, \
     for_some_class1_class2
-from comptests.registrar import comptest, comptest_dynamic
+from comptests.registrar import comptest, comptest_dynamic, comptest_fails
 
 
 @comptest
@@ -73,3 +73,12 @@ def report_class2(ob2):
 # normal test
 def test_dummy():
     pass
+
+@comptest
+def a_real_failure():
+    raise Exception('A failure')
+
+@comptest_fails
+def expected_failure():
+    raise Exception('expected_failure')
+

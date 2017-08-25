@@ -1,0 +1,33 @@
+version: 2
+jobs:
+    build:
+     docker:
+        - image: andreacensi/duckietown-xenial-kinetic:10
+     steps:
+        - checkout
+
+        - run:
+            name: deps
+            command: |
+                pip install -U decorator>=4.1.0
+                 
+        - run:
+            name: Install 
+            command: |
+                python setup.py develop
+ 
+        - run:
+            name: Test with nose
+            command: |
+                nosetests -v
+
+        - run:
+            name: Run tests for package  example_package
+            command: |
+                comptests -o out/example example_package || :
+                comptests-to-junit out/example/compmake > ${CIRCLE_TEST_REPORTS}/junit.xml
+                 
+        - store_artifacts:
+              path: out
+              destination: out
+              
