@@ -9,8 +9,8 @@ jobs:
         - run:
             name: deps
             command: |
-                apt install numpy
-                pip install -U decorator>=4.1.0
+                apt install python-numpy
+                #pip install -U decorator>=4.1.0
                  
         - run:
             name: Install 
