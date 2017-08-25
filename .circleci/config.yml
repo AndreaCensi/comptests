@@ -20,18 +20,24 @@ jobs:
                 python setup.py develop
                 python -c "import comptests; print comptests.__version__"
  
-       # - run:
-       #     name: Test with nose
-       #     command: |
-       #         nosetests -v
-
+       
         - run:
             name: Run tests for package  example_package
             command: |
                 comptests -o out/example example_package || :
-                comptests-to-junit out/example/compmake > ${CIRCLE_TEST_REPORTS}/junit.xml
-                 
+                
+                mkdir -p example_package_out
+                comptests-to-junit out/example/compmake > example_package_out/junit.xml
+          
+        - store_test_results:
+              path: example_package_out
+              
         - store_artifacts:
               path: out
               destination: out
               
+        - run:
+            name: Test with nose
+            command: |
+                nosetests -v
+         
