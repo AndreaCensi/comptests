@@ -74,9 +74,10 @@ def report_class2(ob2):
 def test_dummy():
     pass
 
-@comptest
-def a_real_failure():
-    raise Exception('A failure')
+# 
+# @comptest
+# def a_real_failure():
+#     raise Exception('A failure')
 
 @comptest_fails
 def expected_failure():
