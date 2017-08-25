@@ -20,10 +20,10 @@ jobs:
                 python setup.py develop
                 python -c "import comptests; print comptests.__version__"
  
-        - run:
-            name: Test with nose
-            command: |
-                nosetests -v
+       # - run:
+       #     name: Test with nose
+       #     command: |
+       #         nosetests -v
 
         - run:
             name: Run tests for package  example_package
