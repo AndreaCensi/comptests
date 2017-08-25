@@ -9,7 +9,7 @@ jobs:
         - run:
             name: deps
             command: |
-                sudo apt install numpy
+                apt install numpy
                 pip install -U decorator>=4.1.0
                  
         - run:
