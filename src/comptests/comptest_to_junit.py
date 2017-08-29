@@ -51,8 +51,8 @@ def junit_test_case_from_compmake(db, job_id):
     else:
         elapsed_sec = None
         
-    stderr = flatten_ascii(cache.captured_stderr)
-    stdout = flatten_ascii(cache.captured_stdout)
+    stderr = flatten_ascii(remove_escapes(cache.captured_stderr))
+    stdout = flatten_ascii(remove_escapes(cache.captured_stdout))
     
     tc = TestCase(name=job_id, classname=None, elapsed_sec=elapsed_sec,
                   stdout=stdout, stderr=stderr)
@@ -63,6 +63,12 @@ def junit_test_case_from_compmake(db, job_id):
         tc.add_failure_info(flatten_ascii(message), flatten_ascii(output))
     
     return tc  
+
+def remove_escapes(s):
+    import re
+    escape = re.compile('\x1b\[..?m')
+    return escape.sub("", s)
+
 
 if __name__ == '__main__':
     comptest_to_junit_main()
