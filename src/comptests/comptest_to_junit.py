@@ -65,6 +65,8 @@ def junit_test_case_from_compmake(db, job_id):
     return tc  
 
 def remove_escapes(s):
+    if s is None:
+        return None
     import re
     escape = re.compile('\x1b\[..?m')
     return escape.sub("", s)
