@@ -1,4 +1,5 @@
-from collections import defaultdict
+# -*- coding: utf-8 -*-
+from collections import defaultdict, namedtuple
 import os
 import traceback
 import warnings
@@ -9,12 +10,13 @@ from compmake.jobs.job_execution import JobCompute
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from contracts import contract
-from contracts.utils import raise_desc
+from contracts.utils import raise_desc, indent
 from quickapp import iterate_context_names, iterate_context_names_pair
 from quickapp import logger
 
 from .reports import (report_results_pairs, report_results_pairs_jobs,
     report_results_single)
+import sys
 
 
 __all__ = [
@@ -603,11 +605,63 @@ def run_module_tests():
     
         if __name__ == '__main__':
             run_module_tests()
+            
+        argument 1: grep
     """
+    
+    grep = sys.argv[1] if len(sys.argv) > 1 else None
+    def ignore(r):
+        if grep is None:
+            return False
+        do_ignore = not grep in r.es
+#         if not do_ignore:
+#             print('found %s in %s' % ( grep, r))
+        return do_ignore
+    
+    
+    Res = namedtuple('Res', 'x es en')
+    results = []
+    ignored_results =[]
     for x in reversed(ComptestsRegistrar.regular):
         function = x['function']
         if function.__module__ == '__main__':
-            logger.info('run_module_tests: %s' % function.__name__)
-            function(*x['args'], **x['kwargs'])
+            try:
+                function(*x['args'], **x['kwargs'])
+                results.append(Res(x=x, es=None, en=None))
+            except BaseException as e2:
+                es = traceback.format_exc(e2)
+                r = Res(x=x, es=es, en=type(e2).__name__)
+                if not ignore(r):
+                    results.append(r)
+                else:
+                    ignored_results.append(r)
+    
+    nerrors = 0            
+    msg = ""
+    for r in results:
+        passed = r.es is None
+        mark = '✓' if passed else r.en
+        nerrors += 0 if passed else 1
+        k = r.x['function'].__name__
+        msg += '\n %30s : %s' % (k, mark)
+    
+        if r.es is not None:
+            logger.error('Test %s failed: ' % k)
+            logger.error(indent(r.es, '> '))
+            
+    if ignored_results:
+        logger.debug('Ignored %d errors.' % len(ignored_results))
+    if nerrors:
+        logger.error(msg)
+        sys.exit(nerrors)
+    else:
+        logger.info(msg)
+        sys.exit(0)
+        
+            
+            
+            
+            
+            
             
             
