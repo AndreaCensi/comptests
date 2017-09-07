@@ -18,24 +18,23 @@ def get_version(filename):
 version = get_version(filename='src/comptests/__init__.py')
 
 
-description = """ Testing utilities for projects that use ConfTools 
-for handling their configuration. """ 
+description = """ Testing utilities for projects that use ConfTools for handling their configuration. """ 
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
-    
-long_description = read('README.md')    
+
+long_description = read('README.md')
 
 setup(name='comptests',
       author="Andrea Censi",
       author_email="censi@mit.edu",
       url='http://github.com/AndreaCensi/comptests',
-      
+
       description=description,
       long_description=long_description,
       keywords="",
       license="",
-      
+
       classifiers=[
         'Development Status :: 4 - Beta',
         # 'Intended Audience :: Developers',
@@ -47,10 +46,11 @@ setup(name='comptests',
 
       version=version,
       download_url='http://github.com/AndreaCensi/comptests/tarball/%s' % version,
-      
+
       entry_points={
         'console_scripts': [
-            'comptests = comptests:main_comptests'
+            'comptests = comptests:main_comptests',
+            'comptests-to-junit = comptests.comptest_to_junit:comptest_to_junit_main',
        ],
       #         'nose.plugins.0.10': [
       #             'xunitext = xunitext:XUnitExt'
@@ -59,11 +59,10 @@ setup(name='comptests',
       package_dir={'':'src'},
       packages=find_packages('src'),
       install_requires=[
-        'PyContracts', 
-        'compmake', 
-        'ConfTools', 
+        'PyContracts',
+        'compmake',
+        'ConfTools',
         'quickapp',
       ],
       tests_require=['nose'],
 )
-

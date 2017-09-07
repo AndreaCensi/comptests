@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, OrderedDict
 import os
 import traceback
 import warnings
@@ -38,7 +38,7 @@ class ComptestsRegistrar(object):
     objspec2pairs = defaultdict(list)  # -> (objspec2, f)
     objspec2testsome = defaultdict(list)  # -> dict(function, id_object, dynamic=False)
     objspec2testsomepairs = defaultdict(list)
-    
+
 
 @contract(objspec=ObjectSpec, dynamic=bool)
 def register_single(objspec, f, dynamic):
@@ -111,36 +111,36 @@ def comptest_dynamic(f):
 
 @contract(objspec=ObjectSpec)
 def comptests_for_all(objspec):
-    """ 
-        Returns a decorator for mcdp_lang_tests, which should take two parameters:
-        id and object. 
     """
-    
+        Returns a decorator for mcdp_lang_tests, which should take two parameters:
+        id and object.
+    """
+
     # from decorator import decorator
     # not sure why it doesn't work...
     # @decorator
     def register(f):
-        register_single(objspec, f, dynamic=False)  
+        register_single(objspec, f, dynamic=False)
 
         register.registered.append(f)
 
         return f
-    
+
     register.registered = []
 
-    return register    
+    return register
 
 
 @contract(objspec=ObjectSpec)
 def comptests_for_all_dynamic(objspec):
-    """ 
+    """
         Returns a decorator for mcdp_lang_tests, which should take three parameters:
-        context, id_object and object. 
+        context, id_object and object.
     """
     def register(f):
-        register_single(objspec, f, dynamic=True)  
-        return f    
-    return register    
+        register_single(objspec, f, dynamic=True)
+        return f
+    return register
 
 
 @contract(objspec=ObjectSpec)
@@ -188,29 +188,29 @@ def comptests_for_some_pairs_dynamic(objspec1, objspec2):
 @contract(objspec1=ObjectSpec, objspec2=ObjectSpec)
 def comptests_for_all_pairs_dynamic(objspec1, objspec2):
     def register(f):
-        register_pair(objspec1, objspec2, f, dynamic=True)  
+        register_pair(objspec1, objspec2, f, dynamic=True)
         return f
-    return register    
+    return register
 
 @contract(objspec1=ObjectSpec, objspec2=ObjectSpec)
 def comptests_for_all_pairs(objspec1, objspec2):
     def register(f):
-        register_pair(objspec1, objspec2, f, dynamic=False)  
+        register_pair(objspec1, objspec2, f, dynamic=False)
         return f
-    return register    
+    return register
 
 @contract(cm=ConfigMaster)
 def jobs_registrar(context, cm, create_reports=False):
     assert isinstance(cm, ConfigMaster)
-    
+
     # Sep 15: remove name
 #     context = context.child(cm.name)
     context = context.child("")
-    
+
     names = sorted(cm.specs.keys())
-    
+
     names2test_objects = context.comp_config_dynamic(get_testobjects_promises, cm)
-    
+
     for c, name in iterate_context_names(context, names):
 
         pairs = ComptestsRegistrar.objspec2pairs[name]
@@ -227,7 +227,7 @@ def jobs_registrar(context, cm, create_reports=False):
                           some=some,
                           some_pairs=some_pairs,
                           create_reports=create_reports)
- 
+
     jobs_registrar_simple(context)
 
 def jobs_registrar_simple(context):
@@ -238,17 +238,16 @@ def jobs_registrar_simple(context):
         dynamic = x['dynamic']
         args  = x['args']
         kwargs = x['kwargs']
-        
+
         # print('registering %s' % x)
         if not dynamic:
-            res = context.comp_config(function, *args, **kwargs)
-
+            _res = context.comp_config(function, *args, **kwargs)
         else:
-            res = context.comp_config_dynamic(function, *args, **kwargs)
-      
+            _res = context.comp_config_dynamic(function, *args, **kwargs)
 
 
-@contract(cm=ConfigMaster, 
+
+@contract(cm=ConfigMaster,
           returns='dict(str:dict(str:str))')
 def get_testobjects_promises(context, cm):
     names2test_objects = {}
@@ -256,12 +255,12 @@ def get_testobjects_promises(context, cm):
         objspec = cm.specs[name]
         its = get_testobjects_promises_for_objspec(context, objspec)
         names2test_objects[name] = its
-    return names2test_objects 
+    return names2test_objects
 
 
-@contract(name=str, create_reports='bool', 
-          names2test_objects='dict(str:dict(str:str))') 
-def define_tests_for(context, cm, name, names2test_objects, 
+@contract(name=str, create_reports='bool',
+          names2test_objects='dict(str:dict(str:str))')
+def define_tests_for(context, cm, name, names2test_objects,
 
                      pairs, functions, some, some_pairs,
 
@@ -269,9 +268,9 @@ def define_tests_for(context, cm, name, names2test_objects,
 
     objspec = cm.specs[name]
 
-    define_tests_single(context, objspec, names2test_objects, 
+    define_tests_single(context, objspec, names2test_objects,
                         functions=functions, create_reports=create_reports)
-    define_tests_pairs(context, objspec, names2test_objects, 
+    define_tests_pairs(context, objspec, names2test_objects,
                        pairs=pairs,create_reports=create_reports)
 
     define_tests_some_pairs(context, objspec, names2test_objects,
@@ -338,7 +337,7 @@ def define_tests_some(context, objspec, names2test_objects,
 
 
 @contract(names2test_objects='dict(str:dict(str:str))')
-def define_tests_single(context, objspec, names2test_objects, 
+def define_tests_single(context, objspec, names2test_objects,
                         functions, create_reports):
     test_objects = names2test_objects[objspec.name]
     if not test_objects:
@@ -349,14 +348,14 @@ def define_tests_single(context, objspec, names2test_objects,
     if not functions:
         msg = 'No mcdp_lang_tests specified for objects of kind %r.' % objspec.name
         print(msg)
-        
+
     db = context.cc.get_compmake_db()
 
     for x in functions:
         f = x['function']
         dynamic = x['dynamic']
         results = {}
-        
+
         c = context.child(f.__name__)
         c.add_extra_report_keys(objspec=objspec.name, function=f.__name__)
 
@@ -366,13 +365,13 @@ def define_tests_single(context, objspec, names2test_objects,
             assert_job_exists(ob_job_id, db)
             ob = Promise(ob_job_id)
             job_id = 'f'
-            
+
             params = dict(job_id=job_id, command_name=f.__name__)
             if dynamic:
-                res = cc.comp_config_dynamic(wrap_func_dyn, f, id_object, ob, 
+                res = cc.comp_config_dynamic(wrap_func_dyn, f, id_object, ob,
                                              **params)
             else:
-                res = cc.comp_config(wrap_func, f, id_object, ob, 
+                res = cc.comp_config(wrap_func, f, id_object, ob,
                                      **params)
             results[id_object] = res
 
@@ -390,16 +389,16 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
         return
     else:
         print('%d %s+x pairs mcdp_lang_tests.' % (len(pairs), objspec1.name))
-        
+
     for x in pairs:
         objspec2 = x['objspec2']
         func = x['function']
         dynamic = x['dynamic']
-        
+
         cx = context.child(func.__name__)
         cx.add_extra_report_keys(objspec1=objspec1.name, objspec2=objspec2.name,
                                  function=func.__name__, type='pairs')
-        
+
         objs2 = names2test_objects[objspec2.name]
         if not objs2:
             print('No objects %r for pairs' % objspec2.name)
@@ -407,17 +406,17 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
 
         results = {}
         jobs = {}
-        
+
         db = context.cc.get_compmake_db()
-        
+
         combinations = iterate_context_names_pair(cx, list(objs1), list(objs2),
                                                   key1=objspec1.name, key2=objspec2.name)
         for c, id_ob1, id_ob2 in combinations:
-            assert_job_exists(objs1[id_ob1], db) 
+            assert_job_exists(objs1[id_ob1], db)
             assert_job_exists(objs2[id_ob2], db)
             ob1 = Promise(objs1[id_ob1])
             ob2 = Promise(objs2[id_ob2])
-            
+
             params=dict(job_id='f', command_name=func.__name__)
             if dynamic:
                 res = c.comp_config_dynamic(wrap_func_pair_dyn,
@@ -531,12 +530,12 @@ def wrap_func(func, id_ob1, ob1):
 def wrap_func_dyn(context, func, id_ob1, ob1):
     # print('%20s: %s' % (id_ob1, describe_value(ob1)))
     return func(context, id_ob1,ob1)
-  
+
 def wrap_func_pair_dyn(context, func, id_ob1, ob1, id_ob2, ob2):
     # print('%20s: %s' % (id_ob1, describe_value(ob1)))
     # print('%20s: %s' % (id_ob2, describe_value(ob2)))
     return func(context, id_ob1,ob1,id_ob2,ob2)
- 
+
 def wrap_func_pair(func, id_ob1, ob1, id_ob2, ob2):
     # print('%20s: %s' % (id_ob1, describe_value(ob1)))
     # print('%20s: %s' % (id_ob2, describe_value(ob2)))
@@ -564,7 +563,7 @@ def get_testobjects_promises_for_objspec(context, objspec):
                                   objspec_name=objspec.name, id_object=id_object,
                                   **params)
         else:
-            job = context.comp_config(instance_object, 
+            job = context.comp_config(instance_object,
                                       master_name=objspec.master.name,
                                       objspec_name=objspec.name, id_object=id_object,
                                       **params)
@@ -572,7 +571,7 @@ def get_testobjects_promises_for_objspec(context, objspec):
         db = context.cc. get_compmake_db()
         assert_job_exists(job.job_id, db)
         # print('defined %r -> %s' % (id_object, job.job_id))
-        if not job.job_id.endswith(params['job_id']):   
+        if not job.job_id.endswith(params['job_id']):
             msg = 'Wanted %r but got %r' % (params['job_id'], job.job_id)
             raise ValueError(msg)
     return promises
@@ -600,68 +599,111 @@ def get_objspec(master_name, objspec_name):
 
 
 def run_module_tests():
-    """ 
+    """
         Runs directly the tests defined in this module.
-    
+
         if __name__ == '__main__':
             run_module_tests()
-            
+
         argument 1: grep
     """
-    
+
     grep = sys.argv[1] if len(sys.argv) > 1 else None
-    def ignore(r):
+    logger.debug('grep = %r' % grep)
+    def should_ignore(its_name):
         if grep is None:
             return False
-        do_ignore = not grep in r.es
+        do_ignore = not grep in its_name
 #         if not do_ignore:
 #             print('found %s in %s' % ( grep, r))
         return do_ignore
-    
-    
+
+
     Res = namedtuple('Res', 'x es en')
-    results = []
-    ignored_results =[]
-    for x in reversed(ComptestsRegistrar.regular):
+    results = OrderedDict()
+    all_tests_regular = list(ComptestsRegistrar.regular)
+    seen = []
+    for x in reversed(all_tests_regular):
         function = x['function']
-        if function.__module__ == '__main__':
-            try:
-                function(*x['args'], **x['kwargs'])
-                results.append(Res(x=x, es=None, en=None))
-            except BaseException as e2:
-                es = traceback.format_exc(e2)
-                r = Res(x=x, es=es, en=type(e2).__name__)
-                if not ignore(r):
-                    results.append(r)
-                else:
-                    ignored_results.append(r)
-    
-    nerrors = 0            
+        name = function.__name__
+        if function.__module__ != '__main__':
+            # logger.debug('not running test %s' % name)
+            continue
+
+        seen.append(name)
+
+        if should_ignore(name):
+            logger.debug('Ignoring test %s' % name)
+            continue
+
+        logger.debug('Running test %s' % name)
+
+
+        try:
+            function(*x['args'], **x['kwargs'])
+            r = Res(x=x, es=None, en=None)
+
+        except BaseException as e2:
+            es = traceback.format_exc(e2)
+            r = Res(x=x, es=es, en=type(e2).__name__)
+
+        results[name] = r
+
+    nerrors = 0
     msg = ""
-    for r in results:
+
+    for name, r in results.items():
         passed = r.es is None
         mark = '✓' if passed else r.en
         nerrors += 0 if passed else 1
-        k = r.x['function'].__name__
-        msg += '\n %30s : %s' % (k, mark)
-    
+
+        msg += '\n %30s : %s' % (name, mark)
+
         if r.es is not None:
-            logger.error('Test %s failed: ' % k)
+            logger.error('Test %s failed: ' % name)
             logger.error(indent(r.es, '> '))
-            
-    if ignored_results:
-        logger.debug('Ignored %d errors.' % len(ignored_results))
-    if nerrors:
-        logger.error(msg)
-        sys.exit(nerrors)
+#             errors[name] = r
+
+#             if args:
+#                 if name not in  args:
+#                     #logger.info('skipping %s because not in %s' % (name, args))
+#                     continue
+#             logger.info('run_module_tests: %s' % name)
+#             try:
+#                 seen.append(name)
+#                 function(*x['args'], **x['kwargs'])
+#             except Exception as e:
+#                 s = traceback.format_exc(e)
+#                 logger.error(s)
+#                 errors[name] = e
+#         else:
+#             pass
+#             logger.debug('skipping %s because not in module __main__ (%s)' %
+#                           (name, function.__module__))
+
+
+    if nerrors > 0 and (len(seen) > 1):
+        logger.error('There were %d errors' % nerrors)
+#         for k in seen:
+#             if k in errors:
+#                 s = '%s: Failed with %s' % (k, type(e).__name__)
+#                 s += '\n' + indent(traceback.format_exc(e), '%s | ' % k)
+#                 logger.error(s)
+#
+#         for k in seen:
+#             if k in errors:
+#                 s = '%s: Failed with %s' % (k, type(e).__name__)
+#                 logger.error(s)
+#             else:
+#                 logger.info('%s: OK' % k)
+#
+    if nerrors == 0:
+        if grep is not None and not results:
+            msg = 'run_module_tests: no tests found matching %r' % grep
+            msg += '\nKnown: %s' % seen
+            logger.error(msg)
+            sys.exit(2)
+        l = ", ".join(sorted(results))
+        logger.info('run_module_tests: run these tests successfully: %s' % l)
     else:
-        logger.info(msg)
-        sys.exit(0)
-        
-            
-            
-            
-            
-            
-            
-            
+        sys.exit(1)

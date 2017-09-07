@@ -4,6 +4,7 @@ from conf_tools import GlobalConfig, import_name, reset_config
 from contracts import contract
 from quickapp import QuickApp
 import os
+from contracts.utils import raise_desc
 
 
 __all__ = [
@@ -61,7 +62,9 @@ class CompTests(QuickApp):
             raise ValueError('No modules given')
 
         modules = list(self.interpret_modules_names(extras))
-        
+        if not modules:
+            msg = 'No modules given'
+            raise_desc(ValueError, msg, extras=extras)
         # only get the main ones
         is_first = lambda module_name: not '.' in module_name
         modules = filter(is_first, modules)
@@ -105,7 +108,7 @@ class CompTests(QuickApp):
 
         for module in modules:
 
-            if False:
+            if True:
                 c = context.child(module)
             else:
                 c = context.child("")

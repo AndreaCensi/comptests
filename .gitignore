@@ -37,3 +37,6 @@ nosetests.xml
 out-compmake-tests
 .compmake_history.txt
 out-comptests
+out/comptests-failures
+circleci
+out_example
