@@ -2,16 +2,11 @@ version: 2
 jobs:
     build:
      docker:
-<<<<<<< HEAD
         - image: andreacensi/duckietown-xenial-kinetic:18
-=======
-        - image: andreacensi/duckietown-xenial-kinetic:10
->>>>>>> cc44d920d6d6e928b07836a4ebd4ccf76ef80703
      steps:
         - checkout
 
         - run:
-<<<<<<< HEAD
             name: Install
             command: |
                 python setup.py develop
@@ -20,56 +15,3 @@ jobs:
             command:  |
                 nosetests comptests
             environment:
-#
-# - run:
-#     when: always
-#     command: |
-#         mkdir -p out/comptests/junit
-#         comptests-to-junit  out/comptests/compmake >  out/comptests/junit/junit.xml
-# - test-results-store:
-#         path: out/comptests/junit
-#
-# - run:
-#     when: always
-#     command: |
-#         ./misc/generate-other-reports.sh
-#
-# - store_artifacts:
-#       path: out
-#       destination: out
-=======
-            name: deps
-            command: |
-                apt install python-numpy
-                #pip install -U decorator>=4.1.0
-                 
-        - run:
-            name: Install 
-            command: |
-                # remove if it exists
-                pip uninstall -y comptests
-                python setup.py develop
-                python -c "import comptests; print comptests.__version__"
- 
-       
-        - run:
-            name: Run tests for package  example_package
-            command: |
-                comptests -o out/example example_package || :
-                
-                mkdir -p example_package_out
-                comptests-to-junit out/example/compmake > example_package_out/junit.xml
-          
-        - store_test_results:
-              path: example_package_out
-              
-        - store_artifacts:
-              path: out
-              destination: out
-              
-        - run:
-            name: Test with nose
-            command: |
-                nosetests -v
-         
->>>>>>> cc44d920d6d6e928b07836a4ebd4ccf76ef80703
