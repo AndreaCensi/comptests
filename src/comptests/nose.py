@@ -1,10 +1,12 @@
-from compmake.utils import safe_pickle_load
 from contextlib import contextmanager
-from contracts import contract
-from system_cmd import system_cmd_result
 import os
 import tempfile
 import warnings
+
+from system_cmd import system_cmd_result
+
+from compmake.utils import safe_pickle_load
+from contracts import contract
 
 
 __all__ = ['jobs_nosetests']

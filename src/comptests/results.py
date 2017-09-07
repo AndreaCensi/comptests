@@ -1,5 +1,6 @@
 from contracts import contract
 
+
 __all__ = [
     'Skipped',
     'PartiallySkipped',

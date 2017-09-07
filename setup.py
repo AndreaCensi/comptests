@@ -63,6 +63,7 @@ setup(name='comptests',
         'compmake',
         'ConfTools',
         'quickapp',
+        'junit_xml',
       ],
       tests_require=['nose'],
 )

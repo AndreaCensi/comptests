@@ -1,10 +1,13 @@
+import os
+
+from conf_tools import GlobalConfig, import_name, reset_config
+from quickapp import QuickApp
+
+from contracts import contract
+from contracts.utils import raise_desc
+
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
-from conf_tools import GlobalConfig, import_name, reset_config
-from contracts import contract
-from quickapp import QuickApp
-import os
-from contracts.utils import raise_desc
 
 
 __all__ = [
