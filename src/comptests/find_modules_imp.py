@@ -1,7 +1,7 @@
 import os
-# from os.path import dirname, join
 
 from conf_tools.utils import locate_files
+
 
 __all__ = [
     'find_modules',

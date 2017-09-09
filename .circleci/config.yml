@@ -2,42 +2,16 @@ version: 2
 jobs:
     build:
      docker:
-        - image: andreacensi/duckietown-xenial-kinetic:10
+        - image: andreacensi/duckietown-xenial-kinetic:18
      steps:
         - checkout
 
         - run:
-            name: deps
+            name: Install
             command: |
-                apt install python-numpy
-                #pip install -U decorator>=4.1.0
-                 
-        - run:
-            name: Install 
-            command: |
-                # remove if it exists
-                pip uninstall -y comptests
                 python setup.py develop
-                python -c "import comptests; print comptests.__version__"
- 
-       
+
         - run:
-            name: Run tests for package  example_package
-            command: |
-                comptests -o out/example example_package || :
-                
-                mkdir -p example_package_out
-                comptests-to-junit out/example/compmake > example_package_out/junit.xml
-          
-        - store_test_results:
-              path: example_package_out
-              
-        - store_artifacts:
-              path: out
-              destination: out
-              
-        - run:
-            name: Test with nose
-            command: |
-                nosetests -v
-         
+            command:  |
+                nosetests comptests
+            environment:
