@@ -1,10 +1,12 @@
+from contracts import contract
+import os
+
+from conf_tools import GlobalConfig, import_name, reset_config
+from contracts.utils import raise_desc
+from quickapp import QuickApp
+
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
-from conf_tools import GlobalConfig, import_name, reset_config
-from contracts import contract
-from quickapp import QuickApp
-import os
-from contracts.utils import raise_desc
 
 
 __all__ = [
@@ -85,7 +87,7 @@ class CompTests(QuickApp):
                 modules = list(find_modules(m))
                 if not modules:
                     self.warn('No modules found in %r' % m)
-                
+
                 for m in modules:
                     yield m
             else:
@@ -96,7 +98,7 @@ class CompTests(QuickApp):
         for module in modules:
             c = context.child(module)
             jobs_nosetests(c, module, do_coverage = do_coverage)
-    
+
     def instance_nosesingle_jobs(self, context, modules):
         for module in modules:
             c = context.child(module)
