@@ -5,54 +5,58 @@ from quickapp import QuickApp
 
 from contracts import contract
 from contracts.utils import raise_desc
+from quickapp import QuickApp
+
+from .find_modules_imp import find_modules, find_modules_main
+from .nose import jobs_nosetests, jobs_nosetests_single
 
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
 
 
 __all__ = [
-    'CompTests', 
+    'CompTests',
     'main_comptests',
 ]
 
 
 class CompTests(QuickApp):
-    """ 
-        Runs the modules mcdp_lang_tests using compmake as a backend. 
-        
-    """ 
+    """
+        Runs the modules mcdp_lang_tests using compmake as a backend.
+
+    """
 
     cmd = 'comptests'
-    
+
     hook_name = 'jobs_comptests'
 
     def define_options(self, params):
-        params.add_string('exclude', default='', 
+        params.add_string('exclude', default='',
                           help='exclude these modules (comma separated)')
-        
+
         params.add_flag('nonose', help='Disable nosetests')
         params.add_flag('coverage', help='Enable coverage module')
         params.add_flag('nocomp', help='Disable comptests hooks')
-        
+
         params.add_flag('reports', help='Create reports jobs')
-        
+
         params.accept_extra()
-         
+
     def define_jobs_context(self, context):
         GlobalConfig.global_load_dir('default')
-        
+
         modules = self.get_modules()
 
         if not modules:
             raise Exception('No modules found.') # XXX: what's the nicer way?
 
-        options = self.get_options()        
+        options = self.get_options()
         if not options.nonose:
             do_coverage = options.coverage
             self.instance_nosetests_jobs(context, modules, do_coverage)
-        
+
         #self.instance_nosesingle_jobs(context, modules)
-        
+
         if not options.nocomp:
             self.instance_comptests_jobs(context, modules,
                                          create_reports=options.reports)
@@ -71,15 +75,15 @@ class CompTests(QuickApp):
         # only get the main ones
         is_first = lambda module_name: not '.' in module_name
         modules = filter(is_first, modules)
-        
+
         excludes = self.options.exclude.split(',')
         to_exclude = lambda module_name: not module_name in excludes
         modules = filter(to_exclude, modules)
         return modules
-    
+
     @contract(names='list(str)')
     def interpret_modules_names(self, names):
-        """ yields a list of modules """ 
+        """ yields a list of modules """
         for m in names:
             if os.path.exists(m):
                 # if it's a path, look for 'setup.py' subdirs
@@ -88,7 +92,7 @@ class CompTests(QuickApp):
                 modules = list(find_modules(m))
                 if not modules:
                     self.warn('No modules found in %r' % m)
-                
+
                 for m in modules:
                     yield m
             else:
@@ -99,13 +103,13 @@ class CompTests(QuickApp):
         for module in modules:
             c = context.child(module)
             jobs_nosetests(c, module, do_coverage = do_coverage)
-    
+
     def instance_nosesingle_jobs(self, context, modules):
         for module in modules:
             c = context.child(module)
             c.comp_dynamic(jobs_nosetests_single, module, job_id='nosesingle')
-            
-    
+
+
     @contract(modules='list(str)', create_reports='bool')
     def instance_comptests_jobs(self, context, modules, create_reports):
 
@@ -134,9 +138,9 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
             print(e)  # 'Could not import %r: %s' % (module_name, e))
             raise Exception(e)
         return []
-    
+
     fname = CompTests.hook_name
-    
+
     if not fname in module.__dict__:
         msg = 'Module %s does not have function %s().' % (module_name, fname)
         if warn_errors:
@@ -150,5 +154,5 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
 def comptests_jobs_wrap(context, ff):
     reset_config()
     ff(context)
-    
+
 main_comptests = CompTests.get_sys_main()
