@@ -5,10 +5,6 @@ from quickapp import QuickApp
 
 from contracts import contract
 from contracts.utils import raise_desc
-from quickapp import QuickApp
-
-from .find_modules_imp import find_modules, find_modules_main
-from .nose import jobs_nosetests, jobs_nosetests_single
 
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
@@ -22,7 +18,7 @@ __all__ = [
 
 class CompTests(QuickApp):
     """
-        Runs the modules mcdp_lang_tests using compmake as a backend.
+        Runs the unit tests defined as @comptests.
 
     """
 
@@ -84,7 +80,12 @@ class CompTests(QuickApp):
     @contract(names='list(str)')
     def interpret_modules_names(self, names):
         """ yields a list of modules """
+        # First, extract tokens
+        names2 = []
         for m in names:
+            names2.extend(m.split(','))
+            
+        for m in names2:
             if os.path.exists(m):
                 # if it's a path, look for 'setup.py' subdirs
                 self.info('Interpreting %r as path.' % m)

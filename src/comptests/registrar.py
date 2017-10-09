@@ -21,6 +21,10 @@ from .reports import (report_results_pairs, report_results_pairs_jobs,
 
 
 __all__ = [
+    'comptest',
+    'run_module_tests',
+    'comptest_fails',
+    'comptest_dynamic',
     'comptests_for_all',
     'comptests_for_all_pairs',
     'comptests_for_some',
