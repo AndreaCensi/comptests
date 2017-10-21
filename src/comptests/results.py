@@ -6,7 +6,7 @@ __all__ = [
     'PartiallySkipped',
 ]
 
-class Skipped():
+class Skipped(object):
     """ 
         Can be returned by mcdp_lang_tests to mean that the test
         was skipped for some reason.
@@ -18,7 +18,7 @@ class Skipped():
     def get_reason(self):
         return self.reason
         
-class PartiallySkipped():
+class PartiallySkipped(object):
     """
         Can be returned to mean that some parts of the test
         were skipped.

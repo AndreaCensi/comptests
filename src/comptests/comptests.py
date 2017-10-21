@@ -2,6 +2,7 @@ import os
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from quickapp import QuickApp
+from quickapp import logger
 
 from contracts import contract
 from contracts.utils import raise_desc
@@ -15,12 +16,23 @@ __all__ = [
     'main_comptests',
 ]
 
+def get_comptests_output_dir():
+    """ when run from the comptests executable, returns the output dir. """
+    if CompTests.global_output_dir is None:
+        x = 'out/comptests/build'
+        msg = 'No comptests output dir set. Returning %s' % x
+        logger.warn(msg)
+        return x
+    
+    return CompTests.global_output_dir
 
 class CompTests(QuickApp):
     """
         Runs the unit tests defined as @comptests.
 
     """
+    
+    global_output_dir = None
 
     cmd = 'comptests'
 
@@ -39,6 +51,10 @@ class CompTests(QuickApp):
         params.accept_extra()
 
     def define_jobs_context(self, context):
+        
+        CompTests.global_output_dir = self.get_options().output
+        
+        
         GlobalConfig.global_load_dir('default')
 
         modules = self.get_modules()

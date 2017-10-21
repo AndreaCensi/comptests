@@ -20,6 +20,7 @@ from .reports import (report_results_pairs, report_results_pairs_jobs,
     report_results_single)
 
 
+
 __all__ = [
     'comptest',
     'run_module_tests',
@@ -245,12 +246,23 @@ def jobs_registrar_simple(context):
         kwargs = x['kwargs']
 
         # print('registering %s' % x)
+        wrapper = WrapTest(function)
         if not dynamic:
-            _res = context.comp_config(function, *args, **kwargs)
+            _res = context.comp_config(wrapper, *args, **kwargs)
         else:
-            _res = context.comp_config_dynamic(function, *args, **kwargs)
+            _res = context.comp_config_dynamic(wrapper, *args, **kwargs)
 
-
+class WrapTest(object):
+    def __init__(self, function):
+        self.__name__ = function.__name__
+        self.function = function
+        from .comptests import get_comptests_output_dir
+        self.output_dir = get_comptests_output_dir()
+    
+    def __call__(self, *args, **kwargs):
+        from .comptests import CompTests
+        CompTests.global_output_dir = self.output_dir
+        return self.function(*args, **kwargs)
 
 @contract(cm=ConfigMaster,
           returns='dict(str:dict(str:str))')
