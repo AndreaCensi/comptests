@@ -3,17 +3,18 @@
 # (common version)
 
 .PHONY: docs all develop test
-	
+
 all: develop
 
 develop:
 	python setup.py develop
 
-docs: 
+docs:
 	make -C docs
 
+nose_exclude=--exclude="run_module_tests"
 coverage_dir=coverage_information
-nose=nosetests --with-id
+nose=nosetests --with-id $(nose_exclude)
 nose_parallel=--processes=16 --process-timeout=300 --process-restartworker
 nose_coverage=--with-coverage --cover-html --cover-html-dir $(coverage_dir)  --cover-package=$(package)
 
@@ -39,11 +40,10 @@ test-failed:
 	$(nose) $(package) $(NOSE_PARAMS) --failed
 
 test-parallel:
-	$(nose) $(package) $(NOSE_PARAMS) $(nose_parallel) 
+	$(nose) $(package) $(NOSE_PARAMS) $(nose_parallel)
 
 test-parallel-stop:
-	$(nose) $(package) $(NOSE_PARAMS) $(nose_parallel) -x 
+	$(nose) $(package) $(NOSE_PARAMS) $(nose_parallel) -x
 
 test-coverage:
-	$(nose) $(package) $(NOSE_PARAMS) $(nose_coverage) 
-
+	$(nose) $(package) $(NOSE_PARAMS) $(nose_coverage)

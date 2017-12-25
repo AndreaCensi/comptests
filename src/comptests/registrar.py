@@ -626,7 +626,6 @@ def get_objspec(master_name, objspec_name):
     objspec = master.specs[objspec_name]
     return objspec
 
-
 def run_module_tests():
     """
         Runs directly the tests defined in this module.
@@ -636,9 +635,9 @@ def run_module_tests():
 
         argument 1: grep
     """
-
+#     logger.debug('run_module_tests: args = %s' % sys.argv)
     grep = sys.argv[1] if len(sys.argv) > 1 else None
-    logger.debug('grep = %r' % grep)
+#     logger.debug('grep = %r' % grep)
     def should_ignore(its_name):
         if grep is None:
             return False
