@@ -1,7 +1,7 @@
 comptests
 =========
 
-Testing utilities built on top of [ConfTools][conftools], [CompMake][compmake] 
+Testing utilities built on top of [ConfTools][conftools], [CompMake][compmake]
 and [QuickApp][quickapp].
 
 
@@ -16,10 +16,10 @@ Call the function ``comptests_for_all`` to create a decorator:
 
     # get the library (ObjSpec)
     library_robots = get_conftools_robots()
-    
+
     # Create a test decorator
     for_all_robots = comptests_for_all(library_robots)
-    
+
     # Use the decorator to specify tests. Test functions
     # must take two arguments: id object and object itself
 
@@ -33,7 +33,7 @@ You can also register tests for pairs:
     for_all_robot_nuisance_pairs = comptests_for_all_pairs(library_robots, library_nuisances)
 
     @for_all_robot_nuisance_pairs
-    def check_nuisances_obs(id_robot, robot, id_nuisance, nuisance):  
+    def check_nuisances_obs(id_robot, robot, id_nuisance, nuisance):
         check_conversions(robot.get_spec().get_observations(), nuisance)
 
 # Running tests
@@ -46,8 +46,8 @@ This looks for the ``get_comptests()`` function in ``<module>``:
 
     def get_comptests():
         get_comptests():
-        # get testing configuration directory 
-        from pkg_resources import resource_filename 
+        # get testing configuration directory
+        from pkg_resources import resource_filename
         dirname = resource_filename("boot_agents", "configs")
         # load unittests
         from . import unittests
@@ -77,11 +77,8 @@ coverage gets confused.
 
 This displays the results:
 
-    coverage report -m 
+    coverage report -m
 
 Then create the HTML report:
 
-    coverage html -d outdir 
-
-
-
+    coverage html -d outdir

@@ -28,7 +28,7 @@ def get_comptests_output_dir():
 
 class CompTests(QuickApp):
     """
-        Runs the unit tests defined as @comptests.
+        Runs the unit tests defined as @comptest.
 
     """
     
