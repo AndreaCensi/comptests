@@ -255,7 +255,7 @@ def jobs_registrar_simple(context):
             logger.debug(msg)
             continue
         
-        ComptestsRegistrar.regular_scheduled.append(id_x)
+        ComptestsRegistrar.regular_scheduled.add(id_x)
 
         # print('registering %s' % x)
         wrapper = WrapTest(function)

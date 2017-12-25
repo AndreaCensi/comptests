@@ -142,8 +142,6 @@ class CompTests(QuickApp):
                                   create_reports=create_reports,
                                   job_id='comptests')
 
-
-
 def instance_comptests_jobs2_m(context, module_name, create_reports):
     is_first = not '.' in module_name
     warn_errors = is_first
@@ -152,7 +150,7 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
         module = import_name(module_name)
     except ValueError as e:
         if warn_errors:
-            print(e)  # 'Could not import %r: %s' % (module_name, e))
+            logger.debug(e)  # 'Could not import %r: %s' % (module_name, e))
             raise Exception(e)
         return []
 
