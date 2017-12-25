@@ -39,6 +39,9 @@ __all__ = [
 class ComptestsRegistrar(object):
     """ Static storage """
     regular = []  # list of dict(function=f, dynamic=dynamic))
+    # Once they are scheduled we add id(x) here, so we make sure we 
+    # don't register something twice
+    regular_scheduled = set()
 
     objspec2tests = defaultdict(list)
     objspec2pairs = defaultdict(list)  # -> (objspec2, f)
@@ -239,11 +242,20 @@ def jobs_registrar(context, cm, create_reports=False):
 def jobs_registrar_simple(context):
     """ Registers the simple "comptest" """
     # now register single
+    
     for x in ComptestsRegistrar.regular:
         function = x['function']
         dynamic = x['dynamic']
         args  = x['args']
         kwargs = x['kwargs']
+        
+        id_x = id(x)
+        if id_x in ComptestsRegistrar.regular_scheduled:
+            msg = 'Job already registered. Skipping.'
+            logger.debug(msg)
+            continue
+        
+        ComptestsRegistrar.regular_scheduled.append(id_x)
 
         # print('registering %s' % x)
         wrapper = WrapTest(function)
