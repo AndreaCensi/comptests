@@ -1,11 +1,10 @@
+from contracts import contract
 import os
 
 from conf_tools import GlobalConfig, import_name, reset_config
+from contracts.utils import raise_desc
 from quickapp import QuickApp
 from quickapp import logger
-
-from contracts import contract
-from contracts.utils import raise_desc
 
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
@@ -18,13 +17,16 @@ __all__ = [
 
 def get_comptests_output_dir():
     """ when run from the comptests executable, returns the output dir. """
-    if CompTests.global_output_dir is None:
-        x = 'out/comptests/build'
-        msg = 'No comptests output dir set. Returning %s' % x
-        logger.warn(msg)
-        return x
-    
+    if CompTests.output_dir_for_current_test is None:
+        msg = 'Variable output_dir_for_current_test not set.'
+        logger.warning(msg)
+        return get_comptests_global_output_dir()
+    else:
+        return CompTests.output_dir_for_current_test
+     
+def get_comptests_global_output_dir():
     return CompTests.global_output_dir
+
 
 class CompTests(QuickApp):
     """
@@ -32,7 +34,9 @@ class CompTests(QuickApp):
 
     """
     
-    global_output_dir = None
+    global_output_dir = 'out-comptests'
+    output_dir_for_current_test = None
+    
 
     cmd = 'comptests'
 
@@ -53,6 +57,8 @@ class CompTests(QuickApp):
     def define_jobs_context(self, context):
         
         CompTests.global_output_dir = self.get_options().output
+        self.info('Setting output dir to %s' % CompTests.global_output_dir)
+        CompTests.output_dir_for_current_test = None 
         
         
         GlobalConfig.global_load_dir('default')
@@ -143,6 +149,7 @@ class CompTests(QuickApp):
                                   job_id='comptests')
 
 def instance_comptests_jobs2_m(context, module_name, create_reports):
+    from .registrar import jobs_registrar_simple
     is_first = not '.' in module_name
     warn_errors = is_first
 
@@ -152,7 +159,7 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
         if warn_errors:
             logger.debug(e)  # 'Could not import %r: %s' % (module_name, e))
             raise Exception(e)
-        return []
+        return
 
     fname = CompTests.hook_name
 
@@ -160,11 +167,11 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
         msg = 'Module %s does not have function %s().' % (module_name, fname)
         if warn_errors:
             logger.debug(msg)
-        return []
-
-    ff = module.__dict__[fname]
-
-    context.comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
+    else:
+        ff = module.__dict__[fname]    
+        context.comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
+        
+    jobs_registrar_simple(context, only_for_module=module_name)
 
 def comptests_jobs_wrap(context, ff):
     reset_config()

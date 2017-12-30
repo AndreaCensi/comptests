@@ -20,7 +20,6 @@ from .reports import (report_results_pairs, report_results_pairs_jobs,
     report_results_single)
 
 
-
 __all__ = [
     'comptest',
     'run_module_tests',
@@ -239,15 +238,24 @@ def jobs_registrar(context, cm, create_reports=False):
 
     jobs_registrar_simple(context)
 
-def jobs_registrar_simple(context):
+def jobs_registrar_simple(context, only_for_module=None):
     """ Registers the simple "comptest" """
-    # now register single
+    prefix = context._job_prefix
     
     for x in ComptestsRegistrar.regular:
         function = x['function']
         dynamic = x['dynamic']
-        args  = x['args']
+        args = x['args']
         kwargs = x['kwargs']
+        
+        if only_for_module is not None:
+            this = function.__module__.split(".")[0]
+            if this != only_for_module:
+                msg = ('Skipping function %s in module %s because not in module %r' %
+                       (function, function.__module__, only_for_module)) 
+#                 logger.error(msg)
+                continue
+                
         
         id_x = id(x)
         if id_x in ComptestsRegistrar.regular_scheduled:
@@ -258,22 +266,27 @@ def jobs_registrar_simple(context):
         ComptestsRegistrar.regular_scheduled.add(id_x)
 
         # print('registering %s' % x)
-        wrapper = WrapTest(function)
+        wrapper = WrapTest(function, prefix)
         if not dynamic:
             _res = context.comp_config(wrapper, *args, **kwargs)
         else:
             _res = context.comp_config_dynamic(wrapper, *args, **kwargs)
 
 class WrapTest(object):
-    def __init__(self, function):
+    def __init__(self, function, prefix):
         self.__name__ = function.__name__
         self.function = function
-        from .comptests import get_comptests_output_dir
-        self.output_dir = get_comptests_output_dir()
-    
+        from .comptests import CompTests
+        if prefix is not None:
+            self.output_dir = os.path.join(CompTests.global_output_dir, 
+                                           prefix, self.__name__)
+        else:
+            self.output_dir = os.path.join(CompTests.global_output_dir, 
+                                           self.__name__)
+            
     def __call__(self, *args, **kwargs):
         from .comptests import CompTests
-        CompTests.global_output_dir = self.output_dir
+        CompTests.output_dir_for_current_test = self.output_dir
         return self.function(*args, **kwargs)
 
 @contract(cm=ConfigMaster,
@@ -668,7 +681,8 @@ def run_module_tests():
 
 
         try:
-            function(*x['args'], **x['kwargs'])
+            wrapped = WrapTest(function, prefix=None)
+            wrapped(*x['args'], **x['kwargs'])
             r = Res(x=x, es=None, en=None)
 
         except BaseException as e2:
