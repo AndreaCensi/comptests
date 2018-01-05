@@ -2,6 +2,7 @@ from contextlib import contextmanager
 import os
 import tempfile
 import warnings
+from . import logger
 
 from system_cmd import system_cmd_result
 

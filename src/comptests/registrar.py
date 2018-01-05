@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict, namedtuple, OrderedDict
+from compmake import Promise
+from compmake.jobs import assert_job_exists
+from compmake.jobs.job_execution import JobCompute
+from contracts.utils import raise_desc, indent
 import os
 import sys
 import traceback
@@ -7,17 +11,12 @@ import warnings
 
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
-from quickapp import iterate_context_names, iterate_context_names_pair
-from quickapp import logger
-
-from compmake import Promise
-from compmake.jobs import assert_job_exists
-from compmake.jobs.job_execution import JobCompute
 from contracts import contract
-from contracts.utils import raise_desc, indent
+from quickapp import iterate_context_names, iterate_context_names_pair
 
+from . import logger
 from .reports import (report_results_pairs, report_results_pairs_jobs,
-    report_results_single)
+                      report_results_single)
 
 
 __all__ = [
@@ -266,6 +265,7 @@ def jobs_registrar_simple(context, only_for_module=None):
         ComptestsRegistrar.regular_scheduled.add(id_x)
 
         # print('registering %s' % x)
+        logger.debug("registering %s" % function.__name__)
         wrapper = WrapTest(function, prefix)
         if not dynamic:
             _res = context.comp_config(wrapper, *args, **kwargs)

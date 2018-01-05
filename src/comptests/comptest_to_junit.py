@@ -1,12 +1,12 @@
-import sys
-
-from junit_xml import TestSuite, TestCase  # @UnresolvedImport
-
-from compmake import logger
 from compmake.exceptions import UserError
 from compmake.jobs.storage import all_jobs, get_job_cache
 from compmake.storage.filesystem import StorageFilesystem
 from compmake.structures import Cache
+import sys
+
+from junit_xml import TestSuite, TestCase  # @UnresolvedImport
+
+from . import logger
 
 
 def comptest_to_junit_main():

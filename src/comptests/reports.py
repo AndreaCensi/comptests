@@ -1,11 +1,10 @@
-import itertools
-
-from reprep import Report
-
 from compmake.jobs.storage import get_job_cache, get_job_userobject
 from compmake.structures import Cache
-from contracts import contract
 from contracts.utils import describe_value
+import itertools
+
+from contracts import contract
+from reprep import Report
 
 from .results import PartiallySkipped, Skipped
 

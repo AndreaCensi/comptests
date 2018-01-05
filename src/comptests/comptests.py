@@ -1,11 +1,11 @@
-from contracts import contract
+from contracts.utils import raise_desc
 import os
 
 from conf_tools import GlobalConfig, import_name, reset_config
-from contracts.utils import raise_desc
+from contracts import contract
 from quickapp import QuickApp
-from quickapp import logger
 
+from . import logger
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
 
@@ -149,6 +149,7 @@ class CompTests(QuickApp):
                                   job_id='comptests')
 
 def instance_comptests_jobs2_m(context, module_name, create_reports):
+    logger.debug("instance_comptests_jobs2_m start")
     from .registrar import jobs_registrar_simple
     is_first = not '.' in module_name
     warn_errors = is_first
@@ -172,6 +173,7 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
         context.comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
         
     jobs_registrar_simple(context, only_for_module=module_name)
+    logger.debug("instance_comptests_jobs2_m end")
 
 def comptests_jobs_wrap(context, ff):
     reset_config()
