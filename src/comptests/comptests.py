@@ -64,6 +64,23 @@ class CompTests(QuickApp):
         GlobalConfig.global_load_dir('default')
 
         modules = self.get_modules()
+        
+        env = os.environ
+        v_index, v_total = 'CIRCLE_NODE_INDEX', 'CIRCLE_NODE_TOTAL'
+        if v_index in env and v_total in env:
+            index = int(os.environ[v_index])
+            total = int(os.environ[v_total])
+            msg = 'Detected I am worker #%s of %d in CircleCI.' % (index, total)
+            self.info(msg)
+            mine = []
+            for i in range(len(modules)):
+                if i % total == index:
+                    mine.append(modules[i])
+                    
+            msg = 'I am only doing these modules: %s, instead of %s' % (mine, modules)
+            self.info(msg)
+            modules = mine
+            
 
         if not modules:
             raise Exception('No modules found.') # XXX: what's the nicer way?
