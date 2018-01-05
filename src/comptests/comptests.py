@@ -51,6 +51,7 @@ class CompTests(QuickApp):
         params.add_flag('nocomp', help='Disable comptests hooks')
 
         params.add_flag('reports', help='Create reports jobs')
+        params.add_flag('circle', help='Do CircleCI optimization')
 
         params.accept_extra()
 
@@ -65,21 +66,22 @@ class CompTests(QuickApp):
 
         modules = self.get_modules()
         
-        env = os.environ
-        v_index, v_total = 'CIRCLE_NODE_INDEX', 'CIRCLE_NODE_TOTAL'
-        if v_index in env and v_total in env:
-            index = int(os.environ[v_index])
-            total = int(os.environ[v_total])
-            msg = 'Detected I am worker #%s of %d in CircleCI.' % (index, total)
-            self.info(msg)
-            mine = []
-            for i in range(len(modules)):
-                if i % total == index:
-                    mine.append(modules[i])
-                    
-            msg = 'I am only doing these modules: %s, instead of %s' % (mine, modules)
-            self.info(msg)
-            modules = mine
+        if self.options.circle:
+            env = os.environ
+            v_index, v_total = 'CIRCLE_NODE_INDEX', 'CIRCLE_NODE_TOTAL'
+            if v_index in env and v_total in env:
+                index = int(os.environ[v_index])
+                total = int(os.environ[v_total])
+                msg = 'Detected I am worker #%s of %d in CircleCI.' % (index, total)
+                self.info(msg)
+                mine = []
+                for i in range(len(modules)):
+                    if i % total == index:
+                        mine.append(modules[i])
+                        
+                msg = 'I am only doing these modules: %s, instead of %s' % (mine, modules)
+                self.info(msg)
+                modules = mine
             
 
         if not modules:
