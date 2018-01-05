@@ -2,7 +2,7 @@
 from collections import defaultdict, namedtuple, OrderedDict
 from compmake import Promise
 from compmake.jobs import assert_job_exists
-from compmake.jobs.job_execution import JobCompute
+
 from contracts.utils import raise_desc, indent
 import os
 import sys
@@ -84,15 +84,20 @@ def check_fails(f, *args, **kwargs):
         d = 'out/comptests-failures'
         if not os.path.exists(d):
             os.makedirs(d)
-        job_id = JobCompute.current_job_id
-        if job_id is None:
-            job_id = 'nojob-%s' % f.__name__
-        out = os.path.join(d, job_id + '.txt')
-#         for i in range(1000):
-#             outi = out % i
-#             if not os.path.exists(outi):
-        with open(out, 'w') as f:
-            f.write(traceback.format_exc(e))
+        try:
+            from compmake.jobs.job_execution import JobCompute
+            job_id = JobCompute.current_job_id
+            if job_id is None:
+                job_id = 'nojob-%s' % f.__name__
+            out = os.path.join(d, job_id + '.txt')
+    #         for i in range(1000):
+    #             outi = out % i
+    #             if not os.path.exists(outi):
+            with open(out, 'w') as f:
+                f.write(traceback.format_exc(e))
+        except ImportError:
+            pass
+        
     else:
         msg = 'Function was supposed to fail.'
         raise_desc(Exception, msg, f=f, args=args, kwargs=kwargs)
