@@ -149,11 +149,10 @@ class CompTests(QuickApp):
                                   job_id='comptests')
 
 def instance_comptests_jobs2_m(context, module_name, create_reports):
-    logger.debug("instance_comptests_jobs2_m start")
     from .registrar import jobs_registrar_simple
     is_first = not '.' in module_name
     warn_errors = is_first
-
+    warn_errors = False
     try:
         module = import_name(module_name)
     except ValueError as e:
@@ -173,7 +172,7 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
         context.comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
         
     jobs_registrar_simple(context, only_for_module=module_name)
-    logger.debug("instance_comptests_jobs2_m end")
+    
 
 def comptests_jobs_wrap(context, ff):
     reset_config()

@@ -270,7 +270,7 @@ def jobs_registrar_simple(context, only_for_module=None):
         ComptestsRegistrar.regular_scheduled.add(id_x)
 
         # print('registering %s' % x)
-        logger.debug("registering %s" % function.__name__)
+#         logger.debug("registering %s" % function.__name__)
         wrapper = WrapTest(function, prefix)
         if not dynamic:
             _res = context.comp_config(wrapper, *args, **kwargs)
