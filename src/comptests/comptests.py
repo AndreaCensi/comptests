@@ -1,8 +1,9 @@
-from contracts.utils import raise_desc
 import os
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from contracts import contract
+from contracts.utils import raise_desc
+
 from quickapp import QuickApp
 
 from . import logger

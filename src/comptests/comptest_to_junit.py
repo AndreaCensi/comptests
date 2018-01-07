@@ -37,13 +37,15 @@ def junit_xml(compmake_db):
     
     return TestSuite.to_xml_string([ts])
 
+
 def flatten_ascii(s):
     if s is None:
         return None
     s = unicode(s, encoding='utf8', errors='replace')
     s = s.encode('ascii', errors='ignore')
     return s
-    
+
+
 def junit_test_case_from_compmake(db, job_id):
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
@@ -51,13 +53,13 @@ def junit_test_case_from_compmake(db, job_id):
         elapsed_sec = cache.cputime_used
     else:
         elapsed_sec = None
-        
+
     stderr = flatten_ascii(remove_escapes(cache.captured_stderr))
     stdout = flatten_ascii(remove_escapes(cache.captured_stdout))
-    
+
     tc = TestCase(name=job_id, classname=None, elapsed_sec=elapsed_sec,
                   stdout=stdout, stderr=stderr)
-    
+
     if cache.state == Cache.FAILED:
         message = cache.exception
         output = cache.exception + "\n" + cache.backtrace
