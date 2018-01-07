@@ -2,7 +2,6 @@ import os
 
 from conf_tools.utils import locate_files
 
-
 __all__ = [
     'find_modules',
     'find_modules_main',
@@ -14,19 +13,20 @@ def find_modules_main(root):
     is_main = lambda d: not '.' in d
     return filter(is_main, find_modules(root))
 
+
 def find_modules(root):
-    """ 
+    """
         Looks for modules defined in packages that have the structure: ::
-        
+
             dirname/setup.py
             dirname/src/
             dirname/src/module/__init__.py
             dirname/src/module/module2/__init__.py
-            
+
         This will yield ['module', 'module.module2']
     """
     setups = locate_files(root, 'setup.py')
-    
+
     found = []
     for s in setups:
         # s = <d>/setup.py
@@ -37,7 +37,7 @@ def find_modules(root):
             base = src
         else:
             base = d
-    
+
         for i in locate_files(base, '__init__.py'):
             p = os.path.relpath(i, base)
             components = p.split('/')[:-1]  # remove __init__

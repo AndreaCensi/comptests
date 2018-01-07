@@ -1,6 +1,7 @@
 from contextlib import contextmanager
-import tempfile
 import os
+import tempfile
+
 
 def test_example_package():
     from system_cmd import system_cmd_result
@@ -12,13 +13,13 @@ def test_example_package():
         print('Working in %r ' % cwd)
         cmd = ['comptests',
                '--contracts',
-               #'--nonose', 
+               #'--nonose',
                'example_package']
-        system_cmd_result(cwd, cmd, 
+        system_cmd_result(cwd, cmd,
                           display_stdout=True,
                           display_stderr=True,
                           raise_on_error=True)
-        
+
         fs = [
               'out-comptests/report.html',
               'out-comptests/report/reportclass1single/'
@@ -31,18 +32,18 @@ def test_example_package():
 #                   '-examplepackage-exampleclass1.html',
 #                   'out-comptests/report/reportclass1single/reportclass1single'
 #                   '-checkclass1dynamic-c1a-examplepackage-exampleclass1.html',]
-        
-    
+
         errors = []
         for f in fs:
             fn = os.path.join(cwd, f)
             print('Testing %r' % f)
             if not os.path.exists(fn):
                 errors.append(fn)
-                
+
         if errors:
             msg = 'Files not found:\n' + '\n'.join(errors)
             raise Exception(msg)
+
 
 @contextmanager
 def create_tmp_dir():
@@ -51,5 +52,4 @@ def create_tmp_dir():
         yield dirname
     except:
         raise
-
 

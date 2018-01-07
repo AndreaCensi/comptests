@@ -2,7 +2,7 @@ import os
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from contracts import contract
-from contracts.utils import raise_desc
+from contracts.utils import raise_desc, raise_wrapped
 
 from quickapp import QuickApp
 
@@ -174,10 +174,13 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
     try:
         module = import_name(module_name)
     except ValueError as e:
+
+        msg = 'Could not import module %r' % module_name
+
         if warn_errors:
-            logger.debug(e)  # 'Could not import %r: %s' % (module_name, e))
-            raise Exception(e)
-        raise
+            logger.error(msg)
+
+        raise_wrapped(Exception, e, msg)
 
     fname = CompTests.hook_name
 
