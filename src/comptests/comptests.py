@@ -10,11 +10,11 @@ from . import logger
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
 
-
 __all__ = [
     'CompTests',
     'main_comptests',
 ]
+
 
 def get_comptests_output_dir():
     """ when run from the comptests executable, returns the output dir. """
@@ -24,7 +24,8 @@ def get_comptests_output_dir():
         return get_comptests_global_output_dir()
     else:
         return CompTests.output_dir_for_current_test
-     
+
+
 def get_comptests_global_output_dir():
     return CompTests.global_output_dir
 
@@ -34,10 +35,9 @@ class CompTests(QuickApp):
         Runs the unit tests defined as @comptest.
 
     """
-    
+
     global_output_dir = 'out-comptests'
     output_dir_for_current_test = None
-    
 
     cmd = 'comptests'
 
@@ -57,16 +57,15 @@ class CompTests(QuickApp):
         params.accept_extra()
 
     def define_jobs_context(self, context):
-        
+
         CompTests.global_output_dir = self.get_options().output
         self.info('Setting output dir to %s' % CompTests.global_output_dir)
-        CompTests.output_dir_for_current_test = None 
-        
-        
+        CompTests.output_dir_for_current_test = None
+
         GlobalConfig.global_load_dir('default')
 
         modules = self.get_modules()
-        
+
         if self.options.circle:
             env = os.environ
             v_index, v_total = 'CIRCLE_NODE_INDEX', 'CIRCLE_NODE_TOTAL'
@@ -79,14 +78,13 @@ class CompTests(QuickApp):
                 for i in range(len(modules)):
                     if i % total == index:
                         mine.append(modules[i])
-                        
+
                 msg = 'I am only doing these modules: %s, instead of %s' % (mine, modules)
                 self.info(msg)
                 modules = mine
-            
 
         if not modules:
-            raise Exception('No modules found.') # XXX: what's the nicer way?
+            raise Exception('No modules found.')  # XXX: what's the nicer way?
 
         options = self.get_options()
         if not options.nonose:
@@ -126,7 +124,7 @@ class CompTests(QuickApp):
         names2 = []
         for m in names:
             names2.extend(m.split(','))
-            
+
         for m in names2:
             if os.path.exists(m):
                 # if it's a path, look for 'setup.py' subdirs
@@ -145,13 +143,12 @@ class CompTests(QuickApp):
     def instance_nosetests_jobs(self, context, modules, do_coverage):
         for module in modules:
             c = context.child(module)
-            jobs_nosetests(c, module, do_coverage = do_coverage)
+            jobs_nosetests(c, module, do_coverage=do_coverage)
 
     def instance_nosesingle_jobs(self, context, modules):
         for module in modules:
             c = context.child(module)
             c.comp_dynamic(jobs_nosetests_single, module, job_id='nosesingle')
-
 
     @contract(modules='list(str)', create_reports='bool')
     def instance_comptests_jobs(self, context, modules, create_reports):
@@ -168,18 +165,19 @@ class CompTests(QuickApp):
                                   create_reports=create_reports,
                                   job_id='comptests')
 
+
 def instance_comptests_jobs2_m(context, module_name, create_reports):
     from .registrar import jobs_registrar_simple
     is_first = not '.' in module_name
     warn_errors = is_first
-    warn_errors = False
+
     try:
         module = import_name(module_name)
     except ValueError as e:
         if warn_errors:
             logger.debug(e)  # 'Could not import %r: %s' % (module_name, e))
             raise Exception(e)
-        return
+        raise
 
     fname = CompTests.hook_name
 
@@ -188,14 +186,15 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
         if warn_errors:
             logger.debug(msg)
     else:
-        ff = module.__dict__[fname]    
+        ff = module.__dict__[fname]
         context.comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
-        
+
     jobs_registrar_simple(context, only_for_module=module_name)
-    
+
 
 def comptests_jobs_wrap(context, ff):
     reset_config()
     ff(context)
+
 
 main_comptests = CompTests.get_sys_main()
