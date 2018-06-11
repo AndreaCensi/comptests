@@ -13,6 +13,7 @@ from .nose import jobs_nosetests, jobs_nosetests_single
 __all__ = [
     'CompTests',
     'main_comptests',
+    'get_comptests_output_dir',
 ]
 
 
@@ -134,8 +135,8 @@ class CompTests(QuickApp):
                 if not modules:
                     self.warn('No modules found in %r' % m)
 
-                for m in modules:
-                    yield m
+                for module in modules:
+                    yield module
             else:
                 self.info('Interpreting %r as module.' % m)
                 yield m
