@@ -1,5 +1,6 @@
 PyContracts
-compmake==3.5.29
+compmake==3.5.30
 ConfTools
 junit_xml
 quickapp
+

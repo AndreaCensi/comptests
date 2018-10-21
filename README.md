@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/AndreaCensi/comptests.svg?style=shield)](https://circleci.com/gh/AndreaCensi/comptests)
+
 comptests
 =========
 
