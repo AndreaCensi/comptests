@@ -100,7 +100,7 @@ def check_fails(f, *args, **kwargs):
             #             outi = out % i
             #             if not os.path.exists(outi):
             with open(out, 'w') as f:
-                f.write(traceback.format_exc(e))
+                f.write(traceback.format_exc())
         except ImportError:
             pass
 

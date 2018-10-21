@@ -166,7 +166,7 @@ if False:
 
             def run(self, what):
                 self.what = what
-                print what
+                print(what)
                 print('here!')
                 return FakeResult()
 

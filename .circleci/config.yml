@@ -22,8 +22,8 @@ jobs:
       - run:
           name: Run tests
           command: |
-            pip install nose
-            nosetests
+            pip install --user nose
+            ~/.local/bin/nosetests comptests
 
   test-3.5:
     <<: *test-template
