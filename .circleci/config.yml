@@ -1,17 +1,34 @@
 version: 2
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-3.6
+      - test-3.5
+      - test-2.7
 jobs:
-    build:
-     docker:
-        - image: andreacensi/duckietown-xenial-kinetic:19
-     steps:
-        - checkout
+  test-3.6: &test-template
+    docker:
+      - image: circleci/python:3.6-jessie
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Install deps
+          command: |
+            pip install --user --upgrade -r requirements.txt
+            python setup.py develop --prefix ~/.local --no-deps
 
-        - run:
-            name: Install
-            command: |
-                python setup.py develop
+      - run:
+          name: Run tests
+          command: |
+            nosetests
 
-        - run:
-            command:  |
-                nosetests
-            environment:
+  test-3.5:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.5-jessie
+  test-2.7:
+    <<: *test-template
+    docker:
+      - image: circleci/python:2.7-jessie

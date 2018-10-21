@@ -109,7 +109,7 @@ def check_fails(f, *args, **kwargs):
         raise_desc(Exception, msg, f=f, args=args, kwargs=kwargs)
 
 
-class Wrap():
+class Wrap(object):
     """ Need to assign name """
 
     def __init__(self, f):
@@ -160,11 +160,12 @@ def comptests_for_all_dynamic(objspec):
         Returns a decorator for mcdp_lang_tests, which should take three parameters:
         context, id_object and object.
     """
-    return register
 
     def register(f):
         register_single(objspec, f, dynamic=True)
         return f
+
+    return register
 
 
 @contract(objspec=ObjectSpec)

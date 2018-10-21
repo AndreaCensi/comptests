@@ -145,6 +145,8 @@ def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs)
 #             s = '(in progress)'
         elif cache.state == Cache.NOT_STARTED:
             s = ' '
+        else:
+            s = '?'
 
         data[i][j] = s
 
