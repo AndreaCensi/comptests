@@ -64,7 +64,7 @@ setup(name='comptests',
       packages=find_packages('src'),
       install_requires=[
           'PyContracts',
-          'compmake',
+          'compmake>=3.5.29',
           'ConfTools',
           'quickapp',
           'junit_xml',
