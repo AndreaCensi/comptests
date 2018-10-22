@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-from collections import defaultdict, namedtuple, OrderedDict
 import os
 import sys
 import traceback
 import warnings
+from collections import defaultdict, namedtuple, OrderedDict
 
+from compmake import Promise
+from compmake.jobs import assert_job_exists
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from contracts import contract
 from contracts.utils import raise_desc, indent
-
-from compmake import Promise
-from compmake.jobs import assert_job_exists
 from quickapp import iterate_context_names, iterate_context_names_pair
 
 from . import logger
@@ -100,7 +99,7 @@ def check_fails(f, *args, **kwargs):
             #             outi = out % i
             #             if not os.path.exists(outi):
             with open(out, 'w') as f:
-                f.write(traceback.format_exc(e))
+                f.write(traceback.format_exc())
         except ImportError:
             pass
 
@@ -109,7 +108,7 @@ def check_fails(f, *args, **kwargs):
         raise_desc(Exception, msg, f=f, args=args, kwargs=kwargs)
 
 
-class Wrap():
+class Wrap(object):
     """ Need to assign name """
 
     def __init__(self, f):
@@ -160,11 +159,12 @@ def comptests_for_all_dynamic(objspec):
         Returns a decorator for mcdp_lang_tests, which should take three parameters:
         context, id_object and object.
     """
-    return register
 
     def register(f):
         register_single(objspec, f, dynamic=True)
         return f
+
+    return register
 
 
 @contract(objspec=ObjectSpec)
@@ -678,7 +678,7 @@ def get_objspec(master_name, objspec_name):
     specs = master.specs
     if not objspec_name in specs:
         msg = '%s > %s not found' % (master_name, objspec_name)
-        msg += str(specs.keys())
+        msg += '\n%s' % list(specs.keys())
         raise Exception(msg)
     objspec = master.specs[objspec_name]
     return objspec
@@ -738,7 +738,7 @@ def run_module_tests():
     nerrors = 0
     msg = ""
 
-    for name, r in results.items():
+    for name, r in list(results.items()):
         passed = r.es is None
         mark = '✓' if passed else r.en
         nerrors += 0 if passed else 1

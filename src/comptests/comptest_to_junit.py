@@ -54,7 +54,7 @@ def junit_xml(compmake_db):
 def flatten_ascii(s):
     if s is None:
         return None
-    s = unicode(s, encoding='utf8', errors='replace')
+    s = str(s, encoding='utf8', errors='replace')
     s = s.encode('ascii', errors='ignore')
     return s
 

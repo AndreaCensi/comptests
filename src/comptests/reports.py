@@ -39,7 +39,7 @@ def report_results_single(func, objspec_name, results):
 
     rows = []
     data = []
-    for id_object, res in results.items():
+    for id_object, res in list(results.items()):
         rows.append(id_object)
 
         data.append([get_string_result(res)])
@@ -87,7 +87,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results):
     r.table('summary', rows=rows, data=data, cols=cols)
 
     expl = ""
-    for reason, symbol in reason2symbol.items():
+    for reason, symbol in list(reason2symbol.items()):
         expl += '(%s): %s\n' % (symbol, reason)
     r.text('notes', expl)
 
@@ -145,13 +145,15 @@ def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs)
 #             s = '(in progress)'
         elif cache.state == Cache.NOT_STARTED:
             s = ' '
+        else:
+            s = '?'
 
         data[i][j] = s
 
     r.table('summary', rows=rows, data=data, cols=cols)
 
     expl = ""
-    for reason, symbol in reason2symbol.items():
+    for reason, symbol in list(reason2symbol.items()):
         expl += '(%s): %s\n' % (symbol, reason)
     r.text('notes', expl)
 

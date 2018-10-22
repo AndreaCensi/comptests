@@ -166,13 +166,14 @@ if False:
 
             def run(self, what):
                 self.what = what
-                print what
+                print(what)
                 print('here!')
                 return FakeResult()
 
         mytr = Tr()
 
         from nose.core import TestProgram
+        from nose.suite import ContextSuite
 
         class MyTestProgram(TestProgram):
 
@@ -189,7 +190,7 @@ if False:
 
         def explore(a):
             for b in a._get_tests():
-                from nose.suite import ContextSuite
+
                 if isinstance(b, ContextSuite):
                     for c in explore(b):
                         yield c
