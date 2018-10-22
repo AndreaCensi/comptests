@@ -24,7 +24,7 @@ jobs:
           name: Run tests
           command: |
             pip install --user nose
-            ~/.local/bin/nosetests comptests.unittests
+            PATH=~/.local/bin:$PATH ~/.local/bin/nosetests comptests.unittests
 
   test-2.7:
     <<: *test-template
