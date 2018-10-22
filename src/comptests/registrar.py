@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
-from collections import defaultdict, namedtuple, OrderedDict
 import os
 import sys
 import traceback
 import warnings
+from collections import defaultdict, namedtuple, OrderedDict
 
+from compmake import Promise
+from compmake.jobs import assert_job_exists
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from contracts import contract
 from contracts.utils import raise_desc, indent
-
-from compmake import Promise
-from compmake.jobs import assert_job_exists
 from quickapp import iterate_context_names, iterate_context_names_pair
 
 from . import logger
@@ -679,7 +678,7 @@ def get_objspec(master_name, objspec_name):
     specs = master.specs
     if not objspec_name in specs:
         msg = '%s > %s not found' % (master_name, objspec_name)
-        msg += str(specs.keys())
+        msg += '\n%s' % list(specs.keys())
         raise Exception(msg)
     objspec = master.specs[objspec_name]
     return objspec
@@ -739,7 +738,7 @@ def run_module_tests():
     nerrors = 0
     msg = ""
 
-    for name, r in results.items():
+    for name, r in list(results.items()):
         passed = r.es is None
         mark = '✓' if passed else r.en
         nerrors += 0 if passed else 1
