@@ -3,4 +3,5 @@ compmake==3.6.1
 ConfTools==1.9.7
 junit_xml
 quickapp==1.3.14
+SystemCmd==2.2.2
 
