@@ -111,11 +111,11 @@ class CompTests(QuickApp):
             raise_desc(ValueError, msg, extras=extras)
         # only get the main ones
         is_first = lambda module_name: not '.' in module_name
-        modules = filter(is_first, modules)
+        modules = list(filter(is_first, modules))
 
         excludes = self.options.exclude.split(',')
         to_exclude = lambda module_name: not module_name in excludes
-        modules = filter(to_exclude, modules)
+        modules = list(filter(to_exclude, modules))
         return modules
 
     @contract(names='list(str)')
