@@ -730,7 +730,7 @@ def run_module_tests():
             r = Res(x=x, es=None, en=None)
 
         except BaseException as e2:
-            es = traceback.format_exc(e2)
+            es = traceback.format_exc()
             r = Res(x=x, es=es, en=type(e2).__name__)
 
         results[name] = r

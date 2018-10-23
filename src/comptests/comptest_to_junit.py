@@ -16,17 +16,19 @@ def comptest_to_junit_main():
 
     dirname = args[0]
     # try compressed
-    db = StorageFilesystem(dirname, compress=True)
-    jobs = list(all_jobs(db))
-    if not jobs:
-        # try uncompressed
+    try:
+        db = StorageFilesystem(dirname, compress=True)
+    except Exception:
         db = StorageFilesystem(dirname, compress=False)
-        jobs = list(all_jobs(db))
 
-        if not jobs:
-            msg = 'Could not find any job, compressed or not.'
-            logger.error(msg)
-            sys.exit(1)
+
+
+    jobs = list(all_jobs(db))
+
+    if not jobs:
+        msg = 'Could not find any job, compressed or not.'
+        logger.error(msg)
+        sys.exit(1)
 
     s = junit_xml(db)
     sys.stdout.write(s)
