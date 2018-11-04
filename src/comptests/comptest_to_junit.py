@@ -21,8 +21,6 @@ def comptest_to_junit_main():
     except Exception:
         db = StorageFilesystem(dirname, compress=False)
 
-
-
     jobs = list(all_jobs(db))
 
     if not jobs:
@@ -53,11 +51,15 @@ def junit_xml(compmake_db):
     return TestSuite.to_xml_string([ts])
 
 
+import six
+
+
 def flatten_ascii(s):
     if s is None:
         return None
-    s = str(s, encoding='utf8', errors='replace')
-    s = s.encode('ascii', errors='ignore')
+    if six.PY2:
+        s = unicode(s, encoding='utf8', errors='replace')
+        s = s.encode('ascii', errors='ignore')
     return s
 
 
@@ -65,7 +67,7 @@ def junit_test_case_from_compmake(db, job_id):
     from junit_xml import TestCase
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
-        #elapsed_sec = cache.walltime_used
+        # elapsed_sec = cache.walltime_used
         elapsed_sec = cache.cputime_used
     else:
         elapsed_sec = None
@@ -94,4 +96,3 @@ def remove_escapes(s):
 
 if __name__ == '__main__':
     comptest_to_junit_main()
-
