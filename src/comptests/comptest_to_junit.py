@@ -4,7 +4,6 @@ from compmake.exceptions import UserError
 from compmake.jobs.storage import all_jobs, get_job_cache
 from compmake.storage.filesystem import StorageFilesystem
 from compmake.structures import Cache
-
 from . import logger
 
 
@@ -74,8 +73,11 @@ def junit_test_case_from_compmake(db, job_id):
         elapsed_sec = None
 
     if six.PY3:
-        cache.captured_stderr = cache.captured_stderr.decode('utf-8', errors='replace')
-        cache.captured_stdout = cache.captured_stdout.decode('utf-8', errors='replace')
+        def interpret_robust(by):
+            return by is None and None or by.decode('utf-8', errors='replace')
+
+        cache.captured_stderr = interpret_robust(cache.captured_stderr)
+        cache.captured_stdout = interpret_robust(cache.captured_stdout)
 
     stderr = flatten_ascii(remove_escapes(cache.captured_stderr))
     stdout = flatten_ascii(remove_escapes(cache.captured_stdout))
