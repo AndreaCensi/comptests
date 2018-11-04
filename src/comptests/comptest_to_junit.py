@@ -58,6 +58,7 @@ def flatten_ascii(s):
     if s is None:
         return None
     if six.PY2:
+        # noinspection PyCompatibility
         s = unicode(s, encoding='utf8', errors='replace')
         s = s.encode('ascii', errors='ignore')
     return s
@@ -71,6 +72,10 @@ def junit_test_case_from_compmake(db, job_id):
         elapsed_sec = cache.cputime_used
     else:
         elapsed_sec = None
+
+    if six.PY3:
+        cache.captured_stderr = cache.captured_stderr.decode('utf-8', errors='replace')
+        cache.captured_stdout = cache.captured_stdout.decode('utf-8', errors='replace')
 
     stderr = flatten_ascii(remove_escapes(cache.captured_stderr))
     stdout = flatten_ascii(remove_escapes(cache.captured_stdout))
