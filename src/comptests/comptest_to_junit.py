@@ -74,7 +74,7 @@ def junit_test_case_from_compmake(db, job_id):
 
     if six.PY3:
         def interpret_robust(by):
-            return by is None and None or by.decode('utf-8', errors='replace')
+            return None if by is None else by.decode('utf-8', errors='replace')
 
         cache.captured_stderr = interpret_robust(cache.captured_stderr)
         cache.captured_stdout = interpret_robust(cache.captured_stdout)
