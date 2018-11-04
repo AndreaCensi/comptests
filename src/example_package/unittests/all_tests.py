@@ -1,13 +1,20 @@
-from .generation import (for_all_class1, for_all_class1_class2, 
-    for_all_class1_class2_dynamic, for_all_class1_dynamic)
+from comptests.registrar import comptest, comptest_dynamic, comptest_fails
 from example_package.unittests.generation import for_some_class1, \
     for_some_class1_class2
-from comptests.registrar import comptest, comptest_dynamic, comptest_fails
+from .generation import (for_all_class1, for_all_class1_class2,
+                         for_all_class1_class2_dynamic, for_all_class1_dynamic)
 
 
 @comptest
 def simple_check():
     pass
+
+
+@comptest
+def actual_failure():
+    msg = 'This is a controlled failure.'
+    raise Exception(msg)
+
 
 @comptest_dynamic
 def dyn_simple_check(context):
@@ -29,13 +36,14 @@ def check_some_class1_class2(id_ob1, _, id_ob2, _2):
     assert id_ob1 in ['c1a', 'c1b']
     assert id_ob2 == 'c2a'
 
+
 #
 # @for_some_class1_class2('c1b', 'c2*')
 # def check_some_class1_class2_2(id_ob1, _, id_ob2, _2):
 #     assert id_ob1 == 'c1b'
 #     assert id_ob2 == 'c2a'
 
- 
+
 @for_all_class1_class2
 def check_class1_class2(id_ob1, _, id_ob2, _2):
     print('check_class1_class2(%r,%r)' % (id_ob1, id_ob2))
@@ -74,7 +82,8 @@ def report_class2(ob2):
 def test_dummy():
     pass
 
-# 
+
+#
 # @comptest
 # def a_real_failure():
 #     raise Exception('A failure')
@@ -82,4 +91,3 @@ def test_dummy():
 @comptest_fails
 def expected_failure():
     raise Exception('expected_failure')
-

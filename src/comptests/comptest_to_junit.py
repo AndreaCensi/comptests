@@ -4,7 +4,6 @@ from compmake.exceptions import UserError
 from compmake.jobs.storage import all_jobs, get_job_cache
 from compmake.storage.filesystem import StorageFilesystem
 from compmake.structures import Cache
-
 from . import logger
 
 
@@ -20,8 +19,6 @@ def comptest_to_junit_main():
         db = StorageFilesystem(dirname, compress=True)
     except Exception:
         db = StorageFilesystem(dirname, compress=False)
-
-
 
     jobs = list(all_jobs(db))
 
@@ -53,11 +50,16 @@ def junit_xml(compmake_db):
     return TestSuite.to_xml_string([ts])
 
 
+import six
+
+
 def flatten_ascii(s):
     if s is None:
         return None
-    s = str(s, encoding='utf8', errors='replace')
-    s = s.encode('ascii', errors='ignore')
+    if six.PY2:
+        # noinspection PyCompatibility
+        s = unicode(s, encoding='utf8', errors='replace')
+        s = s.encode('ascii', errors='ignore')
     return s
 
 
@@ -65,10 +67,17 @@ def junit_test_case_from_compmake(db, job_id):
     from junit_xml import TestCase
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
-        #elapsed_sec = cache.walltime_used
+        # elapsed_sec = cache.walltime_used
         elapsed_sec = cache.cputime_used
     else:
         elapsed_sec = None
+
+    if six.PY3:
+        def interpret_robust(by):
+            return None if by is None else by.decode('utf-8', errors='replace')
+
+        cache.captured_stderr = interpret_robust(cache.captured_stderr)
+        cache.captured_stdout = interpret_robust(cache.captured_stdout)
 
     stderr = flatten_ascii(remove_escapes(cache.captured_stderr))
     stdout = flatten_ascii(remove_escapes(cache.captured_stdout))
@@ -94,4 +103,3 @@ def remove_escapes(s):
 
 if __name__ == '__main__':
     comptest_to_junit_main()
-
