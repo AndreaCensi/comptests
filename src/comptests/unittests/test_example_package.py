@@ -14,6 +14,7 @@ def test_example_package():
         print('Working in %r ' % cwd)
         cmd = ['comptests',
                '--contracts',
+               '--coverage',
                # '--nonose',
                'example_package']
 

@@ -88,15 +88,20 @@ class CompTests(QuickApp):
             raise Exception('No modules found.')  # XXX: what's the nicer way?
 
         options = self.get_options()
+
+        do_coverage = options.coverage
+        if do_coverage:
+            import coverage
+            coverage.process_startup()
         if not options.nonose:
-            do_coverage = options.coverage
             self.instance_nosetests_jobs(context, modules, do_coverage)
 
         #self.instance_nosesingle_jobs(context, modules)
 
         if not options.nocomp:
             self.instance_comptests_jobs(context, modules,
-                                         create_reports=options.reports)
+                                         create_reports=options.reports,
+                                         do_coverage=do_coverage)
 
     @contract(returns='list(str)')
     def get_modules(self):
@@ -152,14 +157,14 @@ class CompTests(QuickApp):
             c.comp_dynamic(jobs_nosetests_single, module, job_id='nosesingle')
 
     @contract(modules='list(str)', create_reports='bool')
-    def instance_comptests_jobs(self, context, modules, create_reports):
+    def instance_comptests_jobs(self, context, modules, create_reports, do_coverage):
 
         for module in modules:
 
-            if True:
-                c = context.child(module)
-            else:
-                c = context.child("")
+            # if True:
+            c = context.child(module)
+            # else:
+            #     c = context.child("")
 
             c.add_extra_report_keys(module=module)
             c.comp_config_dynamic(instance_comptests_jobs2_m, module_name=module,
@@ -169,7 +174,7 @@ class CompTests(QuickApp):
 
 def instance_comptests_jobs2_m(context, module_name, create_reports):
     from .registrar import jobs_registrar_simple
-    is_first = not '.' in module_name
+    is_first =  '.' not in module_name
     warn_errors = is_first
 
     try:

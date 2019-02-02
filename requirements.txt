@@ -5,3 +5,4 @@ junit_xml
 quickapp==1.3.16
 SystemCmd==2.2.2
 
+coverage
