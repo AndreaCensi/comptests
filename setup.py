@@ -56,9 +56,7 @@ setup(name='comptests',
               'comptests = comptests:main_comptests',
               'comptests-to-junit = comptests.comptest_to_junit:comptest_to_junit_main',
           ],
-          #         'nose.plugins.0.10': [
-          #             'xunitext = xunitext:XUnitExt'
-          #             ]
+
       },
       package_dir={'': 'src'},
       packages=find_packages('src'),
@@ -68,6 +66,7 @@ setup(name='comptests',
           'ConfTools',
           'quickapp',
           'junit_xml',
+          'coverage',
       ],
       tests_require=['nose'],
       )

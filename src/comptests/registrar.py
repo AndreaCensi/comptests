@@ -99,8 +99,12 @@ def check_fails(f, *args, **kwargs):
             #         for i in range(1000):
             #             outi = out % i
             #             if not os.path.exists(outi):
-            with open(out, 'w') as f:
-                f.write(traceback.format_exc())
+            s = traceback.format_exc()
+            if isinstance(s, bytes):
+                s = s.decode('utf-8', errors='ignore')
+
+            with open(out, 'wb') as f:
+                f.write(s.encode('utf-8'))
         except ImportError:
             pass
 
