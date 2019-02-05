@@ -30,11 +30,9 @@ def comptest_to_junit_main():
 
     s = junit_xml(db)
     check_isinstance(s, six.text_type)
-    print(s)
-    # if six.PY2:
-    #     s = s.encode('utf8')
-    # sys.stdout.write(s)
-
+    s = s.encode('utf8')
+    sys.stdout.buffer.write(s)
+    
 
 def junit_xml(compmake_db):
     from junit_xml import TestSuite
