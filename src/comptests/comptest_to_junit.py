@@ -32,7 +32,7 @@ def comptest_to_junit_main():
     check_isinstance(s, six.text_type)
     s = s.encode('utf8')
     sys.stdout.buffer.write(s)
-    
+
 
 def junit_xml(compmake_db):
     from junit_xml import TestSuite
@@ -76,14 +76,16 @@ def junit_test_case_from_compmake(db, job_id):
         elapsed_sec = cache.cputime_used
     else:
         elapsed_sec = None
-
-    if six.PY3:
-        def interpret_robust(by):
-            return None if by is None else by.decode('utf-8', errors='replace')
-
-        cache.captured_stderr = interpret_robust(cache.captured_stderr)
-        cache.captured_stdout = interpret_robust(cache.captured_stdout)
-
+    #
+    # if six.PY3:
+    #     def interpret_robust(by):
+    #         return None if by is None else by.decode('utf-8', errors='replace')
+    #
+    #     cache.captured_stderr = interpret_robust(cache.captured_stderr)
+    #     cache.captured_stdout = interpret_robust(cache.captured_stdout)
+    check_isinstance(cache.captured_stderr, six.text_type)
+    check_isinstance(cache.captured_stdout, six.text_type)
+    check_isinstance(cache.exception, six.text_type)
     stderr = flatten_ascii(remove_escapes(cache.captured_stderr))
     stdout = flatten_ascii(remove_escapes(cache.captured_stdout))
 
