@@ -4,6 +4,7 @@ from compmake.exceptions import UserError
 from compmake.jobs.storage import all_jobs, get_job_cache
 from compmake.storage.filesystem import StorageFilesystem
 from compmake.structures import Cache
+from contracts import check_isinstance
 from . import logger
 
 
@@ -28,7 +29,11 @@ def comptest_to_junit_main():
         sys.exit(1)
 
     s = junit_xml(db)
-    sys.stdout.write(s)
+    check_isinstance(s, six.text_type)
+    print(s)
+    # if six.PY2:
+    #     s = s.encode('utf8')
+    # sys.stdout.write(s)
 
 
 def junit_xml(compmake_db):
@@ -47,7 +52,9 @@ def junit_xml(compmake_db):
 
     ts = TestSuite("comptests_test_suite", test_cases)
 
-    return TestSuite.to_xml_string([ts])
+    res = TestSuite.to_xml_string([ts])
+    check_isinstance(res, six.text_type)
+    return res
 
 
 import six
@@ -56,10 +63,10 @@ import six
 def flatten_ascii(s):
     if s is None:
         return None
-    if six.PY2:
-        # noinspection PyCompatibility
-        s = unicode(s, encoding='utf8', errors='replace')
-        s = s.encode('ascii', errors='ignore')
+    # if six.PY2:
+    #     # noinspection PyCompatibility
+    #     s = unicode(s, encoding='utf8', errors='replace')
+    #     s = s.encode('ascii', errors='ignore')
     return s
 
 

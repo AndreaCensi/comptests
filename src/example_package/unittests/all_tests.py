@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from comptests.registrar import comptest, comptest_dynamic, comptest_fails
 from example_package.unittests.generation import for_some_class1, \
     for_some_class1_class2
@@ -67,14 +68,14 @@ def check_class1_class2_dynamic(context, _, ob1, _2, ob2):
 def report_class1(ob1):
     from reprep import Report
     r = Report()
-    r.text('ob1', ob1)
+    r.text('ob1', '%s' % ob1)
     return r
 
 
 def report_class2(ob2):
     from reprep import Report
     r = Report()
-    r.text('ob2', ob2)
+    r.text('ob2', '%s'% ob2)
     return r
 
 
