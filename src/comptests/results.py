@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from contracts import contract
 
 __all__ = [

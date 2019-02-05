@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import os
 
 from conf_tools.utils import locate_files

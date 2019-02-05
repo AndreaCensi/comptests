@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import sys
 
 from compmake.exceptions import UserError
@@ -58,14 +59,14 @@ def junit_xml(compmake_db):
 import six
 
 
-def flatten_ascii(s):
-    if s is None:
-        return None
-    # if six.PY2:
-    #     # noinspection PyCompatibility
-    #     s = unicode(s, encoding='utf8', errors='replace')
-    #     s = s.encode('ascii', errors='ignore')
-    return s
+# def flatten_ascii(s):
+#     if s is None:
+#         return None
+#     # if six.PY2:
+#     #     # noinspection PyCompatibility
+#     #     s = unicode(s, encoding='utf8', errors='replace')
+#     #     s = s.encode('ascii', errors='ignore')
+#     return s
 
 
 def junit_test_case_from_compmake(db, job_id):
@@ -76,18 +77,12 @@ def junit_test_case_from_compmake(db, job_id):
         elapsed_sec = cache.cputime_used
     else:
         elapsed_sec = None
-    #
-    # if six.PY3:
-    #     def interpret_robust(by):
-    #         return None if by is None else by.decode('utf-8', errors='replace')
-    #
-    #     cache.captured_stderr = interpret_robust(cache.captured_stderr)
-    #     cache.captured_stdout = interpret_robust(cache.captured_stdout)
-    check_isinstance(cache.captured_stderr, six.text_type)
-    check_isinstance(cache.captured_stdout, six.text_type)
-    check_isinstance(cache.exception, six.text_type)
-    stderr = flatten_ascii(remove_escapes(cache.captured_stderr))
-    stdout = flatten_ascii(remove_escapes(cache.captured_stdout))
+
+    check_isinstance(cache.captured_stderr, (type(None), six.text_type))
+    check_isinstance(cache.captured_stdout, (type(None), six.text_type))
+    check_isinstance(cache.exception, (type(None), six.text_type))
+    stderr = remove_escapes(cache.captured_stderr)
+    stdout = remove_escapes(cache.captured_stdout)
 
     tc = TestCase(name=job_id, classname=None, elapsed_sec=elapsed_sec,
                   stdout=stdout, stderr=stderr)
@@ -95,7 +90,7 @@ def junit_test_case_from_compmake(db, job_id):
     if cache.state == Cache.FAILED:
         message = cache.exception
         output = cache.exception + "\n" + cache.backtrace
-        tc.add_failure_info(flatten_ascii(message), flatten_ascii(output))
+        tc.add_failure_info(message, output)
 
     return tc
 
