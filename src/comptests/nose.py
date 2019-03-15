@@ -46,6 +46,7 @@ def jobs_nosetests(context, module, do_coverage=False):
 
 
 def call_nosetests(module):
+    import nose
     with create_tmp_dir() as cwd:
         cmd = ['nosetests', module]
         system_cmd_result(

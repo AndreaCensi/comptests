@@ -189,6 +189,7 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
             logger.error(msg)
 
         raise_wrapped(Exception, e, msg)
+        assert False
 
     fname = CompTests.hook_name
 

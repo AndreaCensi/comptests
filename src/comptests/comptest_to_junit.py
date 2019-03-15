@@ -41,8 +41,9 @@ def junit_xml(compmake_db):
 
     jobs = list(all_jobs(compmake_db))
     logger.info('Loaded %d jobs' % len(jobs))
-    if len(jobs) < 10:
-        logger.error('too few jobs')
+    N = 10
+    if len(jobs) < N:
+        logger.error('too few jobs (I expect at least %s)' % N)
         sys.exit(128)
 
     test_cases = []

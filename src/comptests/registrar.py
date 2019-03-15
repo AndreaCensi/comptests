@@ -314,7 +314,7 @@ def jobs_registrar_simple(context, only_for_module=None):
 
         n += 1
 
-    print('Registered %d tests (reading a list of %s)' % (n, len(ComptestsRegistrar.regular)))
+    logger.info('Registered %d tests (reading a list of %s)' % (n, len(ComptestsRegistrar.regular)))
 
 
 class WrapTest(object):
