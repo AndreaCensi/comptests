@@ -22,20 +22,12 @@ version = get_version(filename='src/comptests/__init__.py')
 
 description = """ Testing utilities for projects that use ConfTools for handling their configuration. """
 
-
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-
-long_description = read('README.md')
-
 setup(name='comptests',
       author="Andrea Censi",
       author_email="censi@mit.edu",
       url='http://github.com/AndreaCensi/comptests',
 
       description=description,
-      long_description=long_description,
       keywords="",
       license="",
 
