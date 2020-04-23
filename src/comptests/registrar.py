@@ -5,7 +5,7 @@ import sys
 import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
-from typing import Dict
+from typing import Callable, Dict, Optional, Tuple
 
 from compmake import Promise
 from compmake.jobs import assert_job_exists
@@ -33,7 +33,7 @@ __all__ = [
 ]
 
 
-class ComptestsRegistrar(object):
+class ComptestsRegistrar:
     """ Static storage """
     regular = []  # list of dict(function=f, dynamic=dynamic))
     # Once they are scheduled we add id(x) here, so we make sure we
@@ -62,7 +62,7 @@ def register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic):
                    which1=which1, which2=which2))
 
 
-def register_for_some(objspe: ObjectSpec, f, which, dynamic: bool):
+def register_for_some(objspec: ObjectSpec, f, which, dynamic: bool):
     ts = ComptestsRegistrar.objspec2testsome[objspec.name]
     ts.append(dict(function=f, which=which, dynamic=dynamic))
 
@@ -110,7 +110,7 @@ def check_fails(f, *args, **kwargs):
         raise ZException(msg, f=f, args=args, kwargs=kwargs)
 
 
-class Wrap(object):
+class Wrap:
     """ Need to assign name """
 
     def __init__(self, f):
@@ -265,9 +265,38 @@ def jobs_registrar(context, cm: ConfigMaster, create_reports=False):
     jobs_registrar_simple(context)
 
 
-def jobs_registrar_simple(context: QuickAppContext, only_for_module=None):
+def get_test_index() -> Tuple[int, int]:
+    """ Returns i,n: machine index and mcdp_comp_tests """
+    n = int(os.environ.get("CIRCLE_NODE_TOTAL", 1))
+    i = int(os.environ.get("CIRCLE_NODE_INDEX", 0))
+    return i, n
+
+
+def int_from_string(s: str) -> int:
+    return sum(map(ord, s))
+
+
+def accept(f: Callable, worker_i: int, worker_n: int) -> bool:
+    return accept_test_string(f.__name__, worker_i, worker_n)
+
+
+def accept_test_string(s: str, worker_i: int, worker_n: int) -> bool:
+    x = int_from_string(s)
+
+    return x % worker_n == worker_i
+
+
+def accept_test_on_this_worker(s: str):
+    """ Use this from outside. """
+    worker_i, worker_n = get_test_index()
+    return accept_test_string(s, worker_i, worker_n)
+
+
+def jobs_registrar_simple(context: QuickAppContext, only_for_module: str = None):
     """ Registers the simple "comptest" """
     prefix = context._job_prefix
+
+    worker_i, worker_n = get_test_index()
 
     n = 0
     for x in ComptestsRegistrar.regular:
@@ -283,6 +312,12 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module=None):
                        (function, function.__module__, only_for_module))
                 #                 logger.error(msg)
                 continue
+
+        doit = accept(function, worker_i, worker_n)
+        if not doit:
+            logger.debug(f'{worker_i}/{worker_n} skipping {function} ')
+        else:
+            logger.debug(f'{worker_i}/{worker_n} accepts  {function} ')
 
         id_x = id(x)
         if id_x in ComptestsRegistrar.regular_scheduled:
@@ -307,9 +342,12 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module=None):
     logger.info('Registered %d tests (reading a list of %s)' % (n, len(ComptestsRegistrar.regular)))
 
 
-class WrapTest(object):
+class WrapTest:
+    function: Callable
+    prefix: Optional[str]
+    output_dir: str
 
-    def __init__(self, function, prefix):
+    def __init__(self, function: Callable, prefix: Optional[str]):
         self.__name__ = function.__name__
         self.function = function
         from .comptests import CompTests
@@ -354,7 +392,7 @@ def define_tests_for(context, cm, name: str, names2test_objects: Dict[str, Dict[
                       some=some, create_reports=create_reports)
 
 
-def define_tests_some(context, objspec, names2test_objects: Dict[str, Dict[str, str]],
+def define_tests_some(context, objspec: ObjectSpec, names2test_objects: Dict[str, Dict[str, str]],
                       some, create_reports):
     test_objects = names2test_objects[objspec.name]
 
