@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from contextlib import contextmanager
 import os
 import tempfile
 import warnings
-
-from contracts import contract
-from system_cmd import system_cmd_result
-
+from contextlib import contextmanager
+from . import logger
 from compmake.utils import safe_pickle_load
+from system_cmd import system_cmd_result
 
 __all__ = ['jobs_nosetests']
 
@@ -27,9 +25,11 @@ def jobs_nosetests(context, module, do_coverage=False):
     """ Instances the mcdp_lang_tests for the given module. """
     if do_coverage:
         try:
+
             import coverage  # @UnusedImport
+            logger.info('Loaded coverage module')
         except ImportError as e:
-            print('No coverage module found: %s' % e)
+            logger.info('No coverage module found: %s' % e)
             context.comp(call_nosetests, module,
                          job_id='nosetests')
         else:
@@ -46,7 +46,6 @@ def jobs_nosetests(context, module, do_coverage=False):
 
 
 def call_nosetests(module):
-    import nose
     with create_tmp_dir() as cwd:
         cmd = ['nosetests', module]
         system_cmd_result(
@@ -75,23 +74,22 @@ def call_nosetests_plus_coverage(module):
         coverage_file = os.path.join(cwd, '.coverage')
         with open(coverage_file) as f:
             res = f.read()
-        #print('read %d bytes in %s' % (len(res), coverage_file))
+        # print('read %d bytes in %s' % (len(res), coverage_file))
         return res
 
 
 def find_command_path(prog):
     res = system_cmd_result(cwd=os.getcwd(),
-                             cmd=['which', prog],
-                             display_stdout=False,
+                            cmd=['which', prog],
+                            display_stdout=False,
                             display_stderr=False,
                             raise_on_error=True)
     prog = res.stdout
     return prog
 
 
-@contract(covdata='str')
-def write_coverage_report(outdir, covdata, module):
-    print('Writing coverage data to %s' % outdir)
+def write_coverage_report(outdir, covdata: str, module):
+    logger.info('Writing coverage data to %s' % outdir)
     outdir = os.path.abspath(outdir)
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -100,6 +98,7 @@ def write_coverage_report(outdir, covdata, module):
         with open(coverage_file, 'wb') as f:
             f.write(covdata)
 
+        logger.info('Running coverage html')
         cmd = ['coverage', 'html', '-d', outdir,
                '--include=*/%s/*' % module]
         res = system_cmd_result(
@@ -118,13 +117,12 @@ def write_coverage_report(outdir, covdata, module):
 
 
 def jobs_nosetests_single(context, module):
-
     with create_tmp_dir() as cwd:
         out = os.path.join(cwd, '%s.pickle' % module)
         cmd = ['nosetests',
                '--collect-only',
                '--with-xunitext',
-               '--xunitext-file' ,
+               '--xunitext-file',
                out,
                '-v', '-s', module]
         system_cmd_result(
@@ -147,17 +145,17 @@ def execute(t):
 if False:
 
     def load_nosetests(self, context, module_name):
-#         argv = ['-vv', module_name]
+        #         argv = ['-vv', module_name]
         ids = '.noseids'
         if os.path.exists(ids):
             os.remove(ids)
-#
-#         collect = CollectOnly()
-#         testid = TestId()
-#         plugins = []
-#         plugins.append(collect)
-#         plugins.append(testid)
-#         argv = ['nosetests', '--collect-only', '--with-id', module_name]
+        #
+        #         collect = CollectOnly()
+        #         testid = TestId()
+        #         plugins = []
+        #         plugins.append(collect)
+        #         plugins.append(testid)
+        #         argv = ['nosetests', '--collect-only', '--with-id', module_name]
         argv = ['nosetests', '-s', '--nologcapture', module_name]
 
         class FakeResult():
@@ -183,12 +181,12 @@ if False:
             def runTests(self):
                 print('hello')
 
-#         print argv, plugins
+        #         print argv, plugins
         tp = MyTestProgram(module=module_name, argv=argv,
-                       defaultTest=module_name,
-                       addplugins=[],
-                       exit=False,
-                       testRunner=mytr)
+                           defaultTest=module_name,
+                           addplugins=[],
+                           exit=False,
+                           testRunner=mytr)
         self.info('test: %s' % tp.test)
 
         def explore(a):
@@ -202,7 +200,7 @@ if False:
 
         # these things are not pickable
         for a in explore(tp.test):
-            #context.comp(run_testcase, a)
+            # context.comp(run_testcase, a)
             pass
 #
 #             if isinstance(a, FunctionTestCase):
@@ -245,4 +243,3 @@ if False:
 # from nose.plugins.testid import TestId
 # from nose.suite import ContextSuite
 # import nose
-

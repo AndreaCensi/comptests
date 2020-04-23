@@ -5,15 +5,14 @@ import sys
 import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
+from typing import Dict
 
 from compmake import Promise
 from compmake.jobs import assert_job_exists
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
-from contracts import contract
-from contracts.utils import raise_desc, indent
-from quickapp import iterate_context_names, iterate_context_names_pair
-
+from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
+from zuper_commons.types import ZException
 from . import logger
 from .reports import (report_results_pairs, report_results_pairs_jobs,
                       report_results_single)
@@ -47,8 +46,7 @@ class ComptestsRegistrar(object):
     objspec2testsomepairs = defaultdict(list)
 
 
-@contract(objspec=ObjectSpec, dynamic=bool)
-def register_single(objspec, f, dynamic):
+def register_single(objspec: ObjectSpec, f, dynamic: bool):
     ts = ComptestsRegistrar.objspec2tests[objspec.name]
     ts.append(dict(function=f, dynamic=dynamic))
 
@@ -64,8 +62,7 @@ def register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic):
                    which1=which1, which2=which2))
 
 
-@contract(objspec=ObjectSpec, dynamic=bool)
-def register_for_some(objspec, f, which, dynamic):
+def register_for_some(objspe: ObjectSpec, f, which, dynamic: bool):
     ts = ComptestsRegistrar.objspec2testsome[objspec.name]
     ts.append(dict(function=f, which=which, dynamic=dynamic))
 
@@ -84,8 +81,8 @@ def check_fails(f, *args, **kwargs):
     try:
         f(*args, **kwargs)
     except BaseException as e:
-        logger.error('Known failure for %s ' % f)
-        logger.warn('Fails with error %s' % e)
+        logger.error(f'Known failure for {f}')
+        logger.warn(f'Fails with error {type(e).__name__} {e}')
         # comptest_fails = kwargs.get('comptest_fails', f.__name__)
         d = 'out/comptests-failures'
         if not os.path.exists(d):
@@ -110,7 +107,7 @@ def check_fails(f, *args, **kwargs):
 
     else:
         msg = 'Function was supposed to fail.'
-        raise_desc(Exception, msg, f=f, args=args, kwargs=kwargs)
+        raise ZException(msg, f=f, args=args, kwargs=kwargs)
 
 
 class Wrap(object):
@@ -136,8 +133,7 @@ def comptest_dynamic(f):
     return f
 
 
-@contract(objspec=ObjectSpec)
-def comptests_for_all(objspec):
+def comptests_for_all(objspec: ObjectSpec):
     """
         Returns a decorator for mcdp_lang_tests, which should take two parameters:
         id and object.
@@ -158,8 +154,7 @@ def comptests_for_all(objspec):
     return register
 
 
-@contract(objspec=ObjectSpec)
-def comptests_for_all_dynamic(objspec):
+def comptests_for_all_dynamic(objspec: ObjectSpec):
     """
         Returns a decorator for mcdp_lang_tests, which should take three parameters:
         context, id_object and object.
@@ -172,8 +167,7 @@ def comptests_for_all_dynamic(objspec):
     return register
 
 
-@contract(objspec=ObjectSpec)
-def comptests_for_some(objspec):
+def comptests_for_some(objspec: ObjectSpec):
     """ Returns a decorator for a test involving one object only. """
 
     def dec(which):
@@ -186,8 +180,7 @@ def comptests_for_some(objspec):
     return dec
 
 
-@contract(objspec=ObjectSpec)
-def comptests_for_some_dynamic(objspec):
+def comptests_for_some_dynamic(objspec: ObjectSpec):
     """ Returns a decorator for a test involving one object only. """
 
     def dec(which):
@@ -200,8 +193,7 @@ def comptests_for_some_dynamic(objspec):
     return dec
 
 
-@contract(objspec1=ObjectSpec, objspec2=ObjectSpec)
-def comptests_for_some_pairs(objspec1, objspec2):
+def comptests_for_some_pairs(objspec1: ObjectSpec, objspec2: ObjectSpec):
     """ Returns a decorator for a test involving only a subset of objects. """
 
     def dec(which1, which2):
@@ -214,8 +206,7 @@ def comptests_for_some_pairs(objspec1, objspec2):
     return dec
 
 
-@contract(objspec1=ObjectSpec, objspec2=ObjectSpec)
-def comptests_for_some_pairs_dynamic(objspec1, objspec2):
+def comptests_for_some_pairs_dynamic(objspec1: ObjectSpec, objspec2: ObjectSpec):
     """ Returns a decorator for a test involving only a subset of objects. """
 
     def dec(which1, which2):
@@ -228,8 +219,7 @@ def comptests_for_some_pairs_dynamic(objspec1, objspec2):
     return dec
 
 
-@contract(objspec1=ObjectSpec, objspec2=ObjectSpec)
-def comptests_for_all_pairs_dynamic(objspec1, objspec2):
+def comptests_for_all_pairs_dynamic(objspec1: ObjectSpec, objspec2: ObjectSpec):
     def register(f):
         register_pair(objspec1, objspec2, f, dynamic=True)
         return f
@@ -237,8 +227,7 @@ def comptests_for_all_pairs_dynamic(objspec1, objspec2):
     return register
 
 
-@contract(objspec1=ObjectSpec, objspec2=ObjectSpec)
-def comptests_for_all_pairs(objspec1, objspec2):
+def comptests_for_all_pairs(objspec1: ObjectSpec, objspec2: ObjectSpec):
     def register(f):
         register_pair(objspec1, objspec2, f, dynamic=False)
         return f
@@ -246,8 +235,7 @@ def comptests_for_all_pairs(objspec1, objspec2):
     return register
 
 
-@contract(cm=ConfigMaster)
-def jobs_registrar(context, cm, create_reports=False):
+def jobs_registrar(context, cm: ConfigMaster, create_reports=False):
     assert isinstance(cm, ConfigMaster)
 
     # Sep 15: remove name
@@ -277,7 +265,7 @@ def jobs_registrar(context, cm, create_reports=False):
     jobs_registrar_simple(context)
 
 
-def jobs_registrar_simple(context, only_for_module=None):
+def jobs_registrar_simple(context: QuickAppContext, only_for_module=None):
     """ Registers the simple "comptest" """
     prefix = context._job_prefix
 
@@ -307,10 +295,12 @@ def jobs_registrar_simple(context, only_for_module=None):
         # print('registering %s' % x)
         #         logger.debug("registering %s" % function.__name__)
         wrapper = WrapTest(function, prefix)
+        cname = function.__module__.replace('.', '-')
+        context2 = context.child(name=cname)
         if not dynamic:
-            _res = context.comp_config(wrapper, *args, **kwargs)
+            _res = context2.comp_config(wrapper, *args, **kwargs)
         else:
-            _res = context.comp_config_dynamic(wrapper, *args, **kwargs)
+            _res = context2.comp_config_dynamic(wrapper, *args, **kwargs)
 
         n += 1
 
@@ -336,9 +326,7 @@ class WrapTest(object):
         return self.function(*args, **kwargs)
 
 
-@contract(cm=ConfigMaster,
-          returns='dict(str:dict(str:str))')
-def get_testobjects_promises(context, cm):
+def get_testobjects_promises(context, cm: ConfigMaster) -> Dict[str, Dict[str, str]]:
     names2test_objects = {}
     for name in sorted(cm.specs.keys()):
         objspec = cm.specs[name]
@@ -347,13 +335,11 @@ def get_testobjects_promises(context, cm):
     return names2test_objects
 
 
-@contract(name=str, create_reports='bool',
-          names2test_objects='dict(str:dict(str:str))')
-def define_tests_for(context, cm, name, names2test_objects,
+def define_tests_for(context, cm, name: str, names2test_objects: Dict[str, Dict[str, str]],
 
                      pairs, functions, some, some_pairs,
 
-                     create_reports):
+                     create_reports: bool):
     objspec = cm.specs[name]
 
     define_tests_single(context, objspec, names2test_objects,
@@ -368,8 +354,7 @@ def define_tests_for(context, cm, name, names2test_objects,
                       some=some, create_reports=create_reports)
 
 
-@contract(names2test_objects='dict(str:dict(str:str))')
-def define_tests_some(context, objspec, names2test_objects,
+def define_tests_some(context, objspec, names2test_objects: Dict[str, Dict[str, str]],
                       some, create_reports):
     test_objects = names2test_objects[objspec.name]
 
@@ -423,8 +408,7 @@ def define_tests_some(context, objspec, names2test_objects,
             c.add_report(r, 'some')
 
 
-@contract(names2test_objects='dict(str:dict(str:str))')
-def define_tests_single(context, objspec, names2test_objects,
+def define_tests_single(context, objspec, names2test_objects: Dict[str, Dict[str, str]],
                         functions, create_reports):
     test_objects = names2test_objects[objspec.name]
     if not test_objects:
@@ -467,8 +451,7 @@ def define_tests_single(context, objspec, names2test_objects,
             c.add_report(r, 'single')
 
 
-@contract(names2test_objects='dict(str:dict(str:str))', create_reports='bool')
-def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_reports):
+def define_tests_pairs(context, objspec1, names2test_objects: Dict[str, Dict[str, str]], pairs, create_reports: bool):
     objs1 = names2test_objects[objspec1.name]
 
     if not pairs:
@@ -528,8 +511,8 @@ def define_tests_pairs(context, objspec1, names2test_objects, pairs, create_repo
             cx.add_report(r, 'pairs')
 
 
-@contract(names2test_objects='dict(str:dict(str:str))', create_reports='bool')
-def define_tests_some_pairs(context, objspec1, names2test_objects, some_pairs, create_reports):
+def define_tests_some_pairs(context, objspec1: ObjectSpec, names2test_objects: Dict[str, Dict[str, str]], some_pairs,
+                            create_reports: bool):
     if not some_pairs:
         print('No %s+x pairs mcdp_lang_tests.' % (objspec1.name))
         return
@@ -632,8 +615,7 @@ def wrap_func_pair(func, id_ob1, ob1, id_ob2, ob2):
     return func(id_ob1, ob1, id_ob2, ob2)
 
 
-@contract(objspec=ObjectSpec, returns='dict(str:str)')
-def get_testobjects_promises_for_objspec(context, objspec):
+def get_testobjects_promises_for_objspec(context, objspec: ObjectSpec) -> Dict[str, str]:
     warnings.warn('Need to be smarter here.')
     objspec.master.load()
     warnings.warn('Select test objects here.')
@@ -751,8 +733,8 @@ def run_module_tests():
         msg += '\n %30s : %s' % (name, mark)
 
         if r.es is not None:
-            logger.error('Test %s failed: ' % name)
-            logger.error(indent(r.es, '> '))
+            logger.error('Test %s failed: ' % name, es=r.es)
+
     #             errors[name] = r
 
     #             if args:

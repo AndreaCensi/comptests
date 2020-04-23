@@ -14,7 +14,7 @@ def test_example_package():
     with create_tmp_dir() as cwd:
         print('Working in %r ' % cwd)
         cmd = ['comptests',
-               '--contracts',
+               # '--contracts',
                '--coverage',
                # '--nonose',
                'example_package']

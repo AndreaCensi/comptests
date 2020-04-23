@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os
+from typing import List
 
 from conf_tools import GlobalConfig, import_name, reset_config
-from contracts import contract
-from contracts.utils import raise_desc, raise_wrapped
-
 from quickapp import QuickApp
-
+from zuper_commons.types import ZException, ZValueError
 from . import logger
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
@@ -92,21 +90,19 @@ class CompTests(QuickApp):
         options = self.get_options()
 
         do_coverage = options.coverage
-        if do_coverage:
-            import coverage
-            coverage.process_startup()
+        # if do_coverage:
+        #     import coverage
+        #     coverage.process_startup()
         if not options.nonose:
             self.instance_nosetests_jobs(context, modules, do_coverage)
 
-        #self.instance_nosesingle_jobs(context, modules)
+        # self.instance_nosesingle_jobs(context, modules)
 
         if not options.nocomp:
             self.instance_comptests_jobs(context, modules,
-                                         create_reports=options.reports,
-                                         do_coverage=do_coverage)
+                                         create_reports=options.reports)
 
-    @contract(returns='list(str)')
-    def get_modules(self):
+    def get_modules(self) -> List[str]:
         """" Parses the command line argument and interprets them as modules. """
         extras = self.options.get_extra()
         if not extras:
@@ -115,7 +111,7 @@ class CompTests(QuickApp):
         modules = list(self.interpret_modules_names(extras))
         if not modules:
             msg = 'No modules given'
-            raise_desc(ValueError, msg, extras=extras)
+            raise ZValueError(msg, extras=extras)
         # only get the main ones
         is_first = lambda module_name: not '.' in module_name
         modules = list(filter(is_first, modules))
@@ -125,8 +121,7 @@ class CompTests(QuickApp):
         modules = list(filter(to_exclude, modules))
         return modules
 
-    @contract(names='list(str)')
-    def interpret_modules_names(self, names):
+    def interpret_modules_names(self, names: List[str]):
         """ yields a list of modules """
         # First, extract tokens
         names2 = []
@@ -158,11 +153,9 @@ class CompTests(QuickApp):
             c = context.child(module)
             c.comp_dynamic(jobs_nosetests_single, module, job_id='nosesingle')
 
-    @contract(modules='list(str)', create_reports='bool')
-    def instance_comptests_jobs(self, context, modules, create_reports, do_coverage):
+    def instance_comptests_jobs(self, context, modules: List[str], create_reports: bool):
 
         for module in modules:
-
             # if True:
             c = context.child(module)
             # else:
@@ -176,7 +169,7 @@ class CompTests(QuickApp):
 
 def instance_comptests_jobs2_m(context, module_name, create_reports):
     from .registrar import jobs_registrar_simple
-    is_first =  '.' not in module_name
+    is_first = '.' not in module_name
     warn_errors = is_first
 
     try:
@@ -188,8 +181,7 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
         if warn_errors:
             logger.error(msg)
 
-        raise_wrapped(Exception, e, msg)
-        assert False
+        raise ZException(msg) from e
 
     fname = CompTests.hook_name
 

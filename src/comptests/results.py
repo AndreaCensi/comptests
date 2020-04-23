@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-
-from contracts import contract
+from typing import Sequence, Set
 
 __all__ = [
     'Skipped',
@@ -13,9 +12,9 @@ class Skipped(object):
         Can be returned by mcdp_lang_tests to mean that the test
         was skipped for some reason.
     """
+    reason: str
 
-    @contract(reason='str')
-    def __init__(self, reason):
+    def __init__(self, reason: str):
         self.reason = reason
 
     def get_reason(self):
@@ -28,8 +27,9 @@ class PartiallySkipped(object):
         were skipped.
     """
 
-    @contract(skipped='seq(str)')
-    def __init__(self, skipped):
+    skipped: Set[str]
+
+    def __init__(self, skipped: Sequence[str]):
         self.skipped = set(skipped)
 
     def get_skipped_parts(self):

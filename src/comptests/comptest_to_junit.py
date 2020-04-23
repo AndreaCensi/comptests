@@ -6,7 +6,7 @@ from compmake.exceptions import UserError
 from compmake.jobs.storage import all_jobs, get_job_cache
 from compmake.storage.filesystem import StorageFilesystem
 from compmake.structures import Cache
-from contracts import check_isinstance
+from zuper_commons.types import check_isinstance
 from . import logger
 
 

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import itertools
-
-from contracts import contract
-from contracts.utils import describe_value
+from typing import Dict, Tuple
 
 from compmake.jobs.storage import get_job_cache, get_job_userobject
 from compmake.structures import Cache
 from reprep import Report
-
+from . import logger
 from .results import PartiallySkipped, Skipped
 
 __all__ = [
@@ -18,9 +16,7 @@ __all__ = [
 ]
 
 
-@contract(results='dict(str:*)')
-def report_results_single(func, objspec_name, results):
-
+def report_results_single(func, objspec_name, results: Dict[str, object]):
     def get_string_result(res):
         if res is None:
             s = 'ok'
@@ -30,7 +26,7 @@ def report_results_single(func, objspec_name, results):
             parts = res.get_skipped_parts()
             s = 'no ' + ','.join(parts)
         else:
-            print('how to interpret %s? ' % describe_value(res))
+            logger.info('how to interpret?', res=res)
             s = '?'
         return s
 
@@ -50,8 +46,7 @@ def report_results_single(func, objspec_name, results):
     return r
 
 
-@contract(results='dict(tuple(str,str):*)')
-def report_results_pairs(func, objspec1_name, objspec2_name, results):
+def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple[str, str], object]):
     reason2symbol = {}
 
     def get_string_result(res):
@@ -68,7 +63,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results):
             parts = res.get_skipped_parts()
             s = 'no ' + ','.join(parts)
         else:
-            print('how to interpret %s? ' % describe_value(res))
+            logger.info('how to interpret?', res=res)
             s = '?'
         return s
 
@@ -96,8 +91,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results):
     return r
 
 
-@contract(jobs='dict(tuple(str,str):str)')
-def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs):
+def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], str]):
     """ This version gets the jobs ID """
     reason2symbol = {}
 
@@ -115,7 +109,7 @@ def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs)
             parts = res.get_skipped_parts()
             s = 'no ' + ','.join(parts)
         else:
-            print('how to interpret %s? ' % describe_value(res))
+            logger.info('how to interpret?', res=res)
             s = '?'
         return s
 
@@ -143,8 +137,8 @@ def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs)
             s = 'FAIL'
         elif cache.state == Cache.BLOCKED:
             s = 'blocked'
-#         elif cache.state == Cache.IN_PROGRESS:
-#             s = '(in progress)'
+        #         elif cache.state == Cache.IN_PROGRESS:
+        #             s = '(in progress)'
         elif cache.state == Cache.NOT_STARTED:
             s = ' '
         else:
