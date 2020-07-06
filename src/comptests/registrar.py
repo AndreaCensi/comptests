@@ -72,10 +72,6 @@ def register_indep(f, dynamic, args, kwargs):
     ComptestsRegistrar.regular.append(d)
 
 
-def comptest(f):
-    register_indep(f, dynamic=False, args=(), kwargs={})
-    return f
-
 
 def check_fails(f, *args, **kwargs):
     try:
@@ -131,6 +127,11 @@ def comptest_fails(f):
 def comptest_dynamic(f):
     register_indep(f, dynamic=True, args=(), kwargs={})
     return f
+
+def comptest(f):
+    register_indep(f, dynamic=False, args=(), kwargs={})
+    return f
+
 
 
 def comptests_for_all(objspec: ObjectSpec):
