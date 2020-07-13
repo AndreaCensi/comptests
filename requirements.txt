@@ -1,4 +1,4 @@
-PyContracts3==3.0.2
+PyContracts3>=3.0.2
 compmake-z6
 ConfTools-z6
 junit_xml
