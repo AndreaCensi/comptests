@@ -22,9 +22,18 @@ version = get_version(filename='src/comptests/__init__.py')
 
 description = """ Testing utilities for projects that use ConfTools for handling their configuration. """
 
-setup(name='comptests',
+line = 'z6'
+install_requires = [
+    'PyContracts3',
+    'compmake-z6',
+    'ConfTools-z6',
+    'QuickApp-z6',
+    'junit_xml',
+    'coverage',
+]
+setup(name=f'comptests-{line}',
       author="Andrea Censi",
-      author_email="censi@mit.edu",
+      author_email="",
       url='http://github.com/AndreaCensi/comptests',
 
       description=description,
@@ -52,13 +61,6 @@ setup(name='comptests',
       },
       package_dir={'': 'src'},
       packages=find_packages('src'),
-      install_requires=[
-          'PyContracts',
-          'compmake>=3.5.29',
-          'ConfTools',
-          'quickapp',
-          'junit_xml',
-          'coverage',
-      ],
+      install_requires=install_requires,
       tests_require=['nose'],
       )
