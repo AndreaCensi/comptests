@@ -3,6 +3,8 @@ import os
 import tempfile
 from contextlib import contextmanager
 
+from zuper_commons.fs import write_ustring_to_utf8_file
+
 
 def test_example_package():
     from system_cmd import system_cmd_result
@@ -13,6 +15,8 @@ def test_example_package():
 
     with create_tmp_dir() as cwd:
         print('Working in %r ' % cwd)
+        rc = os.path.join(cwd, '.compmake.rc')
+        write_ustring_to_utf8_file("config echo 1", rc)
         cmd = ['comptests',
                # '--contracts',
                '--coverage',
