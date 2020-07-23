@@ -8,6 +8,8 @@ workflows:
       - test-3.6
 jobs:
   test-3.6: &test-template
+    environment:
+      PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     docker:
       - image: python:3.6
     working_directory: ~/repo
