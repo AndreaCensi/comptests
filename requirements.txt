@@ -6,3 +6,4 @@ QuickApp-z6
 SystemCmd-z6>=3.0.4
 
 coverage
+pipdeptree
