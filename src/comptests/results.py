@@ -2,8 +2,8 @@
 from typing import Sequence, Set
 
 __all__ = [
-    'Skipped',
-    'PartiallySkipped',
+    "Skipped",
+    "PartiallySkipped",
 ]
 
 
@@ -12,6 +12,7 @@ class Skipped(object):
         Can be returned by mcdp_lang_tests to mean that the test
         was skipped for some reason.
     """
+
     reason: str
 
     def __init__(self, reason: str):

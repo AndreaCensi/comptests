@@ -13,7 +13,7 @@ from . import logger
 def comptest_to_junit_main():
     args = sys.argv[1:]
     if not args:
-        msg = 'Require the path to a Compmake DB.'
+        msg = "Require the path to a Compmake DB."
         raise UserError(msg)
 
     dirname = args[0]
@@ -26,13 +26,13 @@ def comptest_to_junit_main():
     jobs = list(all_jobs(db))
 
     if not jobs:
-        msg = 'Could not find any job, compressed or not.'
+        msg = "Could not find any job, compressed or not."
         logger.error(msg)
         sys.exit(1)
 
     s = junit_xml(db)
     check_isinstance(s, six.text_type)
-    s = s.encode('utf8')
+    s = s.encode("utf8")
     sys.stdout.buffer.write(s)
 
 
@@ -40,10 +40,10 @@ def junit_xml(compmake_db):
     from junit_xml import TestSuite
 
     jobs = list(all_jobs(compmake_db))
-    logger.info('Loaded %d jobs' % len(jobs))
+    logger.info("Loaded %d jobs" % len(jobs))
     N = 10
     if len(jobs) < N:
-        logger.error('too few jobs (I expect at least %s)' % N)
+        logger.error("too few jobs (I expect at least %s)" % N)
         sys.exit(128)
 
     test_cases = []
@@ -73,6 +73,7 @@ import six
 
 def junit_test_case_from_compmake(db, job_id):
     from junit_xml import TestCase
+
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
         # elapsed_sec = cache.walltime_used
@@ -86,8 +87,13 @@ def junit_test_case_from_compmake(db, job_id):
     stderr = remove_escapes(cache.captured_stderr)
     stdout = remove_escapes(cache.captured_stdout)
 
-    tc = TestCase(name=job_id, classname=None, elapsed_sec=elapsed_sec,
-                  stdout=stdout, stderr=stderr)
+    tc = TestCase(
+        name=job_id,
+        classname=None,
+        elapsed_sec=elapsed_sec,
+        stdout=stdout,
+        stderr=stderr,
+    )
 
     if cache.state == Cache.FAILED:
         message = cache.exception
@@ -101,9 +107,10 @@ def remove_escapes(s):
     if s is None:
         return None
     import re
-    escape = re.compile('\x1b\[..?m')
+
+    escape = re.compile("\x1b\[..?m")
     return escape.sub("", s)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     comptest_to_junit_main()

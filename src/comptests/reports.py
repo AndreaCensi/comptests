@@ -10,29 +10,29 @@ from . import logger
 from .results import PartiallySkipped, Skipped
 
 __all__ = [
-    'report_results_single',
-    'report_results_pairs',
-    'report_results_pairs_jobs',
+    "report_results_single",
+    "report_results_pairs",
+    "report_results_pairs_jobs",
 ]
 
 
 def report_results_single(func, objspec_name, results: Dict[str, object]):
     def get_string_result(res):
         if res is None:
-            s = 'ok'
+            s = "ok"
         elif isinstance(res, Skipped):
-            s = 'skipped'
+            s = "skipped"
         elif isinstance(res, PartiallySkipped):
             parts = res.get_skipped_parts()
-            s = 'no ' + ','.join(parts)
+            s = "no " + ",".join(parts)
         else:
-            logger.info('how to interpret?', res=res)
-            s = '?'
+            logger.info("how to interpret?", res=res)
+            s = "?"
         return s
 
     r = Report()
     if not results:
-        r.text('warning', 'no test objects defined')
+        r.text("warning", "no test objects defined")
         return r
 
     rows = []
@@ -42,34 +42,36 @@ def report_results_single(func, objspec_name, results: Dict[str, object]):
 
         data.append([get_string_result(res)])
 
-    r.table('summary', rows=rows, data=data)
+    r.table("summary", rows=rows, data=data)
     return r
 
 
-def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple[str, str], object]):
+def report_results_pairs(
+    func, objspec1_name, objspec2_name, results: Dict[Tuple[str, str], object]
+):
     reason2symbol = {}
 
     def get_string_result(res):
         if res is None:
-            s = 'ok'
+            s = "ok"
         elif isinstance(res, Skipped):
-            s = 'skipped'
+            s = "skipped"
             reason = res.get_reason()
             if not reason in reason2symbol:
                 reason2symbol[reason] = len(reason2symbol) + 1
-            s += '(%s)' % reason2symbol[reason]
+            s += "(%s)" % reason2symbol[reason]
 
         elif isinstance(res, PartiallySkipped):
             parts = res.get_skipped_parts()
-            s = 'no ' + ','.join(parts)
+            s = "no " + ",".join(parts)
         else:
-            logger.info('how to interpret?', res=res)
-            s = '?'
+            logger.info("how to interpret?", res=res)
+            s = "?"
         return s
 
     r = Report()
     if not results:
-        r.text('warning', 'no test objects defined')
+        r.text("warning", "no test objects defined")
         return r
 
     rows = sorted(set([a for a, _ in results]))
@@ -77,45 +79,49 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple
     data = [[None for a in range(len(cols))] for b in range(len(rows))]
     # a nice bug: data = [[None * len(cols)] * len(rows)
 
-    for ((i, id_object1), (j, id_object2)) in itertools.product(enumerate(rows), enumerate(cols)):
+    for ((i, id_object1), (j, id_object2)) in itertools.product(
+        enumerate(rows), enumerate(cols)
+    ):
         res = results[(id_object1, id_object2)]
         data[i][j] = get_string_result(res)
 
-    r.table('summary', rows=rows, data=data, cols=cols)
+    r.table("summary", rows=rows, data=data, cols=cols)
 
     expl = ""
     for reason, symbol in list(reason2symbol.items()):
-        expl += '(%s): %s\n' % (symbol, reason)
-    r.text('notes', expl)
+        expl += "(%s): %s\n" % (symbol, reason)
+    r.text("notes", expl)
 
     return r
 
 
-def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], str]):
+def report_results_pairs_jobs(
+    context, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], str]
+):
     """ This version gets the jobs ID """
     reason2symbol = {}
 
     def get_string_result(res):
         if res is None:
-            s = 'ok'
+            s = "ok"
         elif isinstance(res, Skipped):
-            s = 'skipped'
+            s = "skipped"
             reason = res.get_reason()
             if not reason in reason2symbol:
                 reason2symbol[reason] = len(reason2symbol) + 1
-            s += '(%s)' % reason2symbol[reason]
+            s += "(%s)" % reason2symbol[reason]
 
         elif isinstance(res, PartiallySkipped):
             parts = res.get_skipped_parts()
-            s = 'no ' + ','.join(parts)
+            s = "no " + ",".join(parts)
         else:
-            logger.info('how to interpret?', res=res)
-            s = '?'
+            logger.info("how to interpret?", res=res)
+            s = "?"
         return s
 
     r = Report()
     if not jobs:
-        r.text('warning', 'no test objects defined')
+        r.text("warning", "no test objects defined")
         return r
 
     rows = sorted(set([a for a, _ in jobs]))
@@ -134,23 +140,23 @@ def report_results_pairs_jobs(context, func, objspec1_name, objspec2_name, jobs:
             res = get_job_userobject(job_id, db)
             s = get_string_result(res)
         elif cache.state == Cache.FAILED:
-            s = 'FAIL'
+            s = "FAIL"
         elif cache.state == Cache.BLOCKED:
-            s = 'blocked'
+            s = "blocked"
         #         elif cache.state == Cache.IN_PROGRESS:
         #             s = '(in progress)'
         elif cache.state == Cache.NOT_STARTED:
-            s = ' '
+            s = " "
         else:
-            s = '?'
+            s = "?"
 
         data[i][j] = s
 
-    r.table('summary', rows=rows, data=data, cols=cols)
+    r.table("summary", rows=rows, data=data, cols=cols)
 
     expl = ""
     for reason, symbol in list(reason2symbol.items()):
-        expl += '(%s): %s\n' % (symbol, reason)
-    r.text('notes', expl)
+        expl += "(%s): %s\n" % (symbol, reason)
+    r.text("notes", expl)
 
     return r
