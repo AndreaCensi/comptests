@@ -6,6 +6,7 @@ bump-upload:
 	bumpversion patch
 	git push --tags
 	git push --all
+upload:
 	rm -f dist/*
 	rm -rf src/*.egg-info
 	python3 setup.py sdist

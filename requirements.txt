@@ -1,9 +1,9 @@
 PyContracts3>=3.0.2
-compmake-z6
-ConfTools-z6
+compmake-z7
+ConfTools-z7
 junit_xml
-QuickApp-z6
-SystemCmd-z6>=3.0.4
+QuickApp-z7
+SystemCmd-z7>=3.0.4
 
 coverage
 pipdeptree
