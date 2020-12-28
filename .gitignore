@@ -40,3 +40,4 @@ out-comptests
 out/comptests-failures
 circleci
 out_example
+out
