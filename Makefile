@@ -1,11 +1,13 @@
+
 package=comptests
 
 include pypackage.mk
 
-bump-upload:
+bump:
 	bumpversion patch
 	git push --tags
 	git push --all
+
 upload:
 	rm -f dist/*
 	rm -rf src/*.egg-info
