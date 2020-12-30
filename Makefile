@@ -1,8 +1,4 @@
 
-package=comptests
-
-include pypackage.mk
-
 bump:
 	bumpversion patch
 	git push --tags

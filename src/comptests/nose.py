@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
-
 import os
 import tempfile
 import warnings
 from contextlib import contextmanager
-from . import logger
+
 from compmake.utils import safe_pickle_load
 from system_cmd import system_cmd_result
+from . import logger
 
-__all__ = ["jobs_nosetests"]
+__all__ = ["jobs_nosetests", "jobs_nosetests_single"]
 
 
 @contextmanager
@@ -94,8 +93,8 @@ def find_command_path(prog):
     return prog
 
 
-def write_coverage_report(outdir, covdata: str, module):
-    logger.info("Writing coverage data to %s" % outdir)
+def write_coverage_report(outdir, covdata: bytes, module):
+    logger.info(f"Writing coverage data to {outdir}")
     outdir = os.path.abspath(outdir)
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -157,66 +156,67 @@ def execute(t):
     print(t)
 
 
-if False:
-
-    def load_nosetests(self, context, module_name):
-        #         argv = ['-vv', module_name]
-        ids = ".noseids"
-        if os.path.exists(ids):
-            os.remove(ids)
-        #
-        #         collect = CollectOnly()
-        #         testid = TestId()
-        #         plugins = []
-        #         plugins.append(collect)
-        #         plugins.append(testid)
-        #         argv = ['nosetests', '--collect-only', '--with-id', module_name]
-        argv = ["nosetests", "-s", "--nologcapture", module_name]
-
-        class FakeResult:
-            def wasSuccessful(self):
-                return False
-
-        class Tr(object):
-            def run(self, what):
-                self.what = what
-                print(what)
-                print("here!")
-                return FakeResult()
-
-        mytr = Tr()
-
-        from nose.core import TestProgram
-        from nose.suite import ContextSuite
-
-        class MyTestProgram(TestProgram):
-            def runTests(self):
-                print("hello")
-
-        #         print argv, plugins
-        tp = MyTestProgram(
-            module=module_name,
-            argv=argv,
-            defaultTest=module_name,
-            addplugins=[],
-            exit=False,
-            testRunner=mytr,
-        )
-        self.info("test: %s" % tp.test)
-
-        def explore(a):
-            for b in a._get_tests():
-
-                if isinstance(b, ContextSuite):
-                    for c in explore(b):
-                        yield c
-                else:
-                    yield b
-
-        # these things are not pickable
-        for a in explore(tp.test):
-            # context.comp(run_testcase, a)
-            pass
+#
+# if False:
+#
+#     def load_nosetests(self, context, module_name):
+#         #         argv = ['-vv', module_name]
+#         ids = ".noseids"
+#         if os.path.exists(ids):
+#             os.remove(ids)
+#         #
+#         #         collect = CollectOnly()
+#         #         testid = TestId()
+#         #         plugins = []
+#         #         plugins.append(collect)
+#         #         plugins.append(testid)
+#         #         argv = ['nosetests', '--collect-only', '--with-id', module_name]
+#         argv = ["nosetests", "-s", "--nologcapture", module_name]
+#
+#         class FakeResult:
+#             def wasSuccessful(self):
+#                 return False
+#
+#         class Tr(object):
+#             def run(self, what):
+#                 self.what = what
+#                 print(what)
+#                 print("here!")
+#                 return FakeResult()
+#
+#         mytr = Tr()
+#
+#         from nose.core import TestProgram
+#         from nose.suite import ContextSuite
+#
+#         class MyTestProgram(TestProgram):
+#             def runTests(self):
+#                 print("hello")
+#
+#         #         print argv, plugins
+#         tp = MyTestProgram(
+#             module=module_name,
+#             argv=argv,
+#             defaultTest=module_name,
+#             addplugins=[],
+#             exit=False,
+#             testRunner=mytr,
+#         )
+#         self.info("test: %s" % tp.test)
+#
+#         def explore(a):
+#             for b in a._get_tests():
+#
+#                 if isinstance(b, ContextSuite):
+#                     for c in explore(b):
+#                         yield c
+#                 else:
+#                     yield b
+#
+#         # these things are not pickable
+#         for a in explore(tp.test):
+#             # context.comp(run_testcase, a)
+#             pass
 
 
 #

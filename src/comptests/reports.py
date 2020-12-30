@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-
 import itertools
 from typing import Dict, Tuple
 
-from compmake.jobs.storage import get_job_cache, get_job_userobject
-from compmake.structures import Cache
+from compmake import get_job_cache, get_job_userobject
+from compmake import Cache, CMJobID
 from reprep import Report
 from . import logger
 from .results import PartiallySkipped, Skipped
@@ -96,7 +94,7 @@ def report_results_pairs(
 
 
 def report_results_pairs_jobs(
-    context, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], str]
+    context, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], CMJobID]
 ):
     """ This version gets the jobs ID """
     reason2symbol = {}

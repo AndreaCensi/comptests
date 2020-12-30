@@ -1,11 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import sys
 
-from compmake.exceptions import UserError
-from compmake.jobs.storage import all_jobs, get_job_cache
-from compmake.storage.filesystem import StorageFilesystem
-from compmake.structures import Cache
+from compmake import all_jobs, Cache, get_job_cache, StorageFilesystem, UserError
 from zuper_commons.types import check_isinstance
 from . import logger
 
@@ -18,6 +13,7 @@ def comptest_to_junit_main():
 
     dirname = args[0]
     # try compressed
+    # noinspection PyBroadException
     try:
         db = StorageFilesystem(dirname, compress=True)
     except Exception:

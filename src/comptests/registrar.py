@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import sys
 import traceback
@@ -7,8 +5,7 @@ import warnings
 from collections import defaultdict, namedtuple, OrderedDict
 from typing import Callable, Dict, Optional, Tuple
 
-from compmake import Promise
-from compmake.jobs import assert_job_exists
+from compmake import assert_job_exists, CMJobID, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
@@ -397,7 +394,7 @@ def define_tests_for(
     context,
     cm,
     name: str,
-    names2test_objects: Dict[str, Dict[str, str]],
+    names2test_objects: Dict[str, Dict[str, CMJobID]],
     pairs,
     functions,
     some,
@@ -433,7 +430,7 @@ def define_tests_for(
 def define_tests_some(
     context,
     objspec: ObjectSpec,
-    names2test_objects: Dict[str, Dict[str, str]],
+    names2test_objects: Dict[str, Dict[str, CMJobID]],
     some,
     create_reports,
 ):
@@ -490,19 +487,19 @@ def define_tests_some(
 def define_tests_single(
     context,
     objspec,
-    names2test_objects: Dict[str, Dict[str, str]],
+    names2test_objects: Dict[str, Dict[str, CMJobID]],
     functions,
     create_reports,
 ):
     test_objects = names2test_objects[objspec.name]
     if not test_objects:
         msg = "No test_objects for objects of kind %r." % objspec.name
-        print(msg)
+        logger.info(msg)
         return
 
     if not functions:
         msg = "No mcdp_lang_tests specified for objects of kind %r." % objspec.name
-        print(msg)
+        logger.info(msg)
 
     db = context.cc.get_compmake_db()
 
@@ -536,17 +533,17 @@ def define_tests_single(
 def define_tests_pairs(
     context,
     objspec1,
-    names2test_objects: Dict[str, Dict[str, str]],
+    names2test_objects: Dict[str, Dict[str, CMJobID]],
     pairs,
     create_reports: bool,
 ):
     objs1 = names2test_objects[objspec1.name]
 
     if not pairs:
-        print("No %s+x pairs mcdp_lang_tests." % (objspec1.name))
+        logger.warn(f"No {objspec1.name}+x pairs mcdp_lang_tests.")
         return
     else:
-        print("%d %s+x pairs mcdp_lang_tests." % (len(pairs), objspec1.name))
+        logger.warn(f"{len(pairs)} {objspec1.name}+x pairs mcdp_lang_tests.")
 
     for x in pairs:
         objspec2 = x["objspec2"]
@@ -563,7 +560,7 @@ def define_tests_pairs(
 
         objs2 = names2test_objects[objspec2.name]
         if not objs2:
-            print("No objects %r for pairs" % objspec2.name)
+            logger.warn("No objects %r for pairs" % objspec2.name)
             continue
 
         results = {}
@@ -640,22 +637,22 @@ def define_tests_some_pairs(
             msg = "No objects %r in %r." % (which2, list(allobjs2))
             raise ValueError(msg)
 
-        for x in objs1:
-            if not x in allobjs1:
+        for y in objs1:
+            if not y in allobjs1:
                 msg = "%r expanded to %r but %r is not in universe %r." % (
                     which1,
                     objs1,
-                    x,
+                    y,
                     list(allobjs1),
                 )
                 raise ValueError(msg)
 
-        for x in objs2:
-            if not x in allobjs2:
+        for z in objs2:
+            if not z in allobjs2:
                 msg = "%r expanded to %r but %r is not in universe %r." % (
                     which2,
                     objs2,
-                    x,
+                    z,
                     list(allobjs2),
                 )
                 raise ValueError(msg)

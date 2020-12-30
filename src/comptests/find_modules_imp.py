@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 
 from conf_tools.utils import locate_files

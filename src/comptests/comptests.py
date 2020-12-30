@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 from typing import List
 
@@ -68,6 +66,7 @@ class CompTests(QuickApp):
 
         modules = self.get_modules()
 
+        # noinspection PyUnresolvedReferences
         if self.options.circle:
             env = os.environ
             v_index, v_total = "CIRCLE_NODE_INDEX", "CIRCLE_NODE_TOTAL"
@@ -120,7 +119,7 @@ class CompTests(QuickApp):
         # only get the main ones
         is_first = lambda module_name: not "." in module_name
         modules = list(filter(is_first, modules))
-
+        # noinspection PyUnresolvedReferences
         excludes = self.options.exclude.split(",")
         to_exclude = lambda module_name: not module_name in excludes
         modules = list(filter(to_exclude, modules))
