@@ -2,9 +2,13 @@ import os
 import tempfile
 import warnings
 from contextlib import contextmanager
+from typing import cast
 
-from compmake.utils import safe_pickle_load
 from system_cmd import system_cmd_result
+from zuper_commons.fs import read_bytes_from_file, read_ustring_from_utf8_file
+from zuper_commons.text import XMLString
+from zuper_commons.types import import_name
+from zuper_html.to_xml import tag_from_xml_str
 from . import logger
 
 __all__ = ["jobs_nosetests", "jobs_nosetests_single"]
@@ -56,10 +60,10 @@ def call_nosetests(module):
         )
 
 
-def call_nosetests_plus_coverage(module):
+def call_nosetests_plus_coverage(module) -> bytes:
     """
         This also calls the coverage module.
-        It returns the .coverage file as a string.
+        It returns the .coverage file as bytes.
     """
     with create_tmp_dir() as cwd:
         prog = find_command_path("nosetests")
@@ -75,8 +79,9 @@ def call_nosetests_plus_coverage(module):
             raise_on_error=True,
         )
         coverage_file = os.path.join(cwd, ".coverage")
-        with open(coverage_file) as f:
-            res = f.read()
+        res = read_bytes_from_file(coverage_file)
+        # with open(coverage_file, 'rb') as f:
+        #     res = f.read()
         # print('read %d bytes in %s' % (len(res), coverage_file))
         return res
 
@@ -112,8 +117,8 @@ def write_coverage_report(outdir, covdata: bytes, module):
             display_stderr=True,
             raise_on_error=True,
         )
-        print(res.stdout)
-        print(res.stderr)
+        # print(res.stdout)
+        # print(res.stderr)
 
         system_cmd_result(
             cwd=cwd,
@@ -124,14 +129,16 @@ def write_coverage_report(outdir, covdata: bytes, module):
         )
 
 
-def jobs_nosetests_single(context, module):
+def jobs_nosetests_single(context, module: str):
     with create_tmp_dir() as cwd:
-        out = os.path.join(cwd, "%s.pickle" % module)
+        out = os.path.join(cwd, f"{module}.pickle")
         cmd = [
             "nosetests",
             "--collect-only",
-            "--with-xunitext",
-            "--xunitext-file",
+            # "--with-xunitext",
+            # "--xunitext-file",
+            "--with-xunit",
+            "--xunit-file",
             out,
             "-v",
             "-s",
@@ -145,15 +152,33 @@ def jobs_nosetests_single(context, module):
             raise_on_error=True,
         )
 
-        tests = safe_pickle_load(out)
-        print("found %d mcdp_lang_tests " % len(tests))
+        contents = read_ustring_from_utf8_file(out)
+        tag = tag_from_xml_str(cast(XMLString, contents))
+        logger.info(f"the a tag {tag}", tag=tag)
+        print(str(tag))
 
-        for t in tests:
-            context.comp(execute, t)
+        for child in tag.contents:
+            assert child.tagname == "testcase"
+            classname = child.attrs["classname"]
+            name = child.attrs["name"]
+            module_name, _, func_name = classname.rpartition(".")
+            context.comp(
+                execute, module_name=module_name, func_name=func_name, job_id=name
+            )
+
+        # tests = safe_pickle_load(out)
+        # logger.info(f"found {len(tests):d} tests from nose ")
+        #
+        # for t in tests:
+        #
 
 
-def execute(t):
-    print(t)
+def execute(module_name: str, func_name: str):
+    print(f"not actually running {module_name} {func_name}")
+    f = import_name(module_name)
+    print(f)
+    ff = getattr(f, func_name)
+    return ff()
 
 
 #

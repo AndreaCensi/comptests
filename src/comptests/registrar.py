@@ -86,24 +86,21 @@ def check_fails(f, *args, **kwargs):
         d = "out/comptests-failures"
         if not os.path.exists(d):
             os.makedirs(d)
-        try:
-            from compmake.jobs.job_execution import JobCompute
+        from compmake import JobCompute
 
-            job_id = JobCompute.current_job_id
-            if job_id is None:
-                job_id = "nojob-%s" % f.__name__
-            out = os.path.join(d, job_id + ".txt")
-            #         for i in range(1000):
-            #             outi = out % i
-            #             if not os.path.exists(outi):
-            s = traceback.format_exc()
-            if isinstance(s, bytes):
-                s = s.decode("utf-8", errors="ignore")
+        job_id = JobCompute.current_job_id
+        if job_id is None:
+            job_id = "nojob-%s" % f.__name__
+        out = os.path.join(d, job_id + ".txt")
+        #         for i in range(1000):
+        #             outi = out % i
+        #             if not os.path.exists(outi):
+        s = traceback.format_exc()
+        if isinstance(s, bytes):
+            s = s.decode("utf-8", errors="ignore")
 
-            with open(out, "wb") as f:
-                f.write(s.encode("utf-8"))
-        except ImportError:
-            pass
+        with open(out, "wb") as f:
+            f.write(s.encode("utf-8"))
 
     else:
         msg = "Function was supposed to fail."

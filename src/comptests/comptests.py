@@ -48,6 +48,7 @@ class CompTests(QuickApp):
         )
 
         params.add_flag("nonose", help="Disable nosetests")
+        params.add_flag("nosesingle", help="Create nose single as tasks")
         params.add_flag("coverage", help="Enable coverage module")
         params.add_flag("nocomp", help="Disable comptests hooks")
 
@@ -99,7 +100,8 @@ class CompTests(QuickApp):
         if not options.nonose:
             self.instance_nosetests_jobs(context, modules, do_coverage)
 
-        # self.instance_nosesingle_jobs(context, modules)
+        if options.nosesingle:
+            self.instance_nosesingle_jobs(context, modules)
 
         if not options.nocomp:
             self.instance_comptests_jobs(
@@ -147,12 +149,13 @@ class CompTests(QuickApp):
                 self.info("Interpreting %r as module." % m)
                 yield m
 
-    def instance_nosetests_jobs(self, context, modules, do_coverage):
+    def instance_nosetests_jobs(self, context, modules, do_coverage: bool):
         for module in modules:
             c = context.child(module)
             jobs_nosetests(c, module, do_coverage=do_coverage)
 
     def instance_nosesingle_jobs(self, context, modules):
+        context = context.child("nose")
         for module in modules:
             c = context.child(module)
             c.comp_dynamic(jobs_nosetests_single, module, job_id="nosesingle")
