@@ -3,6 +3,8 @@ srcdir: src
 version_file: "1"
 modules:
   - comptests
+modules_ignore:
+  - comptests_ex
 
 install_requires:
   - zuper-commons-z7

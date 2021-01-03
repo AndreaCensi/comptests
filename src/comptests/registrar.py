@@ -4,6 +4,8 @@ import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
 from typing import Callable, Dict, Optional, Tuple
+from compmake import JobCompute
+from nose.tools import nottest
 
 from compmake import assert_job_exists, CMJobID, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
@@ -83,10 +85,9 @@ def check_fails(f, *args, **kwargs):
         logger.error(f"Known failure for {f}")
         logger.warn(f"Fails with error {type(e).__name__} {e}")
         # comptest_fails = kwargs.get('comptest_fails', f.__name__)
-        d = "out/comptests-failures"
+        d = "out/comptests/failures"
         if not os.path.exists(d):
             os.makedirs(d)
-        from compmake import JobCompute
 
         job_id = JobCompute.current_job_id
         if job_id is None:
@@ -803,6 +804,7 @@ def get_objspec(master_name, objspec_name):
     return objspec
 
 
+@nottest
 def run_module_tests():
     """
         Runs directly the tests defined in this module.

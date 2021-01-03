@@ -1,13 +1,16 @@
+import importlib
 import os
 import tempfile
 import warnings
 from contextlib import contextmanager
 from typing import cast
 
+from zuper_utils_python import get_modules_in_dir_detailed
+
 from system_cmd import system_cmd_result
 from zuper_commons.fs import read_bytes_from_file, read_ustring_from_utf8_file
-from zuper_commons.text import XMLString
-from zuper_commons.types import import_name
+from zuper_commons.text import PythonModuleName, XMLString
+from zuper_commons.types import import_name, ZValueError
 from zuper_html.to_xml import tag_from_xml_str
 from . import logger
 
@@ -130,6 +133,35 @@ def write_coverage_report(outdir, covdata: bytes, module):
 
 
 def jobs_nosetests_single(context, module: str):
+    assert "." not in module, module
+    m = importlib.import_module(module)
+    d = os.path.dirname(m.__file__)
+    d0 = os.path.dirname(d)
+    mods0 = get_modules_in_dir_detailed(d0)
+    mods = {k for k in mods0 if k.startswith(f"{module}.")}
+
+    # modules = {module+'.'+m: v for m,v in .items()}
+    logger.info(module=module, modules=mods)
+
+    def is_test(k, v):
+        if hasattr(v, "__test__"):
+            return bool(getattr(v, "__test"))
+
+        return "_test" in k or "test_" in k
+
+    for test_module in mods:
+        s = importlib.import_module(test_module)
+        ks = {k: v for k, v in s.__dict__.items() if is_test(k, v)}
+
+        logger.info(test_module=test_module, symbols=ks)
+
+        for k, v in ks.items():
+            job_id = f"{test_module}-{k}"
+            context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
+
+    return
+    raise ZValueError(module=module, modules=mods, mods=mods0)
+
     with create_tmp_dir() as cwd:
         out = os.path.join(cwd, f"{module}.pickle")
         cmd = [
@@ -154,8 +186,8 @@ def jobs_nosetests_single(context, module: str):
 
         contents = read_ustring_from_utf8_file(out)
         tag = tag_from_xml_str(cast(XMLString, contents))
-        logger.info(f"the a tag {tag}", tag=tag)
-        print(str(tag))
+        # logger.info(f"the a tag {tag}", tag=tag)
+        # print(str(tag))
 
         for child in tag.contents:
             assert child.tagname == "testcase"
@@ -173,10 +205,8 @@ def jobs_nosetests_single(context, module: str):
         #
 
 
-def execute(module_name: str, func_name: str):
-    print(f"not actually running {module_name} {func_name}")
-    f = import_name(module_name)
-    print(f)
+def execute(module_name: PythonModuleName, func_name: str):
+    f = importlib.import_module(module_name)
     ff = getattr(f, func_name)
     return ff()
 
