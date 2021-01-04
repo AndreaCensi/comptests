@@ -1,9 +1,7 @@
-import os
-
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
-def get_version(filename):
+def get_version_from_source(filename):
     import ast
 
     version = None
@@ -13,51 +11,42 @@ def get_version(filename):
                 version = ast.parse(line).body[0].value.s
                 break
         else:
-            raise ValueError("No version found in %r." % filename)
+            raise ValueError(f"No version found in {filename!r}.")
     if version is None:
         raise ValueError(filename)
     return version
 
 
-version = get_version(filename="src/comptests/__init__.py")
+import yaml
 
-description = """ Testing utilities for projects that use ConfTools for handling their configuration. """
+with open("project.pp1.yaml") as f:
+    data = yaml.load(f, Loader=yaml.Loader)
 
-line = "z7"
-install_requires = [
-    "PyContracts3",
-    "compmake-z7",
-    "ConfTools-z7",
-    "QuickApp-z7",
-    "junit_xml",
-    "coverage",
-]
-setup(
-    name=f"comptests-{line}",
-    author="Andrea Censi",
-    author_email="",
-    url="http://github.com/AndreaCensi/comptests",
-    description=description,
-    keywords="",
-    license="",
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        # 'Intended Audience :: Developers',
-        # 'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',
-        # 'Topic :: Software Development :: Quality Assurance',
-        # 'Topic :: Software Development :: Documentation',
-        # 'Topic :: Software Development :: Testing'
-    ],
-    version=version,
-    download_url="http://github.com/AndreaCensi/comptests/tarball/%s" % version,
-    entry_points={
-        "console_scripts": [
-            "comptests = comptests:main_comptests",
-            "comptests-to-junit = comptests.comptest_to_junit:comptest_to_junit_main",
-        ],
-    },
-    package_dir={"": "src"},
-    packages=find_packages("src"),
+install_requires = data["install_requires"]
+tests_require = data["tests_require"]
+
+src = data["srcdir"]
+console_scripts = [f"{k} = {v}" for k, v in data["console_scripts"].items()]
+package_name = data["package_name"]
+packages = data["modules"]
+main_package = packages[0]
+version = get_version_from_source(f"{src}/{main_package}/__init__.py")
+
+# setup package
+params = dict(
+    name=package_name,
+    author=data["author"],
+    author_email=data["author_email"],
+    url=data["url"],
+    tests_require=tests_require,
     install_requires=install_requires,
-    tests_require=["nose"],
+    package_dir={"": src},
+    packages=data["modules"],
+    long_description="",
+    version=version,
+    entry_points={"console_scripts": console_scripts},
 )
+
+setup(**params)
+
+# sigil eb9c1d7b9c70de6abb2a4a14d0c49253

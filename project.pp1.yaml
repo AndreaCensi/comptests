@@ -17,10 +17,14 @@ install_requires:
   - junit-xml
   - coverage
   - six
+  - zuper-utils-python-z7
+  - nose
 
 install_conflicts: [ 'comptests-*' ]
 tests_require: [ ]
-console_scripts: {}
+console_scripts:
+    comptests: comptests:main_comptests
+    comptests-to-junit: comptests.comptest_to_junit:comptest_to_junit_main
 nose:
   modules:
     - "*_tests"
