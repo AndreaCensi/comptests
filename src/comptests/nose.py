@@ -5,12 +5,12 @@ import warnings
 from contextlib import contextmanager
 from typing import cast
 
-from zuper_utils_python import get_modules_in_dir_detailed
+from zuper_utils_python.listing import get_modules_in_dir_detailed
 
 from system_cmd import system_cmd_result
 from zuper_commons.fs import read_bytes_from_file, read_ustring_from_utf8_file
 from zuper_commons.text import PythonModuleName, XMLString
-from zuper_commons.types import import_name, ZValueError
+from zuper_commons.types import ZValueError
 from zuper_html.to_xml import tag_from_xml_str
 from . import logger
 
@@ -39,9 +39,7 @@ def jobs_nosetests(context, module, do_coverage=False):
             logger.info("No coverage module found: %s" % e)
             context.comp(call_nosetests, module, job_id="nosetests")
         else:
-            covdata = context.comp(
-                call_nosetests_plus_coverage, module, job_id="nosetests"
-            )
+            covdata = context.comp(call_nosetests_plus_coverage, module, job_id="nosetests")
             if do_coverage:
                 outdir = os.path.join(context.get_output_dir(), "coverage")
                 context.comp(write_coverage_report, outdir, covdata, module)
@@ -55,11 +53,7 @@ def call_nosetests(module):
     with create_tmp_dir() as cwd:
         cmd = ["nosetests", module]
         system_cmd_result(
-            cwd=cwd,
-            cmd=cmd,
-            display_stdout=True,
-            display_stderr=True,
-            raise_on_error=True,
+            cwd=cwd, cmd=cmd, display_stdout=True, display_stderr=True, raise_on_error=True,
         )
 
 
@@ -75,11 +69,7 @@ def call_nosetests_plus_coverage(module) -> bytes:
         # note: coverage -> python-coverage in Ubuntu14
         cmd = ["coverage", "run"] + cmd
         system_cmd_result(
-            cwd=cwd,
-            cmd=cmd,
-            display_stdout=True,
-            display_stderr=True,
-            raise_on_error=True,
+            cwd=cwd, cmd=cmd, display_stdout=True, display_stderr=True, raise_on_error=True,
         )
         coverage_file = os.path.join(cwd, ".coverage")
         res = read_bytes_from_file(coverage_file)
@@ -91,11 +81,7 @@ def call_nosetests_plus_coverage(module) -> bytes:
 
 def find_command_path(prog):
     res = system_cmd_result(
-        cwd=os.getcwd(),
-        cmd=["which", prog],
-        display_stdout=False,
-        display_stderr=False,
-        raise_on_error=True,
+        cwd=os.getcwd(), cmd=["which", prog], display_stdout=False, display_stderr=False, raise_on_error=True,
     )
     prog = res.stdout
     return prog
@@ -114,21 +100,13 @@ def write_coverage_report(outdir, covdata: bytes, module):
         logger.info("Running coverage html")
         cmd = ["coverage", "html", "-d", outdir, "--include=*/%s/*" % module]
         res = system_cmd_result(
-            cwd=cwd,
-            cmd=cmd,
-            display_stdout=True,
-            display_stderr=True,
-            raise_on_error=True,
+            cwd=cwd, cmd=cmd, display_stdout=True, display_stderr=True, raise_on_error=True,
         )
         # print(res.stdout)
         # print(res.stderr)
 
         system_cmd_result(
-            cwd=cwd,
-            cmd=["find", "."],
-            display_stdout=True,
-            display_stderr=True,
-            raise_on_error=True,
+            cwd=cwd, cmd=["find", "."], display_stdout=True, display_stderr=True, raise_on_error=True,
         )
 
 
@@ -177,11 +155,7 @@ def jobs_nosetests_single(context, module: str):
             module,
         ]
         system_cmd_result(
-            cwd=cwd,
-            cmd=cmd,
-            display_stdout=True,
-            display_stderr=True,
-            raise_on_error=True,
+            cwd=cwd, cmd=cmd, display_stdout=True, display_stderr=True, raise_on_error=True,
         )
 
         contents = read_ustring_from_utf8_file(out)
@@ -194,9 +168,7 @@ def jobs_nosetests_single(context, module: str):
             classname = child.attrs["classname"]
             name = child.attrs["name"]
             module_name, _, func_name = classname.rpartition(".")
-            context.comp(
-                execute, module_name=module_name, func_name=func_name, job_id=name
-            )
+            context.comp(execute, module_name=module_name, func_name=func_name, job_id=name)
 
         # tests = safe_pickle_load(out)
         # logger.info(f"found {len(tests):d} tests from nose ")
