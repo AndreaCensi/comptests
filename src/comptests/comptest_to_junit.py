@@ -1,6 +1,7 @@
 import sys
 
 from compmake import all_jobs, Cache, get_job_cache, StorageFilesystem, UserError
+from compmake.context import Storage
 from zuper_commons.types import check_isinstance
 from . import logger
 
@@ -19,7 +20,7 @@ def comptest_to_junit_main():
     except Exception:
         db = StorageFilesystem(dirname, compress=False)
 
-    jobs = list(all_jobs(db))
+    jobs = list(await all_jobs(db))
 
     if not jobs:
         msg = "Could not find any job, compressed or not."
@@ -32,10 +33,10 @@ def comptest_to_junit_main():
     sys.stdout.buffer.write(s)
 
 
-def junit_xml(compmake_db):
+def junit_xml(compmake_db: Storage):
     from junit_xml import TestSuite
 
-    jobs = list(all_jobs(compmake_db))
+    jobs = list(await all_jobs(compmake_db))
     logger.info("Loaded %d jobs" % len(jobs))
     N = 10
     if len(jobs) < N:
@@ -83,13 +84,7 @@ def junit_test_case_from_compmake(db, job_id):
     stderr = remove_escapes(cache.captured_stderr)
     stdout = remove_escapes(cache.captured_stdout)
 
-    tc = TestCase(
-        name=job_id,
-        classname=None,
-        elapsed_sec=elapsed_sec,
-        stdout=stdout,
-        stderr=stderr,
-    )
+    tc = TestCase(name=job_id, classname=None, elapsed_sec=elapsed_sec, stdout=stdout, stderr=stderr,)
 
     if cache.state == Cache.FAILED:
         message = cache.exception
