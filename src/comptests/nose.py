@@ -5,6 +5,7 @@ import warnings
 from contextlib import contextmanager
 from typing import cast
 
+from zuper_utils_asyncio import SyncTaskInterface
 from zuper_utils_python.listing import get_modules_in_dir_detailed
 
 from system_cmd import system_cmd_result
@@ -177,10 +178,21 @@ def jobs_nosetests_single(context, module: str):
         #
 
 
-def execute(module_name: PythonModuleName, func_name: str):
+async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str):
     f = importlib.import_module(module_name)
     ff = getattr(f, func_name)
-    return ff()
+
+    logger.info(func_name=func_name, ff=ff, attrs=ff.__dict__)
+    print(f"{func_name} {ff} {ff.__dict__}")
+    if hasattr(ff, "__original__"):
+        orig = getattr(ff, "__original__")
+        print('calling "orig"')
+
+        t = await sti.create_child_task2(func_name, orig)
+        await t.wait_for_outcome_success()
+
+    else:
+        return ff()
 
 
 #

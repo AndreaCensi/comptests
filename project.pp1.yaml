@@ -18,6 +18,7 @@ install_requires:
   - coverage
   - six
   - zuper-utils-python-z7
+  - zuper-utils-asyncio-z7
   - nose
 
 install_conflicts: [ 'comptests-*' ]
