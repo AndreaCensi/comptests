@@ -1,0 +1,35 @@
+{
+  "install_requires": [
+    "ConfTools-z7",
+    "QuickApp-z7",
+    "SystemCmd-z7",
+    "compmake-z7",
+    "coverage",
+    "junit-xml",
+    "nose",
+    "reprep-z7",
+    "six",
+    "zuper-commons-z7",
+    "zuper-html-z7",
+    "zuper-utils-asyncio-z7",
+    "zuper-utils-python-z7"
+  ],
+  "tests_require": [],
+  "srcdir": "src",
+  "package_name": "comptests-z7",
+  "entry_points": {
+    "console_scripts": [
+      "comptests = comptests:main_comptests",
+      "comptests-to-junit = comptests.comptest_to_junit:comptest_to_junit_main"
+    ]
+  },
+  "zip_safe": false,
+  "include_package_data": false,
+  "modules": [
+    "comptests"
+  ],
+  "version": "7.1.2103021250",
+  "author": "",
+  "author_email": "info@zupermind.com",
+  "url": "http://github.com/AndreaCensi/comptests"
+}
