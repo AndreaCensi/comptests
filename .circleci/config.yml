@@ -2,9 +2,9 @@ jobs:
   test-3.8-production:
     docker:
     - {image: python:3.8}
-    environment: {COLUMNS: '160', COVER_PACKAGES: 'example_package,comptests_tests,comptests.find_modules_imp,comptests.reports,comptests.registrar,comptests.comptest_to_junit,comptests.results,comptests.nose,comptests,comptests.comptests',
+    environment: {COLUMNS: '160', COVER_PACKAGES: 'comptests_tests,example_package,comptests,comptests.find_modules_imp,comptests.registrar,comptests.comptests,comptests.results,comptests.comptest_to_junit,comptests.reports,comptests.nose',
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,
-      TEST_PACKAGES: example_package comptests_tests}
+      TEST_PACKAGES: comptests_tests example_package}
     steps:
     - checkout
     - run: {command: "mkdir -p  build-stats\nenv | tee  build-stats/env.txt\n", name: Build
@@ -33,7 +33,7 @@ jobs:
           \n#              --processes=8 --process-timeout=1000 --process-restartworker\
           \ \\\n# --cover-packages=${COVER_PACKAGES} \\\nnosetests \\\n  --rednose\
           \ --immediate \\\n  --cover-tests --with-coverage \\\n  --with-xunitmp --xunitmp-file=${xunit_output}\
-          \ \\\n  --cover-packages=${COVER_PACKAGES} \\\n  ${TEST_PACKAGES}\n", name: Run
+          \ \\\n  --cover-package=${COVER_PACKAGES} \\\n  ${TEST_PACKAGES}\n", name: Run
           tests}
     - store_test_results: {path: out/test-results, when: always}
     - run: {command: "coverage combine\ncoverage html -d out/coverage\ncoverage xml\n",
@@ -45,9 +45,9 @@ jobs:
   test-3.8-staging:
     docker:
     - {image: python:3.8}
-    environment: {COLUMNS: '160', COVER_PACKAGES: 'example_package,comptests_tests,comptests.find_modules_imp,comptests.reports,comptests.registrar,comptests.comptest_to_junit,comptests.results,comptests.nose,comptests,comptests.comptests',
+    environment: {COLUMNS: '160', COVER_PACKAGES: 'comptests_tests,example_package,comptests,comptests.find_modules_imp,comptests.registrar,comptests.comptests,comptests.results,comptests.comptest_to_junit,comptests.reports,comptests.nose',
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,
-      TEST_PACKAGES: example_package comptests_tests}
+      TEST_PACKAGES: comptests_tests example_package}
     steps:
     - checkout
     - run: {command: "mkdir -p  build-stats\nenv | tee  build-stats/env.txt\n", name: Build
@@ -76,7 +76,7 @@ jobs:
           \n#              --processes=8 --process-timeout=1000 --process-restartworker\
           \ \\\n# --cover-packages=${COVER_PACKAGES} \\\nnosetests \\\n  --rednose\
           \ --immediate \\\n  --cover-tests --with-coverage \\\n  --with-xunitmp --xunitmp-file=${xunit_output}\
-          \ \\\n  --cover-packages=${COVER_PACKAGES} \\\n  ${TEST_PACKAGES}\n", name: Run
+          \ \\\n  --cover-package=${COVER_PACKAGES} \\\n  ${TEST_PACKAGES}\n", name: Run
           tests}
     - store_test_results: {path: out/test-results, when: always}
     - run: {command: "coverage combine\ncoverage html -d out/coverage\ncoverage xml\n",
@@ -99,4 +99,4 @@ workflows:
           branches: {ignore: /z7-stage.*/}
   version: 2
 
-# sigil f21ed618199c5592289d4ccb2ac9bf5d
+# sigil 055c68c68532b47516b8180b4a3181c8
