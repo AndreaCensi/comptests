@@ -31,7 +31,7 @@ def get_comptests_global_output_dir():
 
 class CompTests(QuickApp):
     """
-        Runs the unit tests defined as @comptest.
+    Runs the unit tests defined as @comptest.
 
     """
 
@@ -43,9 +43,7 @@ class CompTests(QuickApp):
     hook_name = "jobs_comptests"
 
     def define_options(self, params):
-        params.add_string(
-            "exclude", default="", help="exclude these modules (comma separated)"
-        )
+        params.add_string("exclude", default="", help="exclude these modules (comma separated)")
 
         params.add_flag("nonose", help="Disable nosetests")
         params.add_flag("nosesingle", help="Create nose single as tasks")
@@ -104,9 +102,7 @@ class CompTests(QuickApp):
             self.instance_nosesingle_jobs(context, modules)
 
         if not options.nocomp:
-            self.instance_comptests_jobs(
-                context, modules, create_reports=options.reports
-            )
+            self.instance_comptests_jobs(context, modules, create_reports=options.reports)
 
     def get_modules(self) -> List[str]:
         """" Parses the command line argument and interprets them as modules. """
@@ -160,9 +156,7 @@ class CompTests(QuickApp):
             c = context.child(module)
             c.comp_dynamic(jobs_nosetests_single, module, job_id="nosesingle")
 
-    def instance_comptests_jobs(
-        self, context, modules: List[str], create_reports: bool
-    ):
+    def instance_comptests_jobs(self, context, modules: List[str], create_reports: bool):
 
         for module in modules:
             # if True:

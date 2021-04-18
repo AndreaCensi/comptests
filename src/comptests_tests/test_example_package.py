@@ -24,9 +24,7 @@ def test_example_package():
             "example_package",
         ]
 
-        res = system_cmd_result(
-            cwd, cmd, display_stdout=True, display_stderr=True, raise_on_error=False
-        )
+        res = system_cmd_result(cwd, cmd, display_stdout=True, display_stderr=True, raise_on_error=False)
         assert res.ret != 0, res
 
         fs = [
@@ -55,9 +53,7 @@ def test_example_package():
 
         print("now calling comptests-to-junit")
         cmd = ["comptests-to-junit", "out-comptests/compmake"]
-        system_cmd_result(
-            cwd, cmd, display_stdout=True, display_stderr=True, raise_on_error=True
-        )
+        system_cmd_result(cwd, cmd, display_stdout=True, display_stderr=True, raise_on_error=True)
 
 
 @contextmanager

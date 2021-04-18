@@ -61,11 +61,7 @@ def register_pair(objspec1, objspec2, f, dynamic):
 
 def register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic):
     ts = ComptestsRegistrar.objspec2testsomepairs[objspec1.name]
-    ts.append(
-        dict(
-            objspec2=objspec2, function=f, dynamic=dynamic, which1=which1, which2=which2
-        )
-    )
+    ts.append(dict(objspec2=objspec2, function=f, dynamic=dynamic, which1=which1, which2=which2))
 
 
 def register_for_some(objspec: ObjectSpec, f, which, dynamic: bool):
@@ -138,8 +134,8 @@ def comptest(f):
 
 def comptests_for_all(objspec: ObjectSpec):
     """
-        Returns a decorator for mcdp_lang_tests, which should take two parameters:
-        id and object.
+    Returns a decorator for mcdp_lang_tests, which should take two parameters:
+    id and object.
     """
 
     # from decorator import decorator
@@ -159,8 +155,8 @@ def comptests_for_all(objspec: ObjectSpec):
 
 def comptests_for_all_dynamic(objspec: ObjectSpec):
     """
-        Returns a decorator for mcdp_lang_tests, which should take three parameters:
-        context, id_object and object.
+    Returns a decorator for mcdp_lang_tests, which should take three parameters:
+    context, id_object and object.
     """
 
     def register(f):
@@ -201,9 +197,7 @@ def comptests_for_some_pairs(objspec1: ObjectSpec, objspec2: ObjectSpec):
 
     def dec(which1, which2):
         def register(f):
-            register_for_some_pairs(
-                objspec1, objspec2, f, which1, which2, dynamic=False
-            )
+            register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic=False)
             return f
 
         return register
@@ -349,10 +343,7 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: str = None)
 
         n += 1
 
-    logger.info(
-        "Registered %d tests (reading a list of %s)"
-        % (n, len(ComptestsRegistrar.regular))
-    )
+    logger.info("Registered %d tests (reading a list of %s)" % (n, len(ComptestsRegistrar.regular)))
 
 
 class WrapTest:
@@ -366,9 +357,7 @@ class WrapTest:
         from .comptests import CompTests
 
         if prefix is not None:
-            self.output_dir = os.path.join(
-                CompTests.global_output_dir, prefix, self.__name__
-            )
+            self.output_dir = os.path.join(CompTests.global_output_dir, prefix, self.__name__)
         else:
             self.output_dir = os.path.join(CompTests.global_output_dir, self.__name__)
 
@@ -408,9 +397,7 @@ def define_tests_for(
         functions=functions,
         create_reports=create_reports,
     )
-    define_tests_pairs(
-        context, objspec, names2test_objects, pairs=pairs, create_reports=create_reports
-    )
+    define_tests_pairs(context, objspec, names2test_objects, pairs=pairs, create_reports=create_reports)
 
     define_tests_some_pairs(
         context,
@@ -420,9 +407,7 @@ def define_tests_for(
         create_reports=create_reports,
     )
 
-    define_tests_some(
-        context, objspec, names2test_objects, some=some, create_reports=create_reports
-    )
+    define_tests_some(context, objspec, names2test_objects, some=some, create_reports=create_reports)
 
 
 def define_tests_some(
@@ -577,27 +562,19 @@ def define_tests_pairs(
 
             params = dict(job_id="f", command_name=func.__name__)
             if dynamic:
-                res = c.comp_config_dynamic(
-                    wrap_func_pair_dyn, func, id_ob1, ob1, id_ob2, ob2, **params
-                )
+                res = c.comp_config_dynamic(wrap_func_pair_dyn, func, id_ob1, ob1, id_ob2, ob2, **params)
             else:
-                res = c.comp_config(
-                    wrap_func_pair, func, id_ob1, ob1, id_ob2, ob2, **params
-                )
+                res = c.comp_config(wrap_func_pair, func, id_ob1, ob1, id_ob2, ob2, **params)
             results[(id_ob1, id_ob2)] = res
             jobs[(id_ob1, id_ob2)] = res.job_id
 
         warnings.warn("disabled report functionality")
 
         if create_reports:
-            r = cx.comp_dynamic(
-                report_results_pairs_jobs, func, objspec1.name, objspec2.name, jobs
-            )
+            r = cx.comp_dynamic(report_results_pairs_jobs, func, objspec1.name, objspec2.name, jobs)
             cx.add_report(r, "jobs_pairs")
 
-            r = cx.comp(
-                report_results_pairs, func, objspec1.name, objspec2.name, results
-            )
+            r = cx.comp(report_results_pairs, func, objspec1.name, objspec2.name, results)
             cx.add_report(r, "pairs")
 
 
@@ -679,9 +656,7 @@ def define_tests_some_pairs(
         )
 
 
-def define_tests_some_pairs_(
-    cx, db, objspec1, objspec2, objs1, objs2, func, dynamic, create_reports
-):
+def define_tests_some_pairs_(cx, db, objspec1, objspec2, objs1, objs2, func, dynamic, create_reports):
     results = {}
     jobs = {}
     combinations = iterate_context_names_pair(
@@ -695,20 +670,14 @@ def define_tests_some_pairs_(
 
         params = dict(job_id="f", command_name=func.__name__)
         if dynamic:
-            res = c.comp_config_dynamic(
-                wrap_func_pair_dyn, func, id_ob1, ob1, id_ob2, ob2, **params
-            )
+            res = c.comp_config_dynamic(wrap_func_pair_dyn, func, id_ob1, ob1, id_ob2, ob2, **params)
         else:
-            res = c.comp_config(
-                wrap_func_pair, func, id_ob1, ob1, id_ob2, ob2, **params
-            )
+            res = c.comp_config(wrap_func_pair, func, id_ob1, ob1, id_ob2, ob2, **params)
         results[(id_ob1, id_ob2)] = res
         jobs[(id_ob1, id_ob2)] = res.job_id
 
     if create_reports:
-        r = cx.comp_dynamic(
-            report_results_pairs_jobs, func, objspec1.name, objspec2.name, jobs
-        )
+        r = cx.comp_dynamic(report_results_pairs_jobs, func, objspec1.name, objspec2.name, jobs)
         cx.add_report(r, "jobs_pairs_some")
 
         r = cx.comp(report_results_pairs, func, objspec1.name, objspec2.name, results)
@@ -737,9 +706,7 @@ def wrap_func_pair(func, id_ob1, ob1, id_ob2, ob2):
     return func(id_ob1, ob1, id_ob2, ob2)
 
 
-def get_testobjects_promises_for_objspec(
-    context, objspec: ObjectSpec
-) -> Dict[str, str]:
+def get_testobjects_promises_for_objspec(context, objspec: ObjectSpec) -> Dict[str, str]:
     warnings.warn("Need to be smarter here.")
     objspec.master.load()
     warnings.warn("Select test objects here.")
@@ -807,12 +774,12 @@ def get_objspec(master_name, objspec_name):
 @nottest
 def run_module_tests():
     """
-        Runs directly the tests defined in this module.
+    Runs directly the tests defined in this module.
 
-        if __name__ == '__main__':
-            run_module_tests()
+    if __name__ == '__main__':
+        run_module_tests()
 
-        argument 1: grep
+    argument 1: grep
     """
     #     logger.debug('run_module_tests: args = %s' % sys.argv)
     grep = sys.argv[1] if len(sys.argv) > 1 else None

@@ -44,9 +44,7 @@ def report_results_single(func, objspec_name, results: Dict[str, object]):
     return r
 
 
-def report_results_pairs(
-    func, objspec1_name, objspec2_name, results: Dict[Tuple[str, str], object]
-):
+def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple[str, str], object]):
     reason2symbol = {}
 
     def get_string_result(res):
@@ -77,9 +75,7 @@ def report_results_pairs(
     data = [[None for a in range(len(cols))] for b in range(len(rows))]
     # a nice bug: data = [[None * len(cols)] * len(rows)
 
-    for ((i, id_object1), (j, id_object2)) in itertools.product(
-        enumerate(rows), enumerate(cols)
-    ):
+    for ((i, id_object1), (j, id_object2)) in itertools.product(enumerate(rows), enumerate(cols)):
         res = results[(id_object1, id_object2)]
         data[i][j] = get_string_result(res)
 

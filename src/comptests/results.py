@@ -8,8 +8,8 @@ __all__ = [
 
 class Skipped(object):
     """
-        Can be returned by mcdp_lang_tests to mean that the test
-        was skipped for some reason.
+    Can be returned by mcdp_lang_tests to mean that the test
+    was skipped for some reason.
     """
 
     reason: str
@@ -23,8 +23,8 @@ class Skipped(object):
 
 class PartiallySkipped(object):
     """
-        Can be returned to mean that some parts of the test
-        were skipped.
+    Can be returned to mean that some parts of the test
+    were skipped.
     """
 
     skipped: Set[str]

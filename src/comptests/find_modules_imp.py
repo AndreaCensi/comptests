@@ -16,14 +16,14 @@ def find_modules_main(root):
 
 def find_modules(root):
     """
-        Looks for modules defined in packages that have the structure: ::
+    Looks for modules defined in packages that have the structure: ::
 
-            dirname/setup.py
-            dirname/src/
-            dirname/src/module/__init__.py
-            dirname/src/module/module2/__init__.py
+        dirname/setup.py
+        dirname/src/
+        dirname/src/module/__init__.py
+        dirname/src/module/module2/__init__.py
 
-        This will yield ['module', 'module.module2']
+    This will yield ['module', 'module.module2']
     """
     setups = locate_files(root, "setup.py")
 

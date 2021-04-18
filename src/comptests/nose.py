@@ -54,14 +54,18 @@ def call_nosetests(module):
     with create_tmp_dir() as cwd:
         cmd = ["nosetests", module]
         system_cmd_result(
-            cwd=cwd, cmd=cmd, display_stdout=True, display_stderr=True, raise_on_error=True,
+            cwd=cwd,
+            cmd=cmd,
+            display_stdout=True,
+            display_stderr=True,
+            raise_on_error=True,
         )
 
 
 def call_nosetests_plus_coverage(module) -> bytes:
     """
-        This also calls the coverage module.
-        It returns the .coverage file as bytes.
+    This also calls the coverage module.
+    It returns the .coverage file as bytes.
     """
     with create_tmp_dir() as cwd:
         prog = find_command_path("nosetests")
@@ -70,7 +74,11 @@ def call_nosetests_plus_coverage(module) -> bytes:
         # note: coverage -> python-coverage in Ubuntu14
         cmd = ["coverage", "run"] + cmd
         system_cmd_result(
-            cwd=cwd, cmd=cmd, display_stdout=True, display_stderr=True, raise_on_error=True,
+            cwd=cwd,
+            cmd=cmd,
+            display_stdout=True,
+            display_stderr=True,
+            raise_on_error=True,
         )
         coverage_file = os.path.join(cwd, ".coverage")
         res = read_bytes_from_file(coverage_file)
@@ -82,7 +90,11 @@ def call_nosetests_plus_coverage(module) -> bytes:
 
 def find_command_path(prog):
     res = system_cmd_result(
-        cwd=os.getcwd(), cmd=["which", prog], display_stdout=False, display_stderr=False, raise_on_error=True,
+        cwd=os.getcwd(),
+        cmd=["which", prog],
+        display_stdout=False,
+        display_stderr=False,
+        raise_on_error=True,
     )
     prog = res.stdout
     return prog
@@ -101,13 +113,21 @@ def write_coverage_report(outdir, covdata: bytes, module):
         logger.info("Running coverage html")
         cmd = ["coverage", "html", "-d", outdir, "--include=*/%s/*" % module]
         res = system_cmd_result(
-            cwd=cwd, cmd=cmd, display_stdout=True, display_stderr=True, raise_on_error=True,
+            cwd=cwd,
+            cmd=cmd,
+            display_stdout=True,
+            display_stderr=True,
+            raise_on_error=True,
         )
         # print(res.stdout)
         # print(res.stderr)
 
         system_cmd_result(
-            cwd=cwd, cmd=["find", "."], display_stdout=True, display_stderr=True, raise_on_error=True,
+            cwd=cwd,
+            cmd=["find", "."],
+            display_stdout=True,
+            display_stderr=True,
+            raise_on_error=True,
         )
 
 
@@ -156,7 +176,11 @@ def jobs_nosetests_single(context, module: str):
             module,
         ]
         system_cmd_result(
-            cwd=cwd, cmd=cmd, display_stdout=True, display_stderr=True, raise_on_error=True,
+            cwd=cwd,
+            cmd=cmd,
+            display_stdout=True,
+            display_stderr=True,
+            raise_on_error=True,
         )
 
         contents = read_ustring_from_utf8_file(out)
