@@ -1,3 +1,4 @@
+zuper-utils-python-z7
 PyContracts3>=3.0.2
 compmake-z7
 ConfTools-z7
