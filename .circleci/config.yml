@@ -2,9 +2,9 @@ jobs:
   test-3.8-production:
     docker:
     - {image: python:3.8}
-    environment: {COLUMNS: '160', COVER_PACKAGES: 'comptests_tests,example_package,comptests.comptests,comptests.results,comptests.comptest_to_junit,comptests.registrar,comptests,comptests.find_modules_imp,comptests.reports,comptests.nose',
+    environment: {COLUMNS: '160', COVER_PACKAGES: 'example_package,comptests_tests,comptests.find_modules_imp,comptests.reports,comptests.registrar,comptests.comptest_to_junit,comptests.results,comptests.nose,comptests,comptests.comptests',
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,
-      TEST_PACKAGES: comptests_tests example_package}
+      TEST_PACKAGES: example_package comptests_tests}
     steps:
     - checkout
     - run: {command: "mkdir -p  build-stats\nenv | tee  build-stats/env.txt\n", name: Build
@@ -45,9 +45,9 @@ jobs:
   test-3.8-staging:
     docker:
     - {image: python:3.8}
-    environment: {COLUMNS: '160', COVER_PACKAGES: 'comptests_tests,example_package,comptests.comptests,comptests.results,comptests.comptest_to_junit,comptests.registrar,comptests,comptests.find_modules_imp,comptests.reports,comptests.nose',
+    environment: {COLUMNS: '160', COVER_PACKAGES: 'example_package,comptests_tests,comptests.find_modules_imp,comptests.reports,comptests.registrar,comptests.comptest_to_junit,comptests.results,comptests.nose,comptests,comptests.comptests',
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,
-      TEST_PACKAGES: comptests_tests example_package}
+      TEST_PACKAGES: example_package comptests_tests}
     steps:
     - checkout
     - run: {command: "mkdir -p  build-stats\nenv | tee  build-stats/env.txt\n", name: Build
@@ -99,4 +99,4 @@ workflows:
           branches: {ignore: /z7-stage.*/}
   version: 2
 
-# sigil c2b31fb9dea4fa7b632e2a5f4b4bc0ee
+# sigil f21ed618199c5592289d4ccb2ac9bf5d
