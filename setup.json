@@ -23,13 +23,14 @@
       "comptests-to-junit = comptests.comptest_to_junit:comptest_to_junit_main"
     ]
   },
-  "zip_safe": false,
-  "include_package_data": false,
+  "zip_safe": true,
+  "include_package_data": true,
   "modules": [
     "comptests"
   ],
   "version": "7.1.2104231703",
   "author": "",
   "author_email": "info@zupermind.com",
-  "url": "https://github.com/AndreaCensi/comptests"
+  "url": "https://github.com/AndreaCensi/comptests",
+  "hey": 2
 }
