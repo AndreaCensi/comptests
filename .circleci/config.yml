@@ -30,7 +30,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      TEST_PACKAGES: example_package comptests_tests
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.7:z7
       auth:
@@ -152,7 +152,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      TEST_PACKAGES: example_package comptests_tests
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.7:z7
       auth:
@@ -274,7 +274,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      TEST_PACKAGES: example_package comptests_tests
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.8:z7
       auth:
@@ -396,7 +396,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      TEST_PACKAGES: example_package comptests_tests
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.8:z7
       auth:
@@ -513,4 +513,4 @@ jobs:
         command: |
           bash <(curl -s https://codecov.io/bash)
 
-# sigil a86f5ddf97284100b50489ade4d78384
+# sigil b7f1a8fe49c4a4662fc4ab7a580473cb
