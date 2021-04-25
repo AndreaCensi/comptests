@@ -1,4 +1,4 @@
-version: 2
+version: '2'
 workflows:
   version: 2
   test:
@@ -30,7 +30,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: example_package comptests_tests
+      TEST_PACKAGES: comptests_tests example_package
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.7:z7
       auth:
@@ -146,13 +146,14 @@ jobs:
         when: always
         command: |
           bash <(curl -s https://codecov.io/bash)
+    resource_class: medium+
   test-3.7-production:
     environment:
       COLUMNS: '160'
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: example_package comptests_tests
+      TEST_PACKAGES: comptests_tests example_package
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.7:z7
       auth:
@@ -268,13 +269,14 @@ jobs:
         when: always
         command: |
           bash <(curl -s https://codecov.io/bash)
+    resource_class: medium+
   test-3.8-staging:
     environment:
       COLUMNS: '160'
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: example_package comptests_tests
+      TEST_PACKAGES: comptests_tests example_package
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.8:z7
       auth:
@@ -390,13 +392,14 @@ jobs:
         when: always
         command: |
           bash <(curl -s https://codecov.io/bash)
+    resource_class: medium+
   test-3.8-production:
     environment:
       COLUMNS: '160'
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: example_package comptests_tests
+      TEST_PACKAGES: comptests_tests example_package
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.8:z7
       auth:
@@ -512,5 +515,6 @@ jobs:
         when: always
         command: |
           bash <(curl -s https://codecov.io/bash)
+    resource_class: medium+
 
-# sigil b7f1a8fe49c4a4662fc4ab7a580473cb
+# sigil bdf3335ff4e97b05f587c7dfa5ffdb71
