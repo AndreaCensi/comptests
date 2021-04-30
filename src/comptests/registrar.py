@@ -32,6 +32,7 @@ __all__ = [
     "comptests_for_all_pairs_dynamic",
     "jobs_registrar",
     "jobs_registrar_simple",
+    "accept_test_on_this_worker",
 ]
 
 
