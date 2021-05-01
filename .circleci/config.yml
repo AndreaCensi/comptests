@@ -30,7 +30,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      TEST_PACKAGES: example_package comptests_tests
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.7:z7
       auth:
@@ -153,7 +153,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      TEST_PACKAGES: example_package comptests_tests
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.7:z7
       auth:
@@ -276,7 +276,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      TEST_PACKAGES: example_package comptests_tests
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.8:z7
       auth:
@@ -399,7 +399,7 @@ jobs:
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      TEST_PACKAGES: example_package comptests_tests
     docker:
     - image: ${DOCKER_REGISTRY}/zupermind/zuper-ci-3.8:z7
       auth:
@@ -517,4 +517,4 @@ jobs:
           bash <(curl -s https://codecov.io/bash)
     resource_class: medium+
 
-# sigil bdf3335ff4e97b05f587c7dfa5ffdb71
+# sigil a49164c24174991aad2a19f6c5f6e7f6
