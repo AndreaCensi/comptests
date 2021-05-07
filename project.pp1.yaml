@@ -1,12 +1,13 @@
-package_name: comptests-z7
-srcdir: src
-version_file: '1'
-modules:
+---
+package_name         : comptests-z7
+srcdir               : src
+version_file         : '1'
+modules              :
 - comptests
-modules_ignore:
+modules_ignore       :
 - comptests_ex
 
-install_requires:
+install_requires     :
 - zuper-commons-z7
 - zuper-html-z7
 - ConfTools-z7
@@ -21,29 +22,29 @@ install_requires:
 - zuper-utils-asyncio-z7
 - nose
 
-install_conflicts: [comptests-*]
-tests_require: []
-console_scripts:
+install_conflicts    : [comptests-*]
+tests_require        : []
+console_scripts      :
   comptests: comptests:main_comptests
   comptests-to-junit: comptests.comptest_to_junit:comptest_to_junit_main
-nose:
+nose                 :
   modules:
   - '*_tests'
   python_versions:
   - '3.7'
   - '3.8'
 
-pypi:
+pypi                 :
   upload: []
 
-circleci:
+circleci             :
   active: true
-  test_python_versions: ['3.7', '3.8']
+  test_python_versions: ['3.8']
 
 python_syntax_version: '3.8'
 
-url: https://github.com/AndreaCensi/comptests
-author: ''
-author_email: info@zupermind.com
-short_description: ''
-full_description: ''
+url                  : https://github.com/AndreaCensi/comptests
+author               : ''
+author_email         : info@zupermind.com
+short_description    : ''
+full_description     : ''
