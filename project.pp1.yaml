@@ -3,40 +3,40 @@ package_name: comptests-z7
 srcdir: src
 version_file: '1'
 modules:
-    - comptests
+- comptests
 modules_ignore:
-    - comptests_ex
+- comptests_ex
 
 install_requires:
-    - zuper-commons-z7
-    - zuper-html-z7
-    - ConfTools-z7
-    - QuickApp-z7
-    - SystemCmd-z7
-    - compmake-z7
-    - reprep-z7
-    - junit-xml
-    - coverage
-    - six
-    - zuper-utils-python-z7
-    - zuper-utils-asyncio-z7
-    - nose
+- zuper-commons-z7
+- zuper-html-z7
+- ConfTools-z7
+- QuickApp-z7
+- SystemCmd-z7
+- compmake-z7
+- reprep-z7
+- junit-xml
+- coverage
+- six
+- zuper-utils-python-z7
+- zuper-utils-asyncio-z7
+- nose
 
 install_conflicts: [comptests-*]
 tests_require: []
 console_scripts:
-    comptests: comptests:main_comptests
-    comptests-to-junit: comptests.comptest_to_junit:comptest_to_junit_main
+  comptests: comptests:main_comptests
+  comptests-to-junit: comptests.comptest_to_junit:comptest_to_junit_main
 nose:
-    modules:
-        - '*_tests'
+  modules:
+  - '*_tests'
 
 pypi:
-    upload: []
+  upload: []
 
 circleci:
-    active: true
-    test_python_versions: ['3.8']
+  active: true
+  test_python_versions: ['3.8']
 
 python_syntax_version: '3.8'
 
