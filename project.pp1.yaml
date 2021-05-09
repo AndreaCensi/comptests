@@ -22,7 +22,7 @@ install_requires:
 - zuper-utils-asyncio-z7
 - nose
 
-install_conflicts: [comptests-*]
+
 tests_require: []
 console_scripts:
   comptests: comptests:main_comptests
