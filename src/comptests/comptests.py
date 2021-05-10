@@ -1,9 +1,11 @@
+import asyncio
 import os
 from typing import Iterator, List
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from quickapp import QuickApp
 from zuper_commons.types import ZException, ZValueError
+from zuper_utils_asyncio import SyncTaskInterface
 from . import logger
 from .find_modules_imp import find_modules, find_modules_main
 from .nose import jobs_nosetests, jobs_nosetests_single
@@ -55,10 +57,10 @@ class CompTests(QuickApp):
 
         params.accept_extra()
 
-    def define_jobs_context(self, context):
-
+    async def define_jobs_context(self, sti: SyncTaskInterface, context):
+        logger = sti.logger
         CompTests.global_output_dir = self.get_options().output
-        self.info("Setting output dir to %s" % CompTests.global_output_dir)
+        logger.info("Setting output dir to %s" % CompTests.global_output_dir)
         CompTests.output_dir_for_current_test = None
 
         GlobalConfig.global_load_dir("default")
@@ -72,7 +74,7 @@ class CompTests(QuickApp):
             if v_index in env and v_total in env:
                 index = int(os.environ[v_index])
                 total = int(os.environ[v_total])
-                msg = "Detected I am worker #%s of %d in CircleCI." % (index, total)
+                msg = f"Detected I am worker #{index} of {total} in CircleCI."
                 self.info(msg)
                 mine = []
                 for i in range(len(modules)):
@@ -96,13 +98,15 @@ class CompTests(QuickApp):
         #     import coverage
         #     coverage.process_startup()
         if not options.nonose:
-            self.instance_nosetests_jobs(context, modules, do_coverage)
+            await self.instance_nosetests_jobs(sti, context, modules, do_coverage)
 
         if options.nosesingle:
-            self.instance_nosesingle_jobs(context, modules)
+            await self.instance_nosesingle_jobs(sti, context, modules)
 
         if not options.nocomp:
-            self.instance_comptests_jobs(context, modules, create_reports=options.reports)
+            await self.instance_comptests_jobs(sti, context, modules, create_reports=options.reports)
+
+        sti.logger.info("Finished defining jobs.")
 
     def get_modules(self) -> List[str]:
         """" Parses the command line argument and interprets them as modules. """
@@ -125,6 +129,7 @@ class CompTests(QuickApp):
 
     def interpret_modules_names(self, names: List[str]) -> Iterator[str]:
         """ yields a list of modules """
+
         # First, extract tokens
         names2 = []
         for m in names:
@@ -145,19 +150,26 @@ class CompTests(QuickApp):
                 self.info("Interpreting %r as module." % m)
                 yield m
 
-    def instance_nosetests_jobs(self, context, modules, do_coverage: bool):
+    async def instance_nosetests_jobs(self, sti: SyncTaskInterface, context, modules, do_coverage: bool):
+        sti.logger.info("instancing nosetests jobs", modules=modules)
+        await asyncio.sleep(0)
         for module in modules:
             c = context.child(module)
             jobs_nosetests(c, module, do_coverage=do_coverage)
 
-    def instance_nosesingle_jobs(self, context, modules):
+    async def instance_nosesingle_jobs(self, sti: SyncTaskInterface, context, modules):
+        sti.logger.info("instancing nosesingle jobs", modules=modules)
+        await asyncio.sleep(0)
         context = context.child("nose")
         for module in modules:
             c = context.child(module)
             c.comp_dynamic(jobs_nosetests_single, module, job_id="nosesingle")
 
-    def instance_comptests_jobs(self, context, modules: List[str], create_reports: bool):
-
+    async def instance_comptests_jobs(
+        self, sti: SyncTaskInterface, context, modules: List[str], create_reports: bool
+    ):
+        sti.logger.info("instancing jobs", modules=modules)
+        await asyncio.sleep(0)
         for module in modules:
             c = context.child(module)
 

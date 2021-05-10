@@ -125,6 +125,7 @@ def comptest_fails(f):
     return f
 
 
+@nottest
 def comptest_dynamic(f):
     register_indep(f, dynamic=True, args=(), kwargs={})
     f.__test__ = False  # Mark as not a nose test
@@ -137,6 +138,7 @@ def comptest(f):
     return f
 
 
+@nottest
 def comptests_for_all(objspec: ObjectSpec):
     """
     Returns a decorator for mcdp_lang_tests, which should take two parameters:
