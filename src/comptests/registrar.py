@@ -4,10 +4,10 @@ import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
 from typing import Callable, Dict, Optional, Tuple
-from compmake import JobCompute
+
 from nose.tools import nottest
 
-from compmake import assert_job_exists, CMJobID, Promise
+from compmake import assert_job_exists, CMJobID, JobCompute, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
@@ -32,7 +32,7 @@ __all__ = [
     "comptests_for_all_pairs_dynamic",
     "jobs_registrar",
     "jobs_registrar_simple",
-    "accept_test_on_this_worker",
+    "accept_tst_on_this_worker",
 ]
 
 
@@ -288,7 +288,7 @@ def accept_test_string(s: str, worker_i: int, worker_n: int) -> bool:
     return x % worker_n == worker_i
 
 
-def accept_test_on_this_worker(s: str):
+def accept_tst_on_this_worker(s: str):
     """ Use this from outside. """
     worker_i, worker_n = get_test_index()
     return accept_test_string(s, worker_i, worker_n)

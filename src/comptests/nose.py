@@ -1,18 +1,18 @@
 import importlib
+import inspect
 import os
 import tempfile
 import warnings
 from contextlib import contextmanager
 from typing import cast
 
-from zuper_utils_asyncio import SyncTaskInterface
-from zuper_utils_python.listing import get_modules_in_dir_detailed
-
 from system_cmd import system_cmd_result
 from zuper_commons.fs import read_bytes_from_file, read_ustring_from_utf8_file
 from zuper_commons.text import PythonModuleName, XMLString
 from zuper_commons.types import ZValueError
 from zuper_html.to_xml import tag_from_xml_str
+from zuper_utils_asyncio import SyncTaskInterface
+from zuper_utils_python.listing import get_modules_in_dir_detailed
 from . import logger
 
 __all__ = ["jobs_nosetests", "jobs_nosetests_single"]
@@ -144,8 +144,10 @@ def jobs_nosetests_single(context, module: str):
 
     def is_test(k, v):
         if hasattr(v, "__test__"):
-            return bool(getattr(v, "__test"))
-
+            return bool(getattr(v, "__test__"))
+        if not inspect.isfunction(v):
+            logger.info(f"This is not a function:  {module}.{k}  {type(v)}")
+            return False
         return "_test" in k or "test_" in k
 
     for test_module in mods:
@@ -159,47 +161,49 @@ def jobs_nosetests_single(context, module: str):
             context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
 
     return
-    raise ZValueError(module=module, modules=mods, mods=mods0)
 
-    with create_tmp_dir() as cwd:
-        out = os.path.join(cwd, f"{module}.pickle")
-        cmd = [
-            "nosetests",
-            "--collect-only",
-            # "--with-xunitext",
-            # "--xunitext-file",
-            "--with-xunit",
-            "--xunit-file",
-            out,
-            "-v",
-            "-s",
-            module,
-        ]
-        system_cmd_result(
-            cwd=cwd,
-            cmd=cmd,
-            display_stdout=True,
-            display_stderr=True,
-            raise_on_error=True,
-        )
-
-        contents = read_ustring_from_utf8_file(out)
-        tag = tag_from_xml_str(cast(XMLString, contents))
-        # logger.info(f"the a tag {tag}", tag=tag)
-        # print(str(tag))
-
-        for child in tag.contents:
-            assert child.tagname == "testcase"
-            classname = child.attrs["classname"]
-            name = child.attrs["name"]
-            module_name, _, func_name = classname.rpartition(".")
-            context.comp(execute, module_name=module_name, func_name=func_name, job_id=name)
-
-        # tests = safe_pickle_load(out)
-        # logger.info(f"found {len(tests):d} tests from nose ")
-        #
-        # for t in tests:
-        #
+    #
+    # raise ZValueError(module=module, modules=mods, mods=mods0)
+    #
+    # with create_tmp_dir() as cwd:
+    #     out = os.path.join(cwd, f"{module}.pickle")
+    #     cmd = [
+    #         "nosetests",
+    #         "--collect-only",
+    #         # "--with-xunitext",
+    #         # "--xunitext-file",
+    #         "--with-xunit",
+    #         "--xunit-file",
+    #         out,
+    #         "-v",
+    #         "-s",
+    #         module,
+    #     ]
+    #     system_cmd_result(
+    #         cwd=cwd,
+    #         cmd=cmd,
+    #         display_stdout=True,
+    #         display_stderr=True,
+    #         raise_on_error=True,
+    #     )
+    #
+    #     contents = read_ustring_from_utf8_file(out)
+    #     tag = tag_from_xml_str(cast(XMLString, contents))
+    #     # logger.info(f"the a tag {tag}", tag=tag)
+    #     # print(str(tag))
+    #
+    #     for child in tag.contents:
+    #         assert child.tagname == "testcase"
+    #         classname = child.attrs["classname"]
+    #         name = child.attrs["name"]
+    #         module_name, _, func_name = classname.rpartition(".")
+    #         context.comp(execute, module_name=module_name, func_name=func_name, job_id=name)
+    #
+    #     # tests = safe_pickle_load(out)
+    #     # logger.info(f"found {len(tests):d} tests from nose ")
+    #     #
+    #     # for t in tests:
+    #     #
 
 
 async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str):

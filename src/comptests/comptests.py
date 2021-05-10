@@ -193,7 +193,7 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
     fname = CompTests.hook_name
 
     if not fname in module.__dict__:
-        msg = "Module %s does not have function %s()." % (module_name, fname)
+        msg = f"Module {module_name} does not have function {fname}()."
         if warn_errors:
             logger.debug(msg)
     else:

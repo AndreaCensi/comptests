@@ -1,60 +1,59 @@
 import sys
 
-from compmake import all_jobs, Cache, get_job_cache, StorageFilesystem, UserError
+from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem, UserError
+from zuper_commons.cmds import ExitCode
 from zuper_commons.types import check_isinstance
-from . import logger
+from zuper_utils_asyncio import SyncTaskInterface
+from zuper_zapp import zapp1, ZappEnv
 
 
-def comptest_to_junit_main():
-    args = sys.argv[1:]
+@zapp1()
+async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
+    logger = ze.sti.logger
+    args = ze.args
     if not args:
         msg = "Require the path to a Compmake DB."
-        raise UserError(msg)
+        logger.user_error(msg)
+        return ExitCode.WRONG_ARGUMENTS
 
     dirname = args[0]
     # try compressed
     # noinspection PyBroadException
-    try:
-        db = StorageFilesystem(dirname, compress=True)
-    except Exception:
-        db = StorageFilesystem(dirname, compress=False)
+    # try:
+    db = StorageFilesystem(dirname, compress=True)
+    # except Exception:
+    #     db = StorageFilesystem(dirname, compress=False)
 
     jobs = list(all_jobs(db))
 
-    if not jobs:
-        msg = "Could not find any job, compressed or not."
-        logger.error(msg)
-        sys.exit(1)
+    if len(jobs) < 10:
+        msg = "Could not enough jobs, compressed or not."
+        logger.error(msg, n=len(jobs), dirname=dirname)
+        return ExitCode.WRONG_ARGUMENTS
 
-    s = junit_xml(db)
-    check_isinstance(s, six.text_type)
+    s = await junit_xml(ze.sti, db)
+    check_isinstance(s, str)
     s = s.encode("utf8")
     sys.stdout.buffer.write(s)
 
 
-def junit_xml(compmake_db):
+async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem):
+    logger = sti.logger
     from junit_xml import TestSuite
 
     jobs = list(all_jobs(compmake_db))
-    logger.info("Loaded %d jobs" % len(jobs))
-    N = 10
-    if len(jobs) < N:
-        logger.error("too few jobs (I expect at least %s)" % N)
-        sys.exit(128)
+    logger.info(f"Loaded {len(jobs)} jobs")
 
     test_cases = []
     for job_id in jobs:
         tc = junit_test_case_from_compmake(compmake_db, job_id)
+        logger.info(name=tc.name, status=tc.status)
         test_cases.append(tc)
 
     ts = TestSuite("comptests_test_suite", test_cases)
 
     res = TestSuite.to_xml_string([ts])
-    check_isinstance(res, six.text_type)
     return res
-
-
-import six
 
 
 # def flatten_ascii(s):
@@ -67,7 +66,7 @@ import six
 #     return s
 
 
-def junit_test_case_from_compmake(db, job_id):
+def junit_test_case_from_compmake(db, job_id: CMJobID):
     from junit_xml import TestCase
 
     cache = get_job_cache(job_id, db=db)
@@ -77,9 +76,9 @@ def junit_test_case_from_compmake(db, job_id):
     else:
         elapsed_sec = None
 
-    check_isinstance(cache.captured_stderr, (type(None), six.text_type))
-    check_isinstance(cache.captured_stdout, (type(None), six.text_type))
-    check_isinstance(cache.exception, (type(None), six.text_type))
+    check_isinstance(cache.captured_stderr, (type(None), str))
+    check_isinstance(cache.captured_stdout, (type(None), str))
+    check_isinstance(cache.exception, (type(None), str))
     stderr = remove_escapes(cache.captured_stderr)
     stdout = remove_escapes(cache.captured_stdout)
 

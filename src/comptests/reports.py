@@ -1,8 +1,7 @@
 import itertools
 from typing import Dict, Tuple
 
-from compmake import get_job_cache, get_job_userobject
-from compmake import Cache, CMJobID
+from compmake import Cache, CMJobID, get_job_cache, get_job_userobject
 from reprep import Report
 from . import logger
 from .results import PartiallySkipped, Skipped
