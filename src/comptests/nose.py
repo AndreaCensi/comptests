@@ -4,13 +4,10 @@ import os
 import tempfile
 import warnings
 from contextlib import contextmanager
-from typing import cast
 
 from system_cmd import system_cmd_result
-from zuper_commons.fs import read_bytes_from_file, read_ustring_from_utf8_file
-from zuper_commons.text import PythonModuleName, XMLString
-from zuper_commons.types import ZValueError
-from zuper_html.to_xml import tag_from_xml_str
+from zuper_commons.fs import read_bytes_from_file
+from zuper_commons.text import PythonModuleName
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_utils_python.listing import get_modules_in_dir_detailed
 from . import logger
@@ -157,7 +154,7 @@ def jobs_nosetests_single(context, module: str):
         logger.info(test_module=test_module, symbols=ks)
 
         for k, v in ks.items():
-            job_id = f"{test_module}-{k}"
+            job_id = f"nosesingle-{test_module}-{k}"
             context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
 
     return

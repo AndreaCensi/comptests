@@ -115,21 +115,25 @@ class Wrap:
         return self.f(*args, **kwargs)
 
 
+@nottest
 def comptest_fails(f):
     check_fails_wrap = Wrap(check_fails)
     check_fails_wrap.__name__ = f.__name__
     check_fails_wrap.__module__ = f.__module__
     register_indep(check_fails_wrap, dynamic=False, args=(f,), kwargs={})
+    f.__test__ = False  # Mark as not a nose test
     return f
 
 
 def comptest_dynamic(f):
     register_indep(f, dynamic=True, args=(), kwargs={})
+    f.__test__ = False  # Mark as not a nose test
     return f
 
 
 def comptest(f):
     register_indep(f, dynamic=False, args=(), kwargs={})
+    f.__test__ = False  # Mark as not a nose test
     return f
 
 

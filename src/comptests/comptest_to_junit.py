@@ -47,7 +47,7 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem):
     test_cases = []
     for job_id in jobs:
         tc = junit_test_case_from_compmake(compmake_db, job_id)
-        logger.info(name=tc.name, status=tc.status)
+        # logger.info(name=tc.name, status=tc.status)
         test_cases.append(tc)
 
     ts = TestSuite("comptests_test_suite", test_cases)

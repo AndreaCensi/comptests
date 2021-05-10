@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import Iterator, List
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from quickapp import QuickApp
@@ -123,7 +123,7 @@ class CompTests(QuickApp):
         modules = list(filter(to_exclude, modules))
         return modules
 
-    def interpret_modules_names(self, names: List[str]):
+    def interpret_modules_names(self, names: List[str]) -> Iterator[str]:
         """ yields a list of modules """
         # First, extract tokens
         names2 = []
@@ -133,7 +133,7 @@ class CompTests(QuickApp):
         for m in names2:
             if os.path.exists(m):
                 # if it's a path, look for 'setup.py' subdirs
-                self.info("Interpreting %r as path." % m)
+                self.info(f"Interpreting {m!r} as path.")
                 self.info("modules main: %s" % " ".join(find_modules_main(m)))
                 modules = list(find_modules(m))
                 if not modules:
@@ -159,10 +159,7 @@ class CompTests(QuickApp):
     def instance_comptests_jobs(self, context, modules: List[str], create_reports: bool):
 
         for module in modules:
-            # if True:
             c = context.child(module)
-            # else:
-            #     c = context.child("")
 
             c.add_extra_report_keys(module=module)
             c.comp_config_dynamic(
