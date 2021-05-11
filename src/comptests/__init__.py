@@ -9,3 +9,4 @@ logger.hello_module(name=__name__, filename=__file__, version=__version__, date=
 from .registrar import *
 from .comptests import *
 from .results import *
+from .indices import *

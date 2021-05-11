@@ -1,9 +1,11 @@
 import hashlib
 import os
+from functools import lru_cache
 from typing import Callable, Tuple
 
-from comptests import logger
-from mcdp_utils_misc import memoize_simple
+from . import logger
+
+__all__ = ["get_test_index", "accept_test_string", "accept_tst_on_this_worker"]
 
 
 def int_from_string(s: str) -> int:
@@ -14,7 +16,7 @@ def int_from_string(s: str) -> int:
     return int.from_bytes(b, "big")
 
 
-@memoize_simple
+@lru_cache(None)
 def get_test_index() -> Tuple[int, int]:
     """ Returns i,n: machine index and mcdp_comp_tests """
     n = int(os.environ.get("CIRCLE_NODE_TOTAL", 1))
