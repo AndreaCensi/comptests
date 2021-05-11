@@ -1,28 +1,38 @@
-import sys
+import argparse
+from typing import Tuple
 
-from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem, UserError
+from junit_xml import TestCase
+
+from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
 from zuper_commons.cmds import ExitCode
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_zapp import zapp1, ZappEnv
+from zuper_zapp_interfaces import get_fs
 
 
 @zapp1()
 async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
+    fs = await get_fs(ze.sti)
     logger = ze.sti.logger
-    args = ze.args
-    if not args:
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", required=True, type=str, help="Output file")
+    parser.add_argument(
+        "--fail-if-failed",
+        default=False,
+        action="store_true",
+        help="Returns nonzero exit code if there are failed tests",
+    )
+    parsed, rest = parser.parse_known_args(args=ze.args)
+
+    if not rest:
         msg = "Require the path to a Compmake DB."
         logger.user_error(msg)
         return ExitCode.WRONG_ARGUMENTS
 
-    dirname = args[0]
-    # try compressed
-    # noinspection PyBroadException
-    # try:
+    dirname = rest[0]
     db = StorageFilesystem(dirname, compress=True)
-    # except Exception:
-    #     db = StorageFilesystem(dirname, compress=False)
 
     jobs = list(all_jobs(db))
 
@@ -31,13 +41,16 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         logger.error(msg, n=len(jobs), dirname=dirname)
         return ExitCode.WRONG_ARGUMENTS
 
-    s = await junit_xml(ze.sti, db)
-    check_isinstance(s, str)
-    s = s.encode("utf8")
-    sys.stdout.buffer.write(s)
+    nseen, nmarked, s = await junit_xml(ze.sti, db)
+
+    await fs.write_str(parsed.output, s)
+
+    ze.sti.logger.info(nseen=nseen, nmarked=nmarked, output=parsed.output)
+    if nmarked > 0 and parsed.fail_if_failed:
+        return ExitCode.OTHER_EXCEPTION
 
 
-async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem):
+async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> Tuple[int, int, str]:
     logger = sti.logger
     from junit_xml import TestSuite
 
@@ -45,15 +58,20 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem):
     logger.info(f"Loaded {len(jobs)} jobs")
 
     test_cases = []
+    nmarked = 0
+    nseen = 0
     for job_id in jobs:
-        tc = junit_test_case_from_compmake(compmake_db, job_id)
+        nseen += 1
+        marked_error, tc = junit_test_case_from_compmake(compmake_db, job_id)
+        if marked_error:
+            nmarked += 1
         # logger.info(name=tc.name, status=tc.status)
         test_cases.append(tc)
 
     ts = TestSuite("comptests_test_suite", test_cases)
 
     res = TestSuite.to_xml_string([ts])
-    return res
+    return nseen, nmarked, res
 
 
 # def flatten_ascii(s):
@@ -66,9 +84,7 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem):
 #     return s
 
 
-def junit_test_case_from_compmake(db, job_id: CMJobID):
-    from junit_xml import TestCase
-
+def junit_test_case_from_compmake(db, job_id: CMJobID) -> Tuple[bool, TestCase]:
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
         # elapsed_sec = cache.walltime_used
@@ -89,13 +105,20 @@ def junit_test_case_from_compmake(db, job_id: CMJobID):
         stdout=stdout,
         stderr=stderr,
     )
-
-    if cache.state == Cache.FAILED:
+    marked_as_error = False
+    failed = cache.state == Cache.FAILED
+    if failed:
+        marked_as_error = True
         message = cache.exception
         output = cache.exception + "\n" + cache.backtrace
         tc.add_failure_info(message, output)
+    else:
+        notdone = cache.state != Cache.DONE
+        if notdone:
+            marked_as_error = True
+            tc.add_error_info(f"Not done: {cache.state} ")
 
-    return tc
+    return marked_as_error, tc
 
 
 def remove_escapes(s):
