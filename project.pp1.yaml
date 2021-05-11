@@ -21,6 +21,7 @@ install_requires:
 - zuper-utils-python-z7
 - zuper-utils-asyncio-z7
 - nose
+- zuper-zapp-z7
 
 
 tests_require: []

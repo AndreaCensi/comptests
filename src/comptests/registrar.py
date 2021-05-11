@@ -1,3 +1,4 @@
+import inspect
 import os
 import sys
 import traceback
@@ -340,7 +341,10 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: str = None)
 
         # print('registering %s' % x)
         #         logger.debug("registering %s" % function.__name__)
-        wrapper = WrapTest(function, prefix)
+        if inspect.iscoroutinefunction(function):
+            wrapper = function  # WrapTestAsync(function, prefix)
+        else:
+            wrapper = WrapTest(function, prefix)
         cname = function.__module__.replace(".", "-")
         context2 = context.child(name=cname)
         if not dynamic:
@@ -350,7 +354,7 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: str = None)
 
         n += 1
 
-    logger.info("Registered %d tests (reading a list of %s)" % (n, len(ComptestsRegistrar.regular)))
+    logger.info(f"Registered {n} tests (reading a list of {len(ComptestsRegistrar.regular)})")
 
 
 class WrapTest:
@@ -373,6 +377,28 @@ class WrapTest:
 
         CompTests.output_dir_for_current_test = self.output_dir
         return self.function(*args, **kwargs)
+
+
+# class WrapTestAsync:
+#     function: Callable
+#     prefix: Optional[str]
+#     output_dir: str
+#
+#     def __init__(self, function: Callable, prefix: Optional[str]):
+#         self.__name__ = function.__name__
+#         self.function = function
+#         from .comptests import CompTests
+#
+#         if prefix is not None:
+#             self.output_dir = os.path.join(CompTests.global_output_dir, prefix, self.__name__)
+#         else:
+#             self.output_dir = os.path.join(CompTests.global_output_dir, self.__name__)
+#
+#     async def __call__(self, sti, *args, **kwargs):
+#         from .comptests import CompTests
+#
+#         CompTests.output_dir_for_current_test = self.output_dir
+#         return await self.function(sti, *args, **kwargs)
 
 
 def get_testobjects_promises(context, cm: ConfigMaster) -> Dict[str, Dict[str, str]]:
