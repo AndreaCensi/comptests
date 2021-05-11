@@ -15,7 +15,10 @@
     "zuper-utils-python-z7",
     "zuper-zapp-z7"
   ],
-  "tests_require": [],
+  "tests_require": [
+    "zuper-fs-local-z7",
+    "zuper-proc-local-z7"
+  ],
   "srcdir": "src",
   "package_name": "comptests-z7",
   "entry_points": {
