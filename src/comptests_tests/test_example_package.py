@@ -52,7 +52,7 @@ def test_example_package():
             raise Exception(msg)
 
         print("now calling comptests-to-junit")
-        cmd = ["comptests-to-junit", "out-comptests/compmake"]
+        cmd = ["comptests-to-junit", "--output", "out-comptests/junit", "out-comptests/compmake"]
         system_cmd_result(cwd, cmd, display_stdout=True, display_stderr=True, raise_on_error=True)
 
 

@@ -17,6 +17,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     logger = ze.sti.logger
 
     parser = argparse.ArgumentParser()
+    # parser.add_argument("--db", required=True, type=str, help="Output file")
     parser.add_argument("--output", required=True, type=str, help="Output file")
     parser.add_argument(
         "--fail-if-failed",
