@@ -4,15 +4,16 @@ import sys
 import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
-from typing import Callable, Dict, Optional, Tuple
-
-from nose.tools import nottest
+from typing import Callable, Dict, Optional
 
 from compmake import assert_job_exists, CMJobID, JobCompute, Promise
+from comptests.indices import accept, get_test_index
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
+from nose.tools import nottest
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
 from zuper_commons.types import ZException
+
 from . import logger
 from .reports import (
     report_results_pairs,
@@ -33,7 +34,6 @@ __all__ = [
     "comptests_for_all_pairs_dynamic",
     "jobs_registrar",
     "jobs_registrar_simple",
-    "accept_tst_on_this_worker",
 ]
 
 
@@ -274,33 +274,6 @@ def jobs_registrar(context, cm: ConfigMaster, create_reports=False):
     jobs_registrar_simple(context)
 
 
-def get_test_index() -> Tuple[int, int]:
-    """ Returns i,n: machine index and mcdp_comp_tests """
-    n = int(os.environ.get("CIRCLE_NODE_TOTAL", 1))
-    i = int(os.environ.get("CIRCLE_NODE_INDEX", 0))
-    return i, n
-
-
-def int_from_string(s: str) -> int:
-    return sum(map(ord, s))
-
-
-def accept(f: Callable, worker_i: int, worker_n: int) -> bool:
-    return accept_test_string(f.__name__, worker_i, worker_n)
-
-
-def accept_test_string(s: str, worker_i: int, worker_n: int) -> bool:
-    x = int_from_string(s)
-
-    return x % worker_n == worker_i
-
-
-def accept_tst_on_this_worker(s: str):
-    """ Use this from outside. """
-    worker_i, worker_n = get_test_index()
-    return accept_test_string(s, worker_i, worker_n)
-
-
 def jobs_registrar_simple(context: QuickAppContext, only_for_module: str = None):
     """ Registers the simple "comptest" """
     prefix = context._job_prefix
@@ -322,7 +295,7 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: str = None)
                     function.__module__,
                     only_for_module,
                 )
-                #                 logger.error(msg)
+                logger.debug(msg)
                 continue
 
         doit = accept(function, worker_i, worker_n)
