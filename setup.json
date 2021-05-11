@@ -17,7 +17,8 @@
   ],
   "tests_require": [
     "zuper-fs-local-z7",
-    "zuper-proc-local-z7"
+    "zuper-proc-local-z7",
+    "zuper-zapp-interfaces-z7"
   ],
   "srcdir": "src",
   "package_name": "comptests-z7",
@@ -32,7 +33,7 @@
   "modules": [
     "comptests"
   ],
-  "version": "7.1.2105111851",
+  "version": "7.1.2105111857",
   "author": "Andrea Censi",
   "author_email": "info@zupermind.com",
   "url": "https://github.com/AndreaCensi/comptests"
