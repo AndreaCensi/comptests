@@ -17,7 +17,6 @@ install_requires:
 - reprep-z7
 - junit-xml
 - coverage
-- six
 - zuper-utils-python-z7
 - zuper-utils-asyncio-z7
 - nose
