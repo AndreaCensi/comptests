@@ -12,6 +12,7 @@
     "zuper-html-z7",
     "zuper-utils-asyncio-z7",
     "zuper-utils-python-z7",
+    "zuper-zapp-interfaces-z7",
     "zuper-zapp-z7"
   ],
   "tests_require": [
