@@ -21,7 +21,7 @@ install_requires:
 - zuper-utils-asyncio-z7
 - nose
 - zuper-zapp-z7
-
+- zuper-zapp-interfaces-z7
 
 tests_require:
 - zuper-fs-local-z7

@@ -12,6 +12,7 @@
     "zuper-html-z7",
     "zuper-utils-asyncio-z7",
     "zuper-utils-python-z7",
+    "zuper-zapp-interfaces-z7",
     "zuper-zapp-z7"
   ],
   "tests_require": [
@@ -32,7 +33,7 @@
   "modules": [
     "comptests"
   ],
-  "version": "7.1.2105161418",
+  "version": "7.1.2105201758",
   "author": "Andrea Censi",
   "author_email": "info@zupermind.com",
   "url": "https://github.com/AndreaCensi/comptests"
