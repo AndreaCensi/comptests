@@ -91,7 +91,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple
 def report_results_pairs_jobs(
     context, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], CMJobID]
 ):
-    """ This version gets the jobs ID """
+    """This version gets the jobs ID"""
     reason2symbol = {}
 
     def get_string_result(res):

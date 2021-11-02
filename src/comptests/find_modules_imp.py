@@ -9,7 +9,7 @@ __all__ = [
 
 
 def find_modules_main(root):
-    """ Finds the main modules (not '.' in the name) """
+    """Finds the main modules (not '.' in the name)"""
     is_main = lambda d: not "." in d
     return list(filter(is_main, find_modules(root)))
 

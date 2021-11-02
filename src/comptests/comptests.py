@@ -18,7 +18,7 @@ __all__ = [
 
 
 def get_comptests_output_dir():
-    """ when run from the comptests executable, returns the output dir. """
+    """when run from the comptests executable, returns the output dir."""
     if CompTests.output_dir_for_current_test is None:
         msg = "Variable output_dir_for_current_test not set."
         logger.warning(msg)
@@ -109,7 +109,7 @@ class CompTests(QuickApp):
         sti.logger.info("Finished defining jobs.")
 
     def get_modules(self) -> List[str]:
-        """" Parses the command line argument and interprets them as modules. """
+        """ " Parses the command line argument and interprets them as modules."""
         extras = self.options.get_extra()
         if not extras:
             raise ValueError("No modules given")
@@ -128,7 +128,7 @@ class CompTests(QuickApp):
         return modules
 
     def interpret_modules_names(self, names: List[str]) -> Iterator[str]:
-        """ yields a list of modules """
+        """yields a list of modules"""
 
         # First, extract tokens
         names2 = []

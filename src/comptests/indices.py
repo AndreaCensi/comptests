@@ -18,7 +18,7 @@ def int_from_string(s: str) -> int:
 
 @lru_cache(None)
 def get_test_index() -> Tuple[int, int]:
-    """ Returns i,n: machine index and mcdp_comp_tests """
+    """Returns i,n: machine index and mcdp_comp_tests"""
     n = int(os.environ.get("CIRCLE_NODE_TOTAL", 1))
     i = int(os.environ.get("CIRCLE_NODE_INDEX", 0))
     logger.info(worker=i, total=n)
@@ -36,6 +36,6 @@ def accept_test_string(s: str, worker_i: int, worker_n: int) -> bool:
 
 
 def accept_tst_on_this_worker(s: str):
-    """ Use this from outside. """
+    """Use this from outside."""
     worker_i, worker_n = get_test_index()
     return accept_test_string(s, worker_i, worker_n)

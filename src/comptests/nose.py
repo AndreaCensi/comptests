@@ -26,7 +26,7 @@ def create_tmp_dir():
 
 
 def jobs_nosetests(context, module, do_coverage=False):
-    """ Instances the mcdp_lang_tests for the given module. """
+    """Instances the mcdp_lang_tests for the given module."""
     if do_coverage:
         try:
 

@@ -38,7 +38,7 @@ __all__ = [
 
 
 class ComptestsRegistrar:
-    """ Static storage """
+    """Static storage"""
 
     regular = []  # list of dict(function=f, dynamic=dynamic))
     # Once they are scheduled we add id(x) here, so we make sure we
@@ -107,7 +107,7 @@ def check_fails(f, *args, **kwargs):
 
 
 class Wrap:
-    """ Need to assign name """
+    """Need to assign name"""
 
     def __init__(self, f):
         self.f = f
@@ -175,7 +175,7 @@ def comptests_for_all_dynamic(objspec: ObjectSpec):
 
 
 def comptests_for_some(objspec: ObjectSpec):
-    """ Returns a decorator for a test involving one object only. """
+    """Returns a decorator for a test involving one object only."""
 
     def dec(which):
         def register(f):
@@ -188,7 +188,7 @@ def comptests_for_some(objspec: ObjectSpec):
 
 
 def comptests_for_some_dynamic(objspec: ObjectSpec):
-    """ Returns a decorator for a test involving one object only. """
+    """Returns a decorator for a test involving one object only."""
 
     def dec(which):
         def register(f):
@@ -201,7 +201,7 @@ def comptests_for_some_dynamic(objspec: ObjectSpec):
 
 
 def comptests_for_some_pairs(objspec1: ObjectSpec, objspec2: ObjectSpec):
-    """ Returns a decorator for a test involving only a subset of objects. """
+    """Returns a decorator for a test involving only a subset of objects."""
 
     def dec(which1, which2):
         def register(f):
@@ -214,7 +214,7 @@ def comptests_for_some_pairs(objspec1: ObjectSpec, objspec2: ObjectSpec):
 
 
 def comptests_for_some_pairs_dynamic(objspec1: ObjectSpec, objspec2: ObjectSpec):
-    """ Returns a decorator for a test involving only a subset of objects. """
+    """Returns a decorator for a test involving only a subset of objects."""
 
     def dec(which1, which2):
         def register(f):
@@ -275,7 +275,7 @@ def jobs_registrar(context, cm: ConfigMaster, create_reports=False):
 
 
 def jobs_registrar_simple(context: QuickAppContext, only_for_module: str = None):
-    """ Registers the simple "comptest" """
+    """Registers the simple "comptest" """
     prefix = context._job_prefix
 
     worker_i, worker_n = get_test_index()
