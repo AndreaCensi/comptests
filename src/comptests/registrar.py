@@ -274,7 +274,7 @@ def jobs_registrar(context, cm: ConfigMaster, create_reports=False):
     jobs_registrar_simple(context)
 
 
-def jobs_registrar_simple(context: QuickAppContext, only_for_module: str = None):
+def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[str] = None):
     """Registers the simple "comptest" """
     prefix = context._job_prefix
 
