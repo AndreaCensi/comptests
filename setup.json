@@ -16,8 +16,7 @@
   ],
   "tests_require": [
     "zuper-fs-local-z7",
-    "zuper-proc-local-z7",
-    "zuper-zapp-interfaces-z7"
+    "zuper-proc-local-z7"
   ],
   "srcdir": "src",
   "package_name": "comptests-z7",

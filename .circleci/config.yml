@@ -31,8 +31,8 @@ jobs:
       COLUMNS: '160'
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      COVER_PACKAGES: comptests,comptests_tests,comptests_tests.test_example_package
+      TEST_PACKAGES: comptests_tests comptests_tests
       Z_SERVICE_LOG: zuper_zapp.envs.log
       Z_SERVICE_PROC: zuper_proc_local.proc
       Z_SERVICE_FS: zuper_fs_local.use_local_fs
@@ -138,17 +138,17 @@ jobs:
               comptests_tests
         when: always
     - run:
-        name: example_package
+        name: comptests_tests
         command: |-
           set -euxo pipefail
           mkdir -p out/test-results
-          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-example_package-xunit.xml
+          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-comptests_tests-xunit.xml
           nosetests \
               --rednose --immediate \
               --cover-tests --with-coverage \
               --with-xunit --xunit-file=${xunit_output} \
               --cover-package=${COVER_PACKAGES} \
-              example_package
+              comptests_tests
         when: always
     - run:
         name: post-circle-tests
@@ -190,8 +190,8 @@ jobs:
       COLUMNS: '160'
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      COVER_PACKAGES: comptests,comptests_tests,comptests_tests.test_example_package
+      TEST_PACKAGES: comptests_tests comptests_tests
       Z_SERVICE_LOG: zuper_zapp.envs.log
       Z_SERVICE_PROC: zuper_proc_local.proc
       Z_SERVICE_FS: zuper_fs_local.use_local_fs
@@ -297,17 +297,17 @@ jobs:
               comptests_tests
         when: always
     - run:
-        name: example_package
+        name: comptests_tests
         command: |-
           set -euxo pipefail
           mkdir -p out/test-results
-          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-example_package-xunit.xml
+          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-comptests_tests-xunit.xml
           nosetests \
               --rednose --immediate \
               --cover-tests --with-coverage \
               --with-xunit --xunit-file=${xunit_output} \
               --cover-package=${COVER_PACKAGES} \
-              example_package
+              comptests_tests
         when: always
     - run:
         name: post-circle-tests
@@ -349,8 +349,8 @@ jobs:
       COLUMNS: '160'
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      COVER_PACKAGES: comptests,comptests_tests,comptests_tests.test_example_package
+      TEST_PACKAGES: comptests_tests comptests_tests
       Z_SERVICE_LOG: zuper_zapp.envs.log
       Z_SERVICE_PROC: zuper_proc_local.proc
       Z_SERVICE_FS: zuper_fs_local.use_local_fs
@@ -456,17 +456,17 @@ jobs:
               comptests_tests
         when: always
     - run:
-        name: example_package
+        name: comptests_tests
         command: |-
           set -euxo pipefail
           mkdir -p out/test-results
-          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-example_package-xunit.xml
+          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-comptests_tests-xunit.xml
           nosetests \
               --rednose --immediate \
               --cover-tests --with-coverage \
               --with-xunit --xunit-file=${xunit_output} \
               --cover-package=${COVER_PACKAGES} \
-              example_package
+              comptests_tests
         when: always
     - run:
         name: post-circle-tests
@@ -508,8 +508,8 @@ jobs:
       COLUMNS: '160'
       # default is /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       PATH: /root/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      COVER_PACKAGES: comptests,comptests_tests,example_package
-      TEST_PACKAGES: comptests_tests example_package
+      COVER_PACKAGES: comptests,comptests_tests,comptests_tests.test_example_package
+      TEST_PACKAGES: comptests_tests comptests_tests
       Z_SERVICE_LOG: zuper_zapp.envs.log
       Z_SERVICE_PROC: zuper_proc_local.proc
       Z_SERVICE_FS: zuper_fs_local.use_local_fs
@@ -615,17 +615,17 @@ jobs:
               comptests_tests
         when: always
     - run:
-        name: example_package
+        name: comptests_tests
         command: |-
           set -euxo pipefail
           mkdir -p out/test-results
-          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-example_package-xunit.xml
+          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-comptests_tests-xunit.xml
           nosetests \
               --rednose --immediate \
               --cover-tests --with-coverage \
               --with-xunit --xunit-file=${xunit_output} \
               --cover-package=${COVER_PACKAGES} \
-              example_package
+              comptests_tests
         when: always
     - run:
         name: post-circle-tests
@@ -663,4 +663,4 @@ jobs:
           bash <(curl -s https://codecov.io/bash)
     resource_class: medium
 
-# sigil 5613a680890f5d437bee12f2bdbbee6d
+# sigil 6b7eff252e9a342d6e9f260248ab7495
