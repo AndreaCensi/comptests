@@ -116,8 +116,6 @@ jobs:
           else
               echo "Target $TARGET not defined"
           fi
-
-
     # - run:
     #     name: Notebooks
     #     command: |
@@ -275,8 +273,6 @@ jobs:
           else
               echo "Target $TARGET not defined"
           fi
-
-
     # - run:
     #     name: Notebooks
     #     command: |
@@ -434,8 +430,6 @@ jobs:
           else
               echo "Target $TARGET not defined"
           fi
-
-
     # - run:
     #     name: Notebooks
     #     command: |
@@ -593,8 +587,6 @@ jobs:
           else
               echo "Target $TARGET not defined"
           fi
-
-
     # - run:
     #     name: Notebooks
     #     command: |
@@ -663,4 +655,4 @@ jobs:
           bash <(curl -s https://codecov.io/bash)
     resource_class: medium
 
-# sigil 6b7eff252e9a342d6e9f260248ab7495
+# sigil cdca8394d83be9049816450c03f3a7f4
