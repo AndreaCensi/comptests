@@ -1,10 +1,11 @@
 from comptests.registrar import comptest, comptest_dynamic, comptest_fails
-from example_package.unittests.generation import for_some_class1, for_some_class1_class2
 from .generation import (
     for_all_class1,
     for_all_class1_class2,
     for_all_class1_class2_dynamic,
     for_all_class1_dynamic,
+    for_some_class1,
+    for_some_class1_class2,
 )
 
 

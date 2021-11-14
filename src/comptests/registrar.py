@@ -6,15 +6,15 @@ import warnings
 from collections import defaultdict, namedtuple, OrderedDict
 from typing import Callable, Dict, Optional
 
+from nose.tools import nottest
+
 from compmake import assert_job_exists, CMJobID, JobCompute, Promise
-from comptests.indices import accept, get_test_index
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
-from nose.tools import nottest
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
 from zuper_commons.types import ZException
-
 from . import logger
+from .indices import accept, get_test_index
 from .reports import (
     report_results_pairs,
     report_results_pairs_jobs,
