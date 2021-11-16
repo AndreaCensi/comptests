@@ -26,6 +26,8 @@ install_requires:
 tests_require:
 - zuper-fs-local-z7
 - zuper-proc-local-z7
+- zuper-notes-z7
+- zuper-loghandle-z7
 
 console_scripts:
   comptests: comptests:main_comptests
@@ -41,10 +43,10 @@ circleci:
   active: true
   test_python_versions: ['3.8', '3.9']
   environment:
-    Z_SERVICE_LOG: zuper_zapp.envs.log
+    Z_SERVICE_LOG: zuper_loghandle.log
     Z_SERVICE_PROC: zuper_proc_local.proc
     Z_SERVICE_FS: zuper_fs_local.use_local_fs
-    Z_SERVICE_NOTE: zuper_zapp.envs.notes
+    Z_SERVICE_NOTE: zuper_notes.notes
 
 python_syntax_version: '3.8'
 
