@@ -6,7 +6,7 @@ import warnings
 from contextlib import contextmanager
 
 from system_cmd import system_cmd_result
-from zuper_commons.fs import read_bytes_from_file
+from zuper_commons.fs import getcwd, read_bytes_from_file
 from zuper_commons.text import PythonModuleName
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_utils_python.listing import get_modules_in_dir_detailed
@@ -87,7 +87,7 @@ def call_nosetests_plus_coverage(module) -> bytes:
 
 def find_command_path(prog):
     res = system_cmd_result(
-        cwd=os.getcwd(),
+        cwd=getcwd(),
         cmd=["which", prog],
         display_stdout=False,
         display_stderr=False,
