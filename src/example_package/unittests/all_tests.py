@@ -85,7 +85,7 @@ def report_class2(ob2):
 
 
 # normal test
-def test_dummy():
+def test_dummy() -> None:
     pass
 
 

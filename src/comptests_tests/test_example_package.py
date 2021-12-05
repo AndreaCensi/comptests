@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from zuper_commons.fs import write_ustring_to_utf8_file
 
 
-def test_example_package():
+def test_example_package() -> None:
     from system_cmd import system_cmd_result
 
     # make sure it's installed
