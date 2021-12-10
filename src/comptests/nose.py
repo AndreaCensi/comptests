@@ -203,7 +203,7 @@ def jobs_nosetests_single(context, module: str):
     #     #
 
 
-async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str):
+async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str) -> object:
     f = importlib.import_module(module_name)
     ff = getattr(f, func_name)
 
