@@ -115,12 +115,15 @@ jobs:
           set -euxo pipefail
               mkdir -p out/test-results
               xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-comptests_tests-xunit.xml
-              nosetests \
-                  --rednose --immediate \
-                  --cover-tests --with-coverage \
-                  --with-xunit --xunit-file=${xunit_output} \
-                  --cover-package=${COVER_PACKAGES} \
-                  comptests_tests
+              NODE_TOTAL=${CIRCLE_NODE_TOTAL} NODE_INDEX=${CIRCLE_NODE_INDEX} \
+                  nosetests -x \
+                      --rednose --immediate \
+                      --cover-tests --with-coverage \
+                      --with-parallel --processes=1 --process-timeout=120 \
+                      --cover-package=${COVER_PACKAGES} \
+                      --with-xunitmp --xunitmp-file=${xunit_output} \
+                      -v \
+                      comptests_tests
     - run:
         name: post-circle-tests
         command: |
@@ -260,12 +263,18 @@ jobs:
         name: comptests_tests
         command: |-
           set -euxo pipefail
-                          TEST_MODULES=$(circleci tests split < .circleci/comptests_tests.tests)
-                          echo $TEST_MODULES
-                          mkdir -p out/test-results
-                          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-comptests_tests-xunit.xml
-                          nose2 --with-coverage --plugin nose2.plugins.junitxml  --junit-xml --junit-xml-path                     ${xunit_output} $TEST_MODULES
-                          # TODO: cover packages
+          TEST_MODULES=$(circleci tests split <.circleci/comptests_tests.tests)
+          echo "TEST_MODULES=[$TEST_MODULES]"
+          if [ -z "$TEST_MODULES" ]; then
+            echo "\$TEST_MODULES is empty"
+            exit 0
+          else
+            echo "\$TEST_MODULES is NOT empty"
+          fi
+          mkdir -p out/test-results
+          xunit_output=$PWD/out/test-results/nose-${CIRCLE_NODE_INDEX}-comptests_tests-xunit.xml
+          nose2 --with-coverage --plugin nose2.plugins.junitxml --junit-xml --junit-xml-path ${xunit_output} $TEST_MODULES
+          # TODO: cover packages
     - run:
         name: post-circle-tests
         command: |
@@ -305,4 +314,4 @@ jobs:
           ./codecov -t ${CODECOV_TOKEN}
     resource_class: small
 
-# sigil 38765a920c13e0c7575264f8e94b17fa
+# sigil f76175a1a972120680c68744cb23ff2a
