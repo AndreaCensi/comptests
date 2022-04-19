@@ -5,6 +5,7 @@ from junit_xml import TestCase
 
 from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
 from zuper_commons.cmds import ExitCode
+from zuper_commons.text import remove_escapes
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_zapp import zapp1, ZappEnv
@@ -96,8 +97,8 @@ def junit_test_case_from_compmake(db, job_id: CMJobID) -> Tuple[bool, TestCase]:
     check_isinstance(cache.captured_stderr, (type(None), str))
     check_isinstance(cache.captured_stdout, (type(None), str))
     check_isinstance(cache.exception, (type(None), str))
-    stderr = remove_escapes(cache.captured_stderr)
-    stdout = remove_escapes(cache.captured_stdout)
+    stderr = remove_escapes(cache.captured_stderr or "")
+    stdout = remove_escapes(cache.captured_stdout or "")
 
     tc = TestCase(
         name=job_id,
@@ -120,15 +121,6 @@ def junit_test_case_from_compmake(db, job_id: CMJobID) -> Tuple[bool, TestCase]:
             tc.add_error_info(f"Not done: {cache.state} ")
 
     return marked_as_error, tc
-
-
-def remove_escapes(s):
-    if s is None:
-        return None
-    import re
-
-    escape = re.compile("\x1b\[..?m")
-    return escape.sub("", s)
 
 
 if __name__ == "__main__":
