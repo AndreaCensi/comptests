@@ -111,7 +111,7 @@ jobs:
 
     - run:
         name: comptests_tests
-        command: |-
+        command: |
           set -euxo pipefail
           TEST_MODULES=$(circleci tests split <.circleci/comptests_tests.tests)
           echo "TEST_MODULES=[$TEST_MODULES]"
@@ -168,4 +168,4 @@ jobs:
           ./codecov -t ${CODECOV_TOKEN}
     resource_class: small
 
-# sigil b82b0125b8bb259a527064e0815b068b
+# sigil fbad09d280fd31c412837c32ae6f4806
