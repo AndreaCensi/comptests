@@ -45,7 +45,8 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
 
     nseen, nmarked, s = await junit_xml(ze.sti, db)
 
-    await fs.write_str(parsed.output, s)
+    async with fs2.session() as fs:
+        await fs.write_str(parsed.output, s)
 
     ze.sti.logger.info(nseen=nseen, nmarked=nmarked, output=parsed.output)
     if nmarked > 0 and parsed.fail_if_failed:

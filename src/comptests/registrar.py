@@ -276,6 +276,7 @@ def jobs_registrar(context, cm: ConfigMaster, create_reports=False):
 
 def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[str] = None):
     """Registers the simple "comptest" """
+    # noinspection PyProtectedMember
     prefix = context._job_prefix
 
     worker_i, worker_n = get_test_index()
@@ -767,6 +768,7 @@ def instance_object(master_name, objspec_name, id_object):
 
 
 def get_objspec(master_name, objspec_name):
+    # noinspection PyProtectedMember
     master = GlobalConfig._masters[master_name]
     specs = master.specs
     if not objspec_name in specs:

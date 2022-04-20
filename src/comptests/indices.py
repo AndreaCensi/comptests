@@ -5,7 +5,7 @@ from typing import Callable, Tuple
 
 from . import logger
 
-__all__ = ["get_test_index", "accept_test_string", "accept_tst_on_this_worker"]
+__all__ = ["get_test_index", "accept_test_string", "accept_tst_on_this_worker", "accept"]
 
 
 def int_from_string(s: str) -> int:
