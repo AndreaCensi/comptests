@@ -9,12 +9,12 @@ from zuper_commons.text import remove_escapes
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_zapp import zapp1, ZappEnv
-from zuper_zapp_interfaces import get_fs
+from zuper_zapp_interfaces import get_fs2
 
 
 @zapp1()
 async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
-    fs = await get_fs(ze.sti)
+    fs2 = await get_fs2(ze.sti)
     logger = ze.sti.logger
 
     parser = argparse.ArgumentParser()
