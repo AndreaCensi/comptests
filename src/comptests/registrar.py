@@ -593,10 +593,10 @@ def define_tests_some_pairs(
     create_reports: bool,
 ):
     if not some_pairs:
-        print("No %s+x pairs mcdp_lang_tests." % (objspec1.name))
+        print(f"No {objspec1.name}+x pairs mcdp_lang_tests.")
         return
     else:
-        print("%d %s+x pairs mcdp_lang_tests." % (len(some_pairs), objspec1.name))
+        print(f"{len(some_pairs):d} {objspec1.name}+x pairs mcdp_lang_tests.")
 
     for x in some_pairs:
         objspec2 = x["objspec2"]
