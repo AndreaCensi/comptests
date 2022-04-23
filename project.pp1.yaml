@@ -23,11 +23,7 @@ install_requires:
 - zuper-zapp-z7
 - zuper-zapp-interfaces-z7
 
-tests_require:
-- zuper-fs-local-z7
-- zuper-proc-local-z7
-- zuper-notes-z7
-- zuper-loghandle-z7
+tests_require: []
 
 console_scripts:
   comptests: comptests:main_comptests
@@ -42,6 +38,12 @@ pypi:
 circleci:
   active: true
   test_python_versions: ['3.10']
+  more_packages:
+  - zuper-fs-local-z7
+  - zuper-proc-local-z7
+  - zuper-notes-z7
+  - zuper-loghandle-z7
+
   environment:
     Z_SERVICE_LOG: zuper_loghandle.log
     Z_SERVICE_PROC: zuper_proc_local.proc
