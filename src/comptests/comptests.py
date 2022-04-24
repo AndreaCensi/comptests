@@ -12,8 +12,8 @@ from .nose import jobs_nosetests, jobs_nosetests_single
 
 __all__ = [
     "CompTests",
-    "main_comptests",
     "get_comptests_output_dir",
+    "main_comptests",
 ]
 
 

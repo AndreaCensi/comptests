@@ -1,8 +1,8 @@
 from typing import Sequence, Set
 
 __all__ = [
-    "Skipped",
     "PartiallySkipped",
+    "Skipped",
 ]
 
 

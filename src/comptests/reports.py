@@ -7,9 +7,9 @@ from . import logger
 from .results import PartiallySkipped, Skipped
 
 __all__ = [
-    "report_results_single",
     "report_results_pairs",
     "report_results_pairs_jobs",
+    "report_results_single",
 ]
 
 

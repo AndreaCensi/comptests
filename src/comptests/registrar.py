@@ -23,17 +23,17 @@ from .reports import (
 
 __all__ = [
     "comptest",
-    "run_module_tests",
-    "comptest_fails",
     "comptest_dynamic",
+    "comptest_fails",
     "comptests_for_all",
+    "comptests_for_all_dynamic",
     "comptests_for_all_pairs",
+    "comptests_for_all_pairs_dynamic",
     "comptests_for_some",
     "comptests_for_some_pairs",
-    "comptests_for_all_dynamic",
-    "comptests_for_all_pairs_dynamic",
     "jobs_registrar",
     "jobs_registrar_simple",
+    "run_module_tests",
 ]
 
 
