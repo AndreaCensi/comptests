@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import os
+import sys
 import tempfile
 import warnings
 from contextlib import contextmanager
@@ -48,8 +49,12 @@ def jobs_nosetests(context, module, do_coverage=False):
 
 
 def call_nosetests(module):
-    with create_tmp_dir() as cwd:
+    if sys.version_info < (3, 10):
         cmd = ["nosetests", module]
+    else:
+        cmd = ["nose2", module]
+
+    with create_tmp_dir() as cwd:
         system_cmd_result(
             cwd=cwd,
             cmd=cmd,
@@ -65,7 +70,7 @@ def call_nosetests_plus_coverage(module) -> bytes:
     It returns the .coverage file as bytes.
     """
     with create_tmp_dir() as cwd:
-        prog = find_command_path("nosetests")
+        prog = find_command_path("nose2")
         cmd = [prog, module]
 
         # note: coverage -> python-coverage in Ubuntu14
