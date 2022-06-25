@@ -36,7 +36,8 @@ jobs:
         name: Build statistics
         command: |
           mkdir -p build-stats
-          env | sort | tee  build-stats/env.txt
+          # env | sort | tee  build-stats/env.txt
+          env | sort
     - store_artifacts:
         path: build-stats
         destination: build-stats
@@ -171,4 +172,4 @@ jobs:
           ./codecov  
     resource_class: small
 
-# sigil 5542325ef5e4d1a24f2296269b9c9aa9
+# sigil e7b9c483f107ec741304a22ad1d7c2d0
