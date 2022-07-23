@@ -13,7 +13,10 @@ from zuper_utils_asyncio import SyncTaskInterface
 from zuper_utils_python.listing import get_modules_in_dir_detailed
 from . import logger
 
-__all__ = ["jobs_nosetests", "jobs_nosetests_single"]
+__all__ = [
+    "jobs_nosetests",
+    "jobs_nosetests_single",
+]
 
 
 @contextmanager
