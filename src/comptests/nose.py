@@ -5,9 +5,11 @@ import sys
 import tempfile
 import warnings
 from contextlib import contextmanager
+from typing import cast, Iterator
 
+from quickapp import QuickAppContext
 from system_cmd import system_cmd_result
-from zuper_commons.fs import getcwd, read_bytes_from_file
+from zuper_commons.fs import dirname, DirPath, FilePath, getcwd, joinf, read_bytes_from_file
 from zuper_commons.text import PythonModuleName
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_utils_python.listing import get_modules_in_dir_detailed
@@ -20,16 +22,16 @@ __all__ = [
 
 
 @contextmanager
-def create_tmp_dir():
+def create_tmp_dir() -> Iterator[DirPath]:
     # TODO: delete dir
     dirname = tempfile.mkdtemp()
     try:
-        yield dirname
+        yield cast(DirPath, dirname)
     except:
         raise
 
 
-def jobs_nosetests(context, module, do_coverage=False):
+def jobs_nosetests(context: QuickAppContext, module: str, do_coverage: bool = False) -> None:
     """Instances the mcdp_lang_tests for the given module."""
     if do_coverage:
         try:
@@ -51,7 +53,7 @@ def jobs_nosetests(context, module, do_coverage=False):
         context.comp(call_nosetests, module, job_id="nosetests")
 
 
-def call_nosetests(module):
+def call_nosetests(module: str) -> None:
     if sys.version_info < (3, 10):
         cmd = ["nosetests", module]
     else:
@@ -67,7 +69,7 @@ def call_nosetests(module):
         )
 
 
-def call_nosetests_plus_coverage(module) -> bytes:
+def call_nosetests_plus_coverage(module: str) -> bytes:
     """
     This also calls the coverage module.
     It returns the .coverage file as bytes.
@@ -85,7 +87,7 @@ def call_nosetests_plus_coverage(module) -> bytes:
             display_stderr=True,
             raise_on_error=True,
         )
-        coverage_file = os.path.join(cwd, ".coverage")
+        coverage_file = joinf(cwd, ".coverage")
         res = read_bytes_from_file(coverage_file)
         # with open(coverage_file, 'rb') as f:
         #     res = f.read()
@@ -93,7 +95,7 @@ def call_nosetests_plus_coverage(module) -> bytes:
         return res
 
 
-def find_command_path(prog):
+def find_command_path(prog: str) -> str:
     res = system_cmd_result(
         cwd=getcwd(),
         cmd=["which", prog],
@@ -105,7 +107,7 @@ def find_command_path(prog):
     return prog
 
 
-def write_coverage_report(outdir, covdata: bytes, module):
+def write_coverage_report(outdir: DirPath, covdata: bytes, module: str) -> None:
     logger.info(f"Writing coverage data to {outdir}")
     outdir = os.path.abspath(outdir)
     if not os.path.exists(outdir):
@@ -136,22 +138,22 @@ def write_coverage_report(outdir, covdata: bytes, module):
         )
 
 
-def jobs_nosetests_single(context, module: str):
+def jobs_nosetests_single(context: QuickAppContext, module: str) -> None:
     assert "." not in module, module
     m = importlib.import_module(module)
-    d = os.path.dirname(m.__file__)
-    d0 = os.path.dirname(d)
+    d = dirname(cast(FilePath, m.__file__))
+    d0 = dirname(d)
     mods0 = get_modules_in_dir_detailed(d0)
     mods = {k for k in mods0 if k.startswith(f"{module}.")}
 
     # modules = {module+'.'+m: v for m,v in .items()}
     logger.info(module=module, modules=mods)
 
-    def is_test(k, v):
+    def is_test(k: str, v: object) -> bool:
         if hasattr(v, "__test__"):
             return bool(getattr(v, "__test__"))
         if not inspect.isfunction(v):
-            logger.info(f"This is not a function:  {module}.{k}  {type(v)}")
+            # logger.info(f"This is not a function:  {module}.{k}  {type(v)}")
             return False
         return "_test" in k or "test_" in k
 
@@ -164,8 +166,6 @@ def jobs_nosetests_single(context, module: str):
         for k, v in ks.items():
             job_id = f"nosesingle-{test_module}-{k}"
             context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
-
-    return
 
     #
     # raise ZValueError(module=module, modules=mods, mods=mods0)
@@ -216,13 +216,14 @@ async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_na
     ff = getattr(f, func_name)
 
     logger.info(func_name=func_name, ff=ff, attrs=ff.__dict__)
-    print(f"{func_name} {ff} {ff.__dict__}")
+    # print(f"{func_name} {ff} {ff.__dict__}")
     if hasattr(ff, "__original__"):
         orig = getattr(ff, "__original__")
-        print('calling "orig"')
+        # print('calling "orig"')
 
         t = await sti.create_child_task2(func_name, orig)
-        await t.wait_for_outcome_success()
+        outcome = await t.wait_for_outcome_success()
+        return outcome.result
 
     else:
         return ff()

@@ -17,7 +17,7 @@ class Skipped:
     def __init__(self, reason: str):
         self.reason = reason
 
-    def get_reason(self):
+    def get_reason(self) -> str:
         return self.reason
 
 
@@ -32,5 +32,5 @@ class PartiallySkipped:
     def __init__(self, skipped: Sequence[str]):
         self.skipped = set(skipped)
 
-    def get_skipped_parts(self):
+    def get_skipped_parts(self) -> Set[str]:
         return self.skipped

@@ -3,7 +3,7 @@ import os
 from typing import Iterator, List
 
 from conf_tools import GlobalConfig, import_name, reset_config
-from quickapp import QuickApp
+from quickapp import QuickApp, QuickAppContext
 from zuper_commons.types import ZException, ZValueError
 from zuper_utils_asyncio import SyncTaskInterface
 from . import logger
@@ -31,6 +31,9 @@ def get_comptests_global_output_dir():
     return CompTests.global_output_dir
 
 
+HOOK_NAME = "jobs_comptests"
+
+
 class CompTests(QuickApp):
     """
     Runs the unit tests defined as @comptest.
@@ -41,8 +44,6 @@ class CompTests(QuickApp):
     output_dir_for_current_test = None
 
     cmd = "comptests"
-
-    hook_name = "jobs_comptests"
 
     def define_options(self, params):
         params.add_string("exclude", default="", help="exclude these modules (comma separated)")
@@ -182,7 +183,7 @@ class CompTests(QuickApp):
             )
 
 
-def instance_comptests_jobs2_m(context, module_name, create_reports):
+def instance_comptests_jobs2_m(context: QuickAppContext, module_name: str, create_reports: bool) -> None:
     from .registrar import jobs_registrar_simple
 
     is_first = "." not in module_name
@@ -192,21 +193,22 @@ def instance_comptests_jobs2_m(context, module_name, create_reports):
         module = import_name(module_name)
     except ValueError as e:
 
-        msg = "Could not import module %r" % module_name
+        msg = f"Could not import module {module_name!r}"
 
         if warn_errors:
             logger.error(msg)
 
         raise ZException(msg) from e
 
-    fname = CompTests.hook_name
-
-    if not fname in module.__dict__:
-        msg = f"Module {module_name} does not have function {fname}()."
-        if warn_errors:
-            logger.debug(msg)
+    if not HOOK_NAME in module.__dict__:
+        msg = f"Module {module_name} does not have function {HOOK_NAME}()."
+        logger.warn(msg)
+        # if warn_errors:
+        #     logger.debug(msg)
     else:
-        ff = module.__dict__[fname]
+        msg = f"Module {module_name}: found hook {HOOK_NAME}()."
+        logger.warn(msg)
+        ff = module.__dict__[HOOK_NAME]
         context.comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
 
     jobs_registrar_simple(context, only_for_module=module_name)

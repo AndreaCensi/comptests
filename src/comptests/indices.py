@@ -1,7 +1,7 @@
 import hashlib
 import os
 from functools import lru_cache
-from typing import Callable, Tuple
+from typing import Any, Callable, Tuple
 
 from . import logger
 
@@ -30,7 +30,7 @@ def get_test_index() -> Tuple[int, int]:
     return i, n
 
 
-def accept(f: Callable, worker_i: int, worker_n: int) -> bool:
+def accept(f: Callable[..., Any], worker_i: int, worker_n: int) -> bool:
     return accept_test_string(f.__name__, worker_i, worker_n)
 
 
@@ -40,7 +40,7 @@ def accept_test_string(s: str, worker_i: int, worker_n: int) -> bool:
     return x % worker_n == worker_i
 
 
-def accept_tst_on_this_worker(s: str):
+def accept_tst_on_this_worker(s: str) -> bool:
     """Use this from outside."""
     worker_i, worker_n = get_test_index()
     return accept_test_string(s, worker_i, worker_n)

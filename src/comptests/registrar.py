@@ -12,6 +12,7 @@ from compmake import assert_job_exists, CMJobID, JobCompute, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
+from zuper_commons.fs import DirPath
 from zuper_commons.types import ZException
 from . import logger
 from .indices import accept, get_test_index
@@ -242,12 +243,12 @@ def comptests_for_all_pairs(objspec1: ObjectSpec, objspec2: ObjectSpec):
     return register
 
 
-def jobs_registrar(context, cm: ConfigMaster, create_reports=False):
+def jobs_registrar(context1: QuickAppContext, cm: ConfigMaster, create_reports=False):
     assert isinstance(cm, ConfigMaster)
 
     # Sep 15: remove name
     #     context = context.child(cm.name)
-    context = context.child("")
+    context = context1.child("")
 
     names = sorted(cm.specs.keys())
 
@@ -274,7 +275,7 @@ def jobs_registrar(context, cm: ConfigMaster, create_reports=False):
     jobs_registrar_simple(context)
 
 
-def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[str] = None):
+def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[str] = None) -> int:
     """Registers the simple "comptest" """
     # noinspection PyProtectedMember
     prefix = context._job_prefix
@@ -329,12 +330,13 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[st
         n += 1
 
     logger.info(f"Registered {n} tests (reading a list of {len(ComptestsRegistrar.regular)})")
+    return n
 
 
 class WrapTest:
     function: Callable
     prefix: Optional[str]
-    output_dir: str
+    output_dir: DirPath
 
     def __init__(self, function: Callable, prefix: Optional[str]):
         self.__name__ = function.__name__
@@ -375,7 +377,7 @@ class WrapTest:
 #         return await self.function(sti, *args, **kwargs)
 
 
-def get_testobjects_promises(context, cm: ConfigMaster) -> Dict[str, Dict[str, str]]:
+def get_testobjects_promises(context: QuickAppContext, cm: ConfigMaster) -> Dict[str, Dict[str, str]]:
     names2test_objects = {}
     for name in sorted(cm.specs.keys()):
         objspec = cm.specs[name]
@@ -385,7 +387,7 @@ def get_testobjects_promises(context, cm: ConfigMaster) -> Dict[str, Dict[str, s
 
 
 def define_tests_for(
-    context,
+    context: QuickAppContext,
     cm,
     name: str,
     names2test_objects: Dict[str, Dict[str, CMJobID]],
@@ -696,12 +698,12 @@ def wrap_func(func, id_ob1, ob1):
     return func(id_ob1, ob1)
 
 
-def wrap_func_dyn(context, func, id_ob1, ob1):
+def wrap_func_dyn(context: QuickAppContext, func, id_ob1, ob1):
     # print('%20s: %s' % (id_ob1, describe_value(ob1)))
     return func(context, id_ob1, ob1)
 
 
-def wrap_func_pair_dyn(context, func, id_ob1, ob1, id_ob2, ob2):
+def wrap_func_pair_dyn(context: QuickAppContext, func, id_ob1, ob1, id_ob2, ob2):
     # print('%20s: %s' % (id_ob1, describe_value(ob1)))
     # print('%20s: %s' % (id_ob2, describe_value(ob2)))
     return func(context, id_ob1, ob1, id_ob2, ob2)
@@ -713,7 +715,7 @@ def wrap_func_pair(func, id_ob1, ob1, id_ob2, ob2):
     return func(id_ob1, ob1, id_ob2, ob2)
 
 
-def get_testobjects_promises_for_objspec(context, objspec: ObjectSpec) -> Dict[str, str]:
+def get_testobjects_promises_for_objspec(context: QuickAppContext, objspec: ObjectSpec) -> Dict[str, str]:
     warnings.warn("Need to be smarter here.")
     objspec.master.load()
     warnings.warn("Select test objects here.")
