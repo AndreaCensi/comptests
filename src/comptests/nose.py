@@ -13,7 +13,8 @@ from zuper_commons.fs import dirname, DirPath, FilePath, getcwd, joinf, read_byt
 from zuper_commons.text import PythonModuleName
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_utils_python.listing import get_modules_in_dir_detailed
-from . import accept_tst_on_this_worker, logger
+from . import logger
+from .indices import accept_tst_on_this_worker
 
 __all__ = [
     "jobs_nosetests",
