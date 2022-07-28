@@ -13,7 +13,7 @@ from zuper_commons.fs import dirname, DirPath, FilePath, getcwd, joinf, read_byt
 from zuper_commons.text import PythonModuleName
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_utils_python.listing import get_modules_in_dir_detailed
-from . import logger
+from . import accept_tst_on_this_worker, logger
 
 __all__ = [
     "jobs_nosetests",
@@ -165,7 +165,11 @@ def jobs_nosetests_single(context: QuickAppContext, module: str) -> None:
 
         for k, v in ks.items():
             job_id = f"nosesingle-{test_module}-{k}"
-            context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
+            if accept_tst_on_this_worker(k):
+
+                context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
+            else:
+                logger.info(f"Skipping {test_module}.{k} on this worker")
 
     #
     # raise ZValueError(module=module, modules=mods, mods=mods0)
