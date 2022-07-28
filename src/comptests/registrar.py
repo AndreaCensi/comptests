@@ -529,7 +529,7 @@ def define_tests_pairs(
     pairs,
     create_reports: bool,
 ):
-    objs1 = names2test_objects[objspec1.name]
+    objs1: Dict[str, CMJobID] = names2test_objects[objspec1.name]
 
     if not pairs:
         logger.warn(f"No {objspec1.name}+x pairs mcdp_lang_tests.")
@@ -588,9 +588,9 @@ def define_tests_pairs(
 
 
 def define_tests_some_pairs(
-    context,
+    context: QuickAppContext,
     objspec1: ObjectSpec,
-    names2test_objects: Dict[str, Dict[str, str]],
+    names2test_objects: Dict[str, Dict[str, CMJobID]],
     some_pairs,
     create_reports: bool,
 ):
@@ -665,7 +665,17 @@ def define_tests_some_pairs(
         )
 
 
-def define_tests_some_pairs_(cx, db, objspec1, objspec2, objs1, objs2, func, dynamic, create_reports):
+def define_tests_some_pairs_(
+    cx,
+    db,
+    objspec1,
+    objspec2,
+    objs1: Dict[str, CMJobID],
+    objs2: Dict[str, CMJobID],
+    func,
+    dynamic,
+    create_reports,
+):
     results = {}
     jobs = {}
     combinations = iterate_context_names_pair(
