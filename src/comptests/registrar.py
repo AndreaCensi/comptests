@@ -4,7 +4,7 @@ import sys
 import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Collection, Dict, Optional, TypedDict
 
 from nose.tools import nottest
 
@@ -419,13 +419,19 @@ def define_tests_for(
     define_tests_some(context, objspec, names2test_objects, some=some, create_reports=create_reports)
 
 
+class TestFunctionRecord(TypedDict):
+    function: Callable[..., Any]
+    which: Any
+    dynamic: bool
+
+
 def define_tests_some(
-    context,
+    context: QuickAppContext,
     objspec: ObjectSpec,
     names2test_objects: Dict[str, Dict[str, CMJobID]],
-    some,
-    create_reports,
-):
+    some: Collection[TestFunctionRecord],
+    create_reports: bool,
+) -> None:
     test_objects = names2test_objects[objspec.name]
 
     if not test_objects:
@@ -477,12 +483,12 @@ def define_tests_some(
 
 
 def define_tests_single(
-    context,
-    objspec,
+    context: QuickAppContext,
+    objspec: ObjectSpec,
     names2test_objects: Dict[str, Dict[str, CMJobID]],
-    functions,
-    create_reports,
-):
+    functions: Collection[TestFunctionRecord],
+    create_reports: bool,
+) -> None:
     test_objects = names2test_objects[objspec.name]
     if not test_objects:
         msg = "No test_objects for objects of kind %r." % objspec.name
@@ -523,8 +529,8 @@ def define_tests_single(
 
 
 def define_tests_pairs(
-    context,
-    objspec1,
+    context: QuickAppContext,
+    objspec1: ObjectSpec,
     names2test_objects: Dict[str, Dict[str, CMJobID]],
     pairs,
     create_reports: bool,
