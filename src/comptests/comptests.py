@@ -101,13 +101,15 @@ class CompTests(QuickApp):
         #     import coverage
         #     coverage.process_startup()
         if not options.nonose:
-            await self.instance_nosetests_jobs(sti, context, modules, do_coverage)
+            await self.instance_nosetests_jobs(sti, context.child("nt"), modules, do_coverage)
 
         if options.nosesingle:
-            await self.instance_nosesingle_jobs(sti, context, modules)
+            await self.instance_nosesingle_jobs(sti, context.child("ns"), modules)
 
         if not options.nocomp:
-            await self.instance_comptests_jobs(sti, context, modules, create_reports=options.reports)
+            await self.instance_comptests_jobs(
+                sti, context.child("ct"), modules, create_reports=options.reports
+            )
 
         sti.logger.info("Finished defining jobs.")
 
@@ -167,7 +169,6 @@ class CompTests(QuickApp):
     ) -> None:
         sti.logger.info("instancing nosesingle jobs", modules=modules)
         await asyncio.sleep(0)
-        context = context.child("nose")
         for module in modules:
             c = context.child(module)
             c.comp_dynamic(jobs_nosetests_single, module, job_id="nosesingle")
@@ -177,8 +178,6 @@ class CompTests(QuickApp):
     ):
         sti.logger.info("instancing jobs", modules=modules)
         await asyncio.sleep(0)
-        context = context.child("ct")
-
         for module in modules:
             c = context.child(module)
 
