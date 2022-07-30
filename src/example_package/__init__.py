@@ -1,8 +1,16 @@
+from zuper_commons import ZLogger
+
+logger = ZLogger(__name__)
+
+from quickapp import QuickAppContext
 from .configuration import *
 from .interfaces import *
+from .unittests import *
 
 
-def jobs_comptests(context):
+def jobs_comptests(context: QuickAppContext) -> None:
+    logger.info("initializing jobs_comptests")
+    print("initializing jobs_comptests")
     # configuration
     from conf_tools import GlobalConfig
 
@@ -14,4 +22,4 @@ def jobs_comptests(context):
     # instantiation
     from comptests import jobs_registrar
 
-    jobs_registrar(context, get_example_package_config())
+    jobs_registrar(context, get_example_package_config(), create_reports=True)

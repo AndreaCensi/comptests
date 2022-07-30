@@ -212,7 +212,7 @@ def instance_comptests_jobs2_m(context: QuickAppContext, module_name: str, creat
         logger.warn(msg)
         ff = module.__dict__[HOOK_NAME]
         # context.child(HOOK_NAME).comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
-        context.comp_dynamic(jobs_registrar_simple, ff, job_id=HOOK_NAME)
+        context.comp_dynamic(comptests_jobs_wrap, ff, job_id=HOOK_NAME)
 
     jobs_registrar_simple(context.child("registrar"), only_for_module=module_name)
 

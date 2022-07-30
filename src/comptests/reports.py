@@ -2,6 +2,7 @@ import itertools
 from typing import Dict, Tuple
 
 from compmake import Cache, CMJobID, get_job_cache, get_job_userobject
+from quickapp import QuickAppContext
 from reprep import Report
 from . import logger
 from .results import PartiallySkipped, Skipped
@@ -89,7 +90,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple
 
 
 def report_results_pairs_jobs(
-    context, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], CMJobID]
+    context: QuickAppContext, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], CMJobID]
 ):
     """This version gets the jobs ID"""
     reason2symbol = {}
@@ -122,7 +123,7 @@ def report_results_pairs_jobs(
     data = [[None for a in range(len(cols))] for b in range(len(rows))]
     # a nice bug: data = [[None * len(cols)] * len(rows)
 
-    db = context.get_compmake_db()
+    db = context.cc.get_compmake_db()
 
     comb = itertools.product(enumerate(rows), enumerate(cols))
     for ((i, id_object1), (j, id_object2)) in comb:

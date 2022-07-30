@@ -2,7 +2,7 @@ import os
 import tempfile
 from contextlib import contextmanager
 
-from zuper_commons.fs import write_ustring_to_utf8_file
+from zuper_commons.fs import joinf, write_ustring_to_utf8_file
 
 
 def test_example_package() -> None:
@@ -12,12 +12,16 @@ def test_example_package() -> None:
     # noinspection PyUnresolvedReferences
     import example_package  # @UnusedImport
 
+    MYOUT = "MYOUT"
     with create_tmp_dir() as cwd:
         print("Working in %r " % cwd)
-        rc = os.path.join(cwd, ".compmake.rc")
+        rc = joinf(cwd, ".compmake.rc")
         write_ustring_to_utf8_file("config echo 1", rc)
         cmd = [
             "comptests",
+            "-o",
+            MYOUT,
+            "--reports",
             # '--contracts',
             "--coverage",
             # '--nonose',
@@ -28,8 +32,8 @@ def test_example_package() -> None:
         assert res.ret != 0, res
 
         fs = [
-            "out-comptests/report.html",
-            "out-comptests/report/reportclass1single/"
+            f"{MYOUT}/report.html",
+            f"{MYOUT}/report/reportclass1single/"
             "reportclass1single-c1a-checkclass1dynamic-examplepackage-exampleclass1.html",
         ]
         #
@@ -52,7 +56,7 @@ def test_example_package() -> None:
             raise Exception(msg)
 
         print("now calling comptests-to-junit")
-        cmd = ["comptests-to-junit", "--output", "out-comptests/junit", "out-comptests/compmake"]
+        cmd = ["comptests-to-junit", "--output", f"{MYOUT}/junit", f"{MYOUT}/compmake"]
         system_cmd_result(cwd, cmd, display_stdout=True, display_stderr=True, raise_on_error=True)
 
 

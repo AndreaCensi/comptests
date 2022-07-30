@@ -30,7 +30,7 @@ console_scripts:
   comptests-to-junit: comptests.comptest_to_junit:comptest_to_junit_main
 nose:
   modules:
-  - comptests_tests
+  - '*_tests'
 
 pypi:
   upload: []

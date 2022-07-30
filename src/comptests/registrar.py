@@ -12,7 +12,7 @@ from compmake import assert_job_exists, CMJobID, JobCompute, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
-from zuper_commons.fs import abspath, DirPath
+from zuper_commons.fs import abspath, DirPath, joind
 from zuper_commons.types import ZException
 from . import logger
 from .indices import accept, get_test_index
@@ -84,7 +84,10 @@ def check_fails(f, *args, **kwargs):
         logger.error(f"Known failure for {f}")
         logger.warn(f"Fails with error {type(e).__name__} {e}")
         # comptest_fails = kwargs.get('comptest_fails', f.__name__)
-        d = "out/comptests/failures"
+        from comptests import get_comptests_output_dir
+
+        d0 = get_comptests_output_dir()
+        d = joind(d0, "failures")
         if not os.path.exists(d):
             os.makedirs(d)
 
@@ -251,7 +254,7 @@ def jobs_registrar(context1: QuickAppContext, cm: ConfigMaster, create_reports: 
     context = context1.child("")
 
     names = sorted(cm.specs.keys())
-
+    logger.info(cm=cm, names=names, create_reports=create_reports)
     names2test_objects = context.comp_config_dynamic(get_testobjects_promises, cm)
 
     for c, name in iterate_context_names(context, names):
