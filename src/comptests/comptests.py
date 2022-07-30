@@ -153,14 +153,18 @@ class CompTests(QuickApp):
                 self.info("Interpreting %r as module." % m)
                 yield m
 
-    async def instance_nosetests_jobs(self, sti: SyncTaskInterface, context, modules, do_coverage: bool):
+    async def instance_nosetests_jobs(
+        self, sti: SyncTaskInterface, context: QuickAppContext, modules: list[str], do_coverage: bool
+    ) -> None:
         sti.logger.info("instancing nosetests jobs", modules=modules)
         await asyncio.sleep(0)
         for module in modules:
             c = context.child(module)
             jobs_nosetests(c, module, do_coverage=do_coverage)
 
-    async def instance_nosesingle_jobs(self, sti: SyncTaskInterface, context, modules):
+    async def instance_nosesingle_jobs(
+        self, sti: SyncTaskInterface, context: QuickAppContext, modules: list[str]
+    ) -> None:
         sti.logger.info("instancing nosesingle jobs", modules=modules)
         await asyncio.sleep(0)
         context = context.child("nose")
@@ -173,6 +177,8 @@ class CompTests(QuickApp):
     ):
         sti.logger.info("instancing jobs", modules=modules)
         await asyncio.sleep(0)
+        context = context.child("ct")
+
         for module in modules:
             c = context.child(module)
 
