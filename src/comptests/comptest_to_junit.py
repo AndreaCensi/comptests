@@ -1,10 +1,11 @@
 import argparse
-from typing import Tuple
+from typing import cast, Tuple
 
 from junit_xml import TestCase
 
 from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
 from zuper_commons.cmds import ExitCode
+from zuper_commons.fs import DirPath
 from zuper_commons.text import remove_escapes
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
@@ -33,7 +34,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         logger.user_error(msg)
         return ExitCode.WRONG_ARGUMENTS
 
-    dirname = rest[0]
+    dirname = cast(DirPath, rest[0])
     db = StorageFilesystem(dirname, compress=True)
 
     jobs = list(all_jobs(db))
@@ -51,6 +52,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     ze.sti.logger.info(nseen=nseen, nmarked=nmarked, output=parsed.output)
     if nmarked > 0 and parsed.fail_if_failed:
         return ExitCode.OTHER_EXCEPTION
+    return ExitCode.OK
 
 
 async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> Tuple[int, int, str]:
@@ -87,7 +89,7 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> T
 #     return s
 
 
-def junit_test_case_from_compmake(db, job_id: CMJobID) -> Tuple[bool, TestCase]:
+def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> Tuple[bool, TestCase]:
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
         # elapsed_sec = cache.walltime_used
@@ -98,8 +100,8 @@ def junit_test_case_from_compmake(db, job_id: CMJobID) -> Tuple[bool, TestCase]:
     check_isinstance(cache.captured_stderr, (type(None), str))
     check_isinstance(cache.captured_stdout, (type(None), str))
     check_isinstance(cache.exception, (type(None), str))
-    stderr = remove_escapes(cache.captured_stderr or "")
-    stdout = remove_escapes(cache.captured_stdout or "")
+    stderr: str = remove_escapes(cache.captured_stderr or "")
+    stdout: str = remove_escapes(cache.captured_stdout or "")
 
     tc = TestCase(
         name=job_id,
@@ -113,7 +115,7 @@ def junit_test_case_from_compmake(db, job_id: CMJobID) -> Tuple[bool, TestCase]:
     if failed:
         marked_as_error = True
         message = cache.exception
-        output = cache.exception + "\n" + cache.backtrace
+        output = (cache.exception or "") + "\n" + (cache.backtrace or "")
         tc.add_failure_info(message, output)
     else:
         notdone = cache.state != Cache.DONE

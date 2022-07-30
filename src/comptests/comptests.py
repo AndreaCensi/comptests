@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Iterator, List
+from typing import cast, Iterator, List, Optional
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from quickapp import QuickApp, QuickAppContext
@@ -42,10 +42,10 @@ class CompTests(QuickApp):
 
     """
 
-    global_output_dir = "out-DEFAULT-comptests"
-    output_dir_for_current_test = None
+    global_output_dir = cast(AbsDirPath, os.getcwd() + "/out-DEFAULT-comptests")
+    output_dir_for_current_test: Optional[AbsDirPath] = None
 
-    cmd = "comptests"
+    cmd: str = "comptests"
 
     def define_options(self, params: DecentParams) -> None:
         params.add_string("exclude", default="", help="exclude these modules (comma separated)")

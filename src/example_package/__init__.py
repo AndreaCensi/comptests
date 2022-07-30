@@ -2,7 +2,6 @@ from zuper_commons import ZLogger
 
 logger = ZLogger(__name__)
 
-from quickapp import QuickAppContext
 from .configuration import *
 from .interfaces import *
 from .unittests import *

@@ -4,7 +4,7 @@ import sys
 import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
-from typing import Any, Callable, Collection, Dict, Optional, TypedDict
+from typing import Any, Callable, Collection, Dict, Optional, ParamSpec, Protocol, TypedDict, TypeVar
 
 from nose.tools import nottest
 
@@ -38,13 +38,31 @@ __all__ = [
 ]
 
 
+class FT(Protocol):
+    __name__: str
+    __module__: str
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        ...
+
+
+# FT = Callable[..., Any]
+
+
+class DRegular(TypedDict):
+    function: FT
+    dynamic: bool
+    args: tuple[Any, ...]
+    kwargs: dict[str, Any]
+
+
 class ComptestsRegistrar:
     """Static storage"""
 
-    regular = []  # list of dict(function=f, dynamic=dynamic))
+    regular: list[DRegular] = []  # list of dict(function=f, dynamic=dynamic))
     # Once they are scheduled we add id(x) here, so we make sure we
     # don't register something twice
-    regular_scheduled = set()
+    regular_scheduled: set[int] = set()
 
     objspec2tests = defaultdict(list)
     objspec2pairs = defaultdict(list)  # -> (objspec2, f)
@@ -52,17 +70,19 @@ class ComptestsRegistrar:
     objspec2testsomepairs = defaultdict(list)
 
 
-def register_single(objspec: ObjectSpec, f, dynamic: bool):
+def register_single(objspec: ObjectSpec, f: FT, dynamic: bool) -> None:
     ts = ComptestsRegistrar.objspec2tests[objspec.name]
     ts.append(dict(function=f, dynamic=dynamic))
 
 
-def register_pair(objspec1, objspec2, f, dynamic):
+def register_pair(objspec1: ObjectSpec, objspec2: ObjectSpec, f: FT, dynamic: bool) -> None:
     ts = ComptestsRegistrar.objspec2pairs[objspec1.name]
     ts.append(dict(objspec2=objspec2, function=f, dynamic=dynamic))
 
 
-def register_for_some_pairs(objspec1, objspec2, f, which1, which2, dynamic):
+def register_for_some_pairs(
+    objspec1: ObjectSpec, objspec2: ObjectSpec, f: FT, which1: str, which2: str, dynamic: bool
+) -> None:
     ts = ComptestsRegistrar.objspec2testsomepairs[objspec1.name]
     ts.append(dict(objspec2=objspec2, function=f, dynamic=dynamic, which1=which1, which2=which2))
 
@@ -72,12 +92,16 @@ def register_for_some(objspec: ObjectSpec, f, which, dynamic: bool):
     ts.append(dict(function=f, which=which, dynamic=dynamic))
 
 
-def register_indep(f, dynamic, args, kwargs):
-    d = dict(function=f, dynamic=dynamic, args=args, kwargs=kwargs)
+def register_indep(f: FT, dynamic: bool, args: tuple[Any, ...], kwargs: dict[str, Any]):
+    d: DRegular = dict(function=f, dynamic=dynamic, args=args, kwargs=kwargs)
     ComptestsRegistrar.regular.append(d)
 
 
-def check_fails(f, *args, **kwargs):
+P = ParamSpec("P")
+FX = Callable[P, Any]
+
+
+def check_fails(f: FX, *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
         f(*args, **kwargs)
     except BaseException as e:
@@ -113,31 +137,39 @@ def check_fails(f, *args, **kwargs):
 class Wrap:
     """Need to assign name"""
 
-    def __init__(self, f):
-        self.f = f
+    __name__: str
+    __module__: str
+    f: Callable[..., Any]
 
-    def __call__(self, *args, **kwargs):
+    def __init__(self, f: Callable[..., Any], name: str, module: str):
+        self.f = f
+        self.__name__ = name
+        self.__module__ = module
+
+    def __call__(self, *args, **kwargs) -> Any:
         return self.f(*args, **kwargs)
 
 
 @nottest
 def comptest_fails(f):
-    check_fails_wrap = Wrap(check_fails)
-    check_fails_wrap.__name__ = f.__name__
-    check_fails_wrap.__module__ = f.__module__
+    check_fails_wrap = Wrap(check_fails, f.__name__, f.__module__)
+
     register_indep(check_fails_wrap, dynamic=False, args=(f,), kwargs={})
     f.__test__ = False  # Mark as not a nose test
     return f
 
 
+FAny = TypeVar("FAny", bound=Callable[..., Any])
+
+
 @nottest
-def comptest_dynamic(f):
+def comptest_dynamic(f: FAny) -> FAny:
     register_indep(f, dynamic=True, args=(), kwargs={})
     f.__test__ = False  # Mark as not a nose test
     return f
 
 
-def comptest(f):
+def comptest(f: FAny) -> FAny:
     register_indep(f, dynamic=False, args=(), kwargs={})
     f.__test__ = False  # Mark as not a nose test
     return f
