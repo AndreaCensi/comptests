@@ -335,7 +335,7 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[st
 
 class WrapTest:
     function: Callable
-    prefix: Optional[str]
+    # prefix: Optional[str]
     output_dir: DirPath
 
     def __init__(self, function: Callable, prefix: Optional[str]):

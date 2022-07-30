@@ -119,7 +119,7 @@ def junit_test_case_from_compmake(db, job_id: CMJobID) -> Tuple[bool, TestCase]:
         notdone = cache.state != Cache.DONE
         if notdone:
             marked_as_error = True
-            tc.add_error_info(f"Not done: {cache.state} ")
+            tc.add_error_info(f"Not done: {Cache.state2desc[cache.state]} ")
 
     return marked_as_error, tc
 
