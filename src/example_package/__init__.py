@@ -9,7 +9,7 @@ from .unittests import *
 
 def jobs_comptests(context: QuickAppContext) -> None:
     logger.info("initializing jobs_comptests")
-    print("initializing jobs_comptests")
+
     # configuration
     from conf_tools import GlobalConfig
 
@@ -22,3 +22,8 @@ def jobs_comptests(context: QuickAppContext) -> None:
     from comptests import jobs_registrar
 
     jobs_registrar(context, get_example_package_config(), create_reports=True)
+
+
+@comptest
+def just_one_single():
+    pass

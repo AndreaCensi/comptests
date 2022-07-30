@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import cast, Iterator, List, Optional
+from typing import Any, Callable, cast, Iterator, List, Optional
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from quickapp import QuickApp, QuickAppContext
@@ -169,7 +169,7 @@ class CompTests(QuickApp):
             c.comp_dynamic(jobs_nosetests_single, module, job_id="nosesingle")
 
     async def instance_comptests_jobs(
-        self, sti: SyncTaskInterface, context, modules: List[str], create_reports: bool
+        self, sti: SyncTaskInterface, context: QuickAppContext, modules: List[str], create_reports: bool
     ):
         sti.logger.info("instancing jobs", modules=modules)
         await asyncio.sleep(0)
@@ -191,6 +191,7 @@ def instance_comptests_jobs2_m(context: QuickAppContext, module_name: str, creat
     is_first = "." not in module_name
     warn_errors = is_first
 
+    # important: first import!
     try:
         module = import_name(module_name)
     except ValueError as e:
@@ -202,6 +203,9 @@ def instance_comptests_jobs2_m(context: QuickAppContext, module_name: str, creat
 
         raise ZException(msg) from e
 
+    # important: need to import the module above!
+    jobs_registrar_simple(context.child("registrar"), only_for_module=module_name)
+
     if not HOOK_NAME in module.__dict__:
         msg = f"Module {module_name} does not have function {HOOK_NAME}()."
         logger.warn(msg)
@@ -211,13 +215,11 @@ def instance_comptests_jobs2_m(context: QuickAppContext, module_name: str, creat
         msg = f"Module {module_name}: found hook {HOOK_NAME}()."
         logger.warn(msg)
         ff = module.__dict__[HOOK_NAME]
-        # context.child(HOOK_NAME).comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
-        context.comp_dynamic(comptests_jobs_wrap, ff, job_id=HOOK_NAME)
-
-    jobs_registrar_simple(context.child("registrar"), only_for_module=module_name)
+        context.child(HOOK_NAME).comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
+        # context.comp_dynamic(comptests_jobs_wrap, ff, job_id=HOOK_NAME)
 
 
-def comptests_jobs_wrap(context, ff):
+def comptests_jobs_wrap(context: QuickAppContext, ff: Callable[[QuickAppContext], Any]) -> None:
     reset_config()
     ff(context)
 

@@ -145,7 +145,7 @@ def jobs_nosetests_single(context: QuickAppContext, module: str) -> None:
     d = dirname(cast(FilePath, m.__file__))
     d0 = dirname(d)
     mods0 = get_modules_in_dir_detailed(d0)
-    mods = {k for k in mods0 if k.startswith(f"{module}.")}
+    mods: set[str] = {k for k in mods0 if k.startswith(f"{module}.")}
 
     # modules = {module+'.'+m: v for m,v in .items()}
     logger.info(module=module, modules=mods)
@@ -164,8 +164,9 @@ def jobs_nosetests_single(context: QuickAppContext, module: str) -> None:
 
         logger.info(test_module=test_module, symbols=ks)
 
+        test_module_name = test_module.removeprefix(module + ".")
         for k, v in ks.items():
-            job_id = f"nosesingle-{test_module}-{k}"
+            job_id = f"nose-{test_module_name}-{k}"
             if accept_tst_on_this_worker(k):
 
                 context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
