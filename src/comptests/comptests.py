@@ -4,7 +4,9 @@ from typing import Iterator, List
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from quickapp import QuickApp, QuickAppContext
+from zuper_commons.fs import AbsDirPath, abspath
 from zuper_commons.types import ZException, ZValueError
+from zuper_params import DecentParams
 from zuper_utils_asyncio import SyncTaskInterface
 from . import logger
 from .find_modules_imp import find_modules, find_modules_main
@@ -17,18 +19,18 @@ __all__ = [
 ]
 
 
-def get_comptests_output_dir():
+def get_comptests_output_dir() -> AbsDirPath:
     """when run from the comptests executable, returns the output dir."""
     if CompTests.output_dir_for_current_test is None:
         msg = "Variable output_dir_for_current_test not set."
         logger.warning(msg)
-        return get_comptests_global_output_dir()
+        return abspath(get_comptests_global_output_dir())
     else:
-        return CompTests.output_dir_for_current_test
+        return abspath(CompTests.output_dir_for_current_test)
 
 
-def get_comptests_global_output_dir():
-    return CompTests.global_output_dir
+def get_comptests_global_output_dir() -> AbsDirPath:
+    return abspath(CompTests.global_output_dir)
 
 
 HOOK_NAME = "jobs_comptests"
@@ -40,12 +42,12 @@ class CompTests(QuickApp):
 
     """
 
-    global_output_dir = "out-comptests"
+    global_output_dir = "out-DEFAULT-comptests"
     output_dir_for_current_test = None
 
     cmd = "comptests"
 
-    def define_options(self, params):
+    def define_options(self, params: DecentParams) -> None:
         params.add_string("exclude", default="", help="exclude these modules (comma separated)")
 
         params.add_flag("nonose", help="Disable nosetests")
@@ -58,7 +60,7 @@ class CompTests(QuickApp):
 
         params.accept_extra()
 
-    async def define_jobs_context(self, sti: SyncTaskInterface, context):
+    async def define_jobs_context(self, sti: SyncTaskInterface, context: QuickAppContext) -> None:
         logger = sti.logger
         CompTests.global_output_dir = self.get_options().output
         logger.info("Setting output dir to %s" % CompTests.global_output_dir)
@@ -209,9 +211,10 @@ def instance_comptests_jobs2_m(context: QuickAppContext, module_name: str, creat
         msg = f"Module {module_name}: found hook {HOOK_NAME}()."
         logger.warn(msg)
         ff = module.__dict__[HOOK_NAME]
-        context.comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
+        # context.child(HOOK_NAME).comp_dynamic(comptests_jobs_wrap, ff, job_id=module_name)
+        context.comp_dynamic(jobs_registrar_simple, ff, job_id=HOOK_NAME)
 
-    jobs_registrar_simple(context, only_for_module=module_name)
+    jobs_registrar_simple(context.child("registrar"), only_for_module=module_name)
 
 
 def comptests_jobs_wrap(context, ff):

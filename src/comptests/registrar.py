@@ -12,7 +12,7 @@ from compmake import assert_job_exists, CMJobID, JobCompute, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
-from zuper_commons.fs import DirPath
+from zuper_commons.fs import abspath, DirPath
 from zuper_commons.types import ZException
 from . import logger
 from .indices import accept, get_test_index
@@ -243,7 +243,7 @@ def comptests_for_all_pairs(objspec1: ObjectSpec, objspec2: ObjectSpec):
     return register
 
 
-def jobs_registrar(context1: QuickAppContext, cm: ConfigMaster, create_reports=False):
+def jobs_registrar(context1: QuickAppContext, cm: ConfigMaster, create_reports: bool = False) -> None:
     assert isinstance(cm, ConfigMaster)
 
     # Sep 15: remove name
@@ -317,10 +317,15 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[st
         # print('registering %s' % x)
         #         logger.debug("registering %s" % function.__name__)
         if inspect.iscoroutinefunction(function):
-            wrapper = function  # WrapTestAsync(function, prefix)
+            wrapper = WrapTestAsync(function, prefix)
         else:
             wrapper = WrapTest(function, prefix)
-        cname = function.__module__.replace(".", "-")
+        module: str = function.__module__
+        if only_for_module is not None:
+            module = module.removeprefix(only_for_module + ".")
+            module = module.removeprefix(only_for_module)
+
+        cname = module.replace(".", "-")
         context2 = context.child(name=cname)
         if not dynamic:
             _res = context2.comp_config(wrapper, *args, **kwargs)
@@ -344,37 +349,39 @@ class WrapTest:
         from .comptests import CompTests
 
         if prefix is not None:
-            self.output_dir = os.path.join(CompTests.global_output_dir, prefix, self.__name__)
+            self.output_dir = abspath(os.path.join(CompTests.global_output_dir, prefix, self.__name__))
         else:
-            self.output_dir = os.path.join(CompTests.global_output_dir, self.__name__)
+            self.output_dir = abspath(os.path.join(CompTests.global_output_dir, self.__name__))
 
     def __call__(self, *args, **kwargs):
         from .comptests import CompTests
 
+        logger.info(f"Wrapper setting output dir to {self.output_dir} ")
         CompTests.output_dir_for_current_test = self.output_dir
         return self.function(*args, **kwargs)
 
 
-# class WrapTestAsync:
-#     function: Callable
-#     prefix: Optional[str]
-#     output_dir: str
-#
-#     def __init__(self, function: Callable, prefix: Optional[str]):
-#         self.__name__ = function.__name__
-#         self.function = function
-#         from .comptests import CompTests
-#
-#         if prefix is not None:
-#             self.output_dir = os.path.join(CompTests.global_output_dir, prefix, self.__name__)
-#         else:
-#             self.output_dir = os.path.join(CompTests.global_output_dir, self.__name__)
-#
-#     async def __call__(self, sti, *args, **kwargs):
-#         from .comptests import CompTests
-#
-#         CompTests.output_dir_for_current_test = self.output_dir
-#         return await self.function(sti, *args, **kwargs)
+class WrapTestAsync:
+    function: Callable
+    prefix: Optional[str]
+    output_dir: str
+
+    def __init__(self, function: Callable, prefix: Optional[str]):
+        self.__name__ = function.__name__
+        self.function = function
+        from .comptests import CompTests
+
+        if prefix is not None:
+            self.output_dir = abspath(os.path.join(CompTests.global_output_dir, prefix, self.__name__))
+        else:
+            self.output_dir = abspath(os.path.join(CompTests.global_output_dir, self.__name__))
+
+    async def __call__(self, sti, *args, **kwargs):
+        from .comptests import CompTests
+
+        logger.info(f"Wrapper setting output dir to {self.output_dir} ")
+        CompTests.output_dir_for_current_test = self.output_dir
+        return await self.function(sti, *args, **kwargs)
 
 
 def get_testobjects_promises(context: QuickAppContext, cm: ConfigMaster) -> Dict[str, Dict[str, str]]:
