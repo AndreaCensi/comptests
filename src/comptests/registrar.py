@@ -336,6 +336,7 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[st
         doit = accept(function, worker_i, worker_n)
         if not doit:
             logger.debug(f"{worker_i}/{worker_n} skipping {function} ")
+            continue
         else:
             logger.debug(f"{worker_i}/{worker_n} accepts  {function} ")
 

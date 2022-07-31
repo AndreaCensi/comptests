@@ -146,7 +146,3 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> Cla
         return ClassificationResult(tc, "test_skipped")
 
     assert False, f"Unknown state {cache.state}"
-
-
-if __name__ == "__main__":
-    comptest_to_junit_main()
