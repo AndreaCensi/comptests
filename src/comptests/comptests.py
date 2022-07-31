@@ -68,7 +68,7 @@ class CompTests(QuickApp):
 
         GlobalConfig.global_load_dir("default")
 
-        modules = self.get_modules()
+        modules = list(self.get_modules())
 
         # noinspection PyUnresolvedReferences
         if self.options.circle:
@@ -113,13 +113,13 @@ class CompTests(QuickApp):
 
         sti.logger.info("Finished defining jobs.")
 
-    def get_modules(self) -> List[str]:
+    def get_modules(self) -> set[str]:
         """ " Parses the command line argument and interprets them as modules."""
         extras = self.options.get_extra()
         if not extras:
             raise ValueError("No modules given")
 
-        modules = list(self.interpret_modules_names(extras))
+        modules = list(self.interpret_modules_names(set(extras)))
         if not modules:
             msg = "No modules given"
             raise ZValueError(msg, extras=extras)
@@ -130,9 +130,9 @@ class CompTests(QuickApp):
         excludes = self.options.exclude.split(",")
         to_exclude = lambda module_name: not module_name in excludes
         modules = list(filter(to_exclude, modules))
-        return modules
+        return set(modules)
 
-    def interpret_modules_names(self, names: List[str]) -> Iterator[str]:
+    def interpret_modules_names(self, names: set[str]) -> Iterator[str]:
         """yields a list of modules"""
 
         # First, extract tokens

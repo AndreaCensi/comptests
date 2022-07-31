@@ -1,7 +1,8 @@
 import argparse
-from typing import cast, Tuple
+from dataclasses import dataclass
+from typing import cast, Literal, Mapping
 
-from junit_xml import TestCase
+from junit_xml import TestCase, TestSuite, to_xml_report_string
 
 from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
 from zuper_commons.cmds import ExitCode
@@ -25,7 +26,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         "--fail-if-failed",
         default=False,
         action="store_true",
-        help="Returns nonzero exit code if there are failed tests",
+        help="Returns nonzero exit code if there are failed or errored tests",
     )
     parsed, rest = parser.parse_known_args(args=ze.args)
 
@@ -44,18 +45,32 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         logger.error(msg, n=len(jobs), dirname=dirname)
         return ExitCode.WRONG_ARGUMENTS
 
-    nseen, nmarked, s = await junit_xml(ze.sti, db)
+    tcr = await junit_xml(ze.sti, db)
+    stats_reduce: Mapping[TestStatusString, int] = {k: len(v) for k, v in tcr.stats.items()}
+    ze.sti.logger.info(output=parsed.output, stats_reduce=stats_reduce)
 
+    fn = parsed.output
+    ze.sti.logger.info(f"Writing XML report to {fn}")
+    xml = to_xml_report_string([tcr.test_suite])
     async with fs2.session("comptest_to_junit_main") as fs:
-        await fs.write_str(parsed.output, s)
+        await fs.write_str(parsed.output, xml)
 
-    ze.sti.logger.info(nseen=nseen, nmarked=nmarked, output=parsed.output)
-    if nmarked > 0 and parsed.fail_if_failed:
+    n_should_exit = stats_reduce["test_failed"] + stats_reduce["test_error"]
+    if n_should_exit > 0 and parsed.fail_if_failed:
         return ExitCode.OTHER_EXCEPTION
     return ExitCode.OK
 
 
-async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> Tuple[int, int, str]:
+TestStatusString = Literal["test_success", "test_skipped", "test_failed", "test_error"]
+
+
+@dataclass
+class JUnitResults:
+    test_suite: TestSuite
+    stats: Mapping[TestStatusString, set[CMJobID]]
+
+
+async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> JUnitResults:
     logger = sti.logger
     from junit_xml import TestSuite
 
@@ -63,33 +78,29 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> T
     logger.info(f"Loaded {len(jobs)} jobs")
 
     test_cases = []
-    nmarked = 0
-    nseen = 0
+
+    stats: dict[TestStatusString, set[CMJobID]] = {}
+    stats["test_success"] = set()
+    stats["test_skipped"] = set()
+    stats["test_failed"] = set()
+    stats["test_error"] = set()
+
     for job_id in jobs:
-        nseen += 1
-        marked_error, tc = junit_test_case_from_compmake(compmake_db, job_id)
-        if marked_error:
-            nmarked += 1
-        # logger.info(name=tc.name, status=tc.status)
-        test_cases.append(tc)
+        r = junit_test_case_from_compmake(compmake_db, job_id)
+        stats[r.status].add(job_id)
+        test_cases.append(r.tc)
 
     ts = TestSuite("comptests_test_suite", test_cases)
-
-    res = TestSuite.to_xml_string([ts])
-    return nseen, nmarked, res
+    return JUnitResults(ts, dict(stats))
 
 
-# def flatten_ascii(s):
-#     if s is None:
-#         return None
-#     # if six.PY2:
-#     #     # noinspection PyCompatibility
-#     #     s = unicode(s, encoding='utf8', errors='replace')
-#     #     s = s.encode('ascii', errors='ignore')
-#     return s
+@dataclass
+class ClassificationResult:
+    tc: TestCase
+    status: TestStatusString
 
 
-def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> Tuple[bool, TestCase]:
+def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> ClassificationResult:
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
         # elapsed_sec = cache.walltime_used
@@ -110,20 +121,31 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> Tup
         stdout=stdout,
         stderr=stderr,
     )
-    marked_as_error = False
-    failed = cache.state == Cache.FAILED
-    if failed:
-        marked_as_error = True
+    if cache.state == Cache.DONE:
+        # TODO: look at object - Skipped result
+        return ClassificationResult(tc, "test_success")
+
+    if cache.state == Cache.FAILED:
         message = cache.exception
         output = (cache.exception or "") + "\n" + (cache.backtrace or "")
         tc.add_failure_info(message, output)
-    else:
-        notdone = cache.state != Cache.DONE
-        if notdone:
-            marked_as_error = True
-            tc.add_error_info(f"Not done: {Cache.state2desc[cache.state]} ")
+        return ClassificationResult(tc, "test_failed")
 
-    return marked_as_error, tc
+    if cache.state == Cache.PROCESSING:
+        message = "Job still processing. Probably interrupted."
+        tc.add_error_info(message)
+        return ClassificationResult(tc, "test_error")
+    if cache.state == Cache.NOT_STARTED:
+        message = "Job not started."
+        tc.add_error_info(message)
+        return ClassificationResult(tc, "test_error")
+
+    if cache.state == Cache.BLOCKED:
+        message = "Job is blocked."
+        tc.add_skipped_info(message)
+        return ClassificationResult(tc, "test_skipped")
+
+    assert False, f"Unknown state {cache.state}"
 
 
 if __name__ == "__main__":
