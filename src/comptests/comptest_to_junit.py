@@ -38,7 +38,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     dirname = cast(DirPath, rest[0])
     db = StorageFilesystem(dirname, compress=True)
 
-    jobs = list(all_jobs(db))
+    jobs = sorted(all_jobs(db))
 
     if len(jobs) < 10:
         msg = "Could not enough jobs, compressed or not."
