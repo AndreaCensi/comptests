@@ -108,7 +108,7 @@ def check_fails(f: FX, *args: P.args, **kwargs: P.kwargs) -> Any:
         logger.error(f"Known failure for {f}")
         logger.warn(f"Fails with error {type(e).__name__} {e}")
         # comptest_fails = kwargs.get('comptest_fails', f.__name__)
-        from comptests import get_comptests_output_dir
+        from .comptests import get_comptests_output_dir
 
         d0 = get_comptests_output_dir()
         d = joind(d0, "failures")
