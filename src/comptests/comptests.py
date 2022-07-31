@@ -208,7 +208,7 @@ def instance_comptests_jobs2_m(context: QuickAppContext, module_name: str, creat
         raise ZException(msg) from e
 
     # important: need to import the module above!
-    jobs_registrar_simple(context.child("registrar"), only_for_module=module_name)
+    jobs_registrar_simple(context.child("r"), only_for_module=module_name)
 
     if not HOOK_NAME in module.__dict__:
         msg = f"Module {module_name} does not have function {HOOK_NAME}()."
