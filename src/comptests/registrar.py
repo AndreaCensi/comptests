@@ -882,13 +882,13 @@ def run_module_tests():
         seen.append(name)
 
         if should_ignore(name):
-            logger.debug("Ignoring test %s" % name)
+            logger.debug(f"Ignoring test {name}")
             continue
 
-        logger.debug("Running test %s" % name)
+        logger.debug(f"Running test {name}")
 
         try:
-            wrapped = WrapTest(function, prefix=None)
+            wrapped = WrapTest(function, None)
             wrapped(*x["args"], **x["kwargs"])
             r = Res(x=x, es=None, en=None)
 

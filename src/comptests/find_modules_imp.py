@@ -1,5 +1,6 @@
 import os
 from typing import List
+from zuper_commons.fs import DirPath
 
 from conf_tools.utils import locate_files
 
@@ -7,8 +8,6 @@ __all__ = [
     "find_modules",
     "find_modules_main",
 ]
-
-from zuper_commons.fs import DirPath
 
 
 def find_modules_main(root: DirPath) -> List[str]:

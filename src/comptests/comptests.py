@@ -3,10 +3,9 @@ import os
 from typing import Any, Callable, cast, Iterator, List, Optional
 
 from conf_tools import GlobalConfig, import_name, reset_config
-from quickapp import QuickApp, QuickAppContext
+from quickapp import QuickApp, QuickAppContext, DecentParams
 from zuper_commons.fs import AbsDirPath, abspath
 from zuper_commons.types import ZException, ZValueError
-from zuper_params import DecentParams
 from zuper_utils_asyncio import SyncTaskInterface
 from . import logger
 from .find_modules_imp import find_modules, find_modules_main
