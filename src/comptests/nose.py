@@ -221,7 +221,7 @@ async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_na
     f = importlib.import_module(module_name)
     ff = getattr(f, func_name)
 
-    logger.info(func_name=func_name, ff=ff, attrs=ff.__dict__)
+    # logger.info(func_name=func_name, ff=ff, attrs=ff.__dict__)
     # print(f"{func_name} {ff} {ff.__dict__}")
     if hasattr(ff, "__original__"):
         orig = getattr(ff, "__original__")
