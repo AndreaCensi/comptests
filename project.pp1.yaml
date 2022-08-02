@@ -50,7 +50,7 @@ circleci:
     Z_SERVICE_FS: zuper_fs_local.use_local_fs
     Z_SERVICE_NOTE: zuper_notes.notes
 
-python_syntax_version: '3.8'
+python_syntax_version: '3.10'
 
 url: https://github.com/AndreaCensi/comptests
 author: Andrea Censi
