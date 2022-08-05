@@ -5,14 +5,16 @@ import sys
 import tempfile
 import warnings
 from contextlib import contextmanager
-from typing import cast, Iterator
+from typing import Any, Awaitable, Callable, cast, Iterator
 
 from quickapp import QuickAppContext
 from system_cmd import system_cmd_result
 from zuper_commons.fs import dirname, DirPath, FilePath, getcwd, joinf, read_bytes_from_file
 from zuper_commons.text import PythonModuleName
+from zuper_commons.types import add_context, unwrap
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_utils_python.listing import get_modules_in_dir_detailed
+from zuper_zapp.utils import ORIGINAL_ZAPP1_TEST_ATT, ZappTestEnv
 from . import logger
 from .indices import accept_tst_on_this_worker
 
@@ -167,72 +169,107 @@ def jobs_nosetests_single(context: QuickAppContext, module: str) -> None:
         test_module_name = test_module.removeprefix(module + ".")
         for k, v in ks.items():
             job_id = f"nose-{test_module_name}-{k}"
-            if accept_tst_on_this_worker(k):
-
-                context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
-            else:
+            if not accept_tst_on_this_worker(k):
                 logger.info(f"Skipping {test_module}.{k} on this worker")
 
-    #
-    # raise ZValueError(module=module, modules=mods, mods=mods0)
-    #
-    # with create_tmp_dir() as cwd:
-    #     out = os.path.join(cwd, f"{module}.pickle")
-    #     cmd = [
-    #         "nosetests",
-    #         "--collect-only",
-    #         # "--with-xunitext",
-    #         # "--xunitext-file",
-    #         "--with-xunit",
-    #         "--xunit-file",
-    #         out,
-    #         "-v",
-    #         "-s",
-    #         module,
-    #     ]
-    #     system_cmd_result(
-    #         cwd=cwd,
-    #         cmd=cmd,
-    #         display_stdout=True,
-    #         display_stderr=True,
-    #         raise_on_error=True,
-    #     )
-    #
-    #     contents = read_ustring_from_utf8_file(out)
-    #     tag = tag_from_xml_str(cast(XMLString, contents))
-    #     # logger.info(f"the a tag {tag}", tag=tag)
-    #     # print(str(tag))
-    #
-    #     for child in tag.contents:
-    #         assert child.tagname == "testcase"
-    #         classname = child.attrs["classname"]
-    #         name = child.attrs["name"]
-    #         module_name, _, func_name = classname.rpartition(".")
-    #         context.comp(execute, module_name=module_name, func_name=func_name, job_id=name)
-    #
-    #     # tests = safe_pickle_load(out)
-    #     # logger.info(f"found {len(tests):d} tests from nose ")
-    #     #
-    #     # for t in tests:
-    #     #
+                continue
+
+            if hasattr(v, ORIGINAL_ZAPP1_TEST_ATT):
+                orig_f: Callable[[ZappTestEnv], Awaitable[Any]] = getattr(v, ORIGINAL_ZAPP1_TEST_ATT)
+                orig_f = unwrap(orig_f)
+                context.comp(
+                    execute_wrap_zapp1_test,
+                    module_name=orig_f.__module__,
+                    func_name=orig_f.__name__,
+                    job_id=job_id,
+                )
+            else:
+
+                context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
+
+
+#
+# raise ZValueError(module=module, modules=mods, mods=mods0)
+#
+# with create_tmp_dir() as cwd:
+#     out = os.path.join(cwd, f"{module}.pickle")
+#     cmd = [
+#         "nosetests",
+#         "--collect-only",
+#         # "--with-xunitext",
+#         # "--xunitext-file",
+#         "--with-xunit",
+#         "--xunit-file",
+#         out,
+#         "-v",
+#         "-s",
+#         module,
+#     ]
+#     system_cmd_result(
+#         cwd=cwd,
+#         cmd=cmd,
+#         display_stdout=True,
+#         display_stderr=True,
+#         raise_on_error=True,
+#     )
+#
+#     contents = read_ustring_from_utf8_file(out)
+#     tag = tag_from_xml_str(cast(XMLString, contents))
+#     # logger.info(f"the a tag {tag}", tag=tag)
+#     # print(str(tag))
+#
+#     for child in tag.contents:
+#         assert child.tagname == "testcase"
+#         classname = child.attrs["classname"]
+#         name = child.attrs["name"]
+#         module_name, _, func_name = classname.rpartition(".")
+#         context.comp(execute, module_name=module_name, func_name=func_name, job_id=name)
+#
+#     # tests = safe_pickle_load(out)
+#     # logger.info(f"found {len(tests):d} tests from nose ")
+#     #
+#     # for t in tests:
+#     #
+async def execute_wrap_zapp1_test(
+    sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str
+) -> object:
+    with add_context(module_name=module_name, func_name=func_name) as c:
+        f = importlib.import_module(module_name)
+        ff: Callable[[ZappTestEnv], Awaitable[Any]]
+
+        ff = getattr(f, func_name)
+        c["ff"] = ff
+        ze = ZappTestEnv(sti)
+        try:
+            return await ff(ze)
+        except TypeError:
+            c["sig"] = inspect.signature(ff)
+            raise
+            # t = await sti.create_child_task2(func_name, ff, ze)
+    # outcome = await t.wait_for_outcome_success()
+    # return outcome.result
 
 
 async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str) -> object:
-    f = importlib.import_module(module_name)
-    ff = getattr(f, func_name)
+    with add_context(module_name=module_name, func_name=func_name) as c:
+        f = importlib.import_module(module_name)
+        ff = getattr(f, func_name)
+        c["ff"] = ff
+        c["ff_sig"] = inspect.signature(ff)
 
-    # logger.info(func_name=func_name, ff=ff, attrs=ff.__dict__)
-    # print(f"{func_name} {ff} {ff.__dict__}")
-    if hasattr(ff, "__original__"):
-        orig = getattr(ff, "__original__")
-        # print('calling "orig"')
+        # logger.info(func_name=func_name, ff=ff, attrs=ff.__dict__)
+        # print(f"{func_name} {ff} {ff.__dict__}")
+        if hasattr(ff, "__original__"):
+            orig = getattr(ff, "__original__")
+            # print('calling "orig"')
 
-        t = await sti.create_child_task2(func_name, orig)
-        outcome = await t.wait_for_outcome_success()
-        return outcome.result
+            t = await sti.create_child_task2(func_name, orig)
+            outcome = await t.wait_for_outcome_success()
+            return outcome.result
 
-    else:
-        return ff()
+        else:
+            res = ff()  # Q: are we not calling await it? A: correct.
+            return res
 
 
 #
