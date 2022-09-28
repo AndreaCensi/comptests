@@ -113,7 +113,7 @@ def check_fails(f: FX, *args: P.args, **kwargs: P.kwargs) -> Any:
         d0 = get_comptests_output_dir()
         d = joind(d0, "failures")
         if not os.path.exists(d):
-            os.makedirs(d)
+            os.makedirs(d, exist_ok=True)
 
         job_id = JobCompute.current_job_id
         if job_id is None:

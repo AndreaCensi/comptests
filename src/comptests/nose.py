@@ -114,7 +114,7 @@ def write_coverage_report(outdir: DirPath, covdata: bytes, module: str) -> None:
     logger.info(f"Writing coverage data to {outdir}")
     outdir = os.path.abspath(outdir)
     if not os.path.exists(outdir):
-        os.makedirs(outdir)
+        os.makedirs(outdir, exist_ok=True)
     with create_tmp_dir() as cwd:
         coverage_file = os.path.join(cwd, ".coverage")
         with open(coverage_file, "wb") as f:
