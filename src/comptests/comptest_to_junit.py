@@ -1,7 +1,7 @@
 import argparse
-from dataclasses import dataclass
 from typing import cast, Literal, Mapping
 
+from dataclasses import dataclass
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 
 from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
@@ -128,8 +128,13 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> Cla
     if cache.state == Cache.FAILED:
         message = cache.exception
         output = (cache.exception or "") + "\n" + (cache.backtrace or "")
-        tc.add_failure_info(message, output)
-        return ClassificationResult(tc, "test_failed")
+        if "SkipTest" in message:
+            tc.add_skipped_info(message)
+            return ClassificationResult(tc, "test_skipped")
+
+        else:
+            tc.add_failure_info(message, output)
+            return ClassificationResult(tc, "test_failed")
 
     if cache.state == Cache.PROCESSING:
         message = "Job still processing. Probably interrupted."
