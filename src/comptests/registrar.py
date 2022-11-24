@@ -6,13 +6,12 @@ import warnings
 from collections import defaultdict, namedtuple, OrderedDict
 from typing import Any, Callable, Collection, Dict, Optional, ParamSpec, Protocol, TypedDict, TypeVar
 
-from nose.tools import nottest
-
 from compmake import assert_job_exists, CMJobID, JobCompute, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
 from conf_tools.utils import expand_string
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
 from zuper_commons.fs import DirPath, joind
+from zuper_commons.test_utils import nottest
 from zuper_commons.types import add_context, ZException
 from . import logger
 from .indices import accept, get_test_index

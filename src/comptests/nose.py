@@ -181,55 +181,20 @@ def jobs_nosetests_single(context: QuickAppContext, module: str) -> None:
                     execute_wrap_zapp1_test,
                     module_name=orig_f.__module__,
                     func_name=orig_f.__name__,
+                    command_name=k,
                     job_id=job_id,
                 )
             else:
 
-                context.comp(execute, module_name=test_module, func_name=k, job_id=job_id)
+                if not hasattr(v, "__original__"):
+                    context.comp(v, job_id=job_id)
+                else:
+                    context.comp(execute, module_name=test_module, func_name=k, job_id=job_id, command_name=k)
 
 
 #
-# raise ZValueError(module=module, modules=mods, mods=mods0)
-#
-# with create_tmp_dir() as cwd:
-#     out = os.path.join(cwd, f"{module}.pickle")
-#     cmd = [
-#         "nosetests",
-#         "--collect-only",
-#         # "--with-xunitext",
-#         # "--xunitext-file",
-#         "--with-xunit",
-#         "--xunit-file",
-#         out,
-#         "-v",
-#         "-s",
-#         module,
-#     ]
-#     system_cmd_result(
-#         cwd=cwd,
-#         cmd=cmd,
-#         display_stdout=True,
-#         display_stderr=True,
-#         raise_on_error=True,
-#     )
-#
-#     contents = read_ustring_from_utf8_file(out)
-#     tag = tag_from_xml_str(cast(XMLString, contents))
-#     # logger.info(f"the a tag {tag}", tag=tag)
-#     # print(str(tag))
-#
-#     for child in tag.contents:
-#         assert child.tagname == "testcase"
-#         classname = child.attrs["classname"]
-#         name = child.attrs["name"]
-#         module_name, _, func_name = classname.rpartition(".")
-#         context.comp(execute, module_name=module_name, func_name=func_name, job_id=name)
-#
-#     # tests = safe_pickle_load(out)
-#     # logger.info(f"found {len(tests):d} tests from nose ")
-#     #
-#     # for t in tests:
-#     #
+
+
 async def execute_wrap_zapp1_test(
     sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str
 ) -> object:
@@ -245,9 +210,6 @@ async def execute_wrap_zapp1_test(
         except TypeError:
             c["sig"] = inspect.signature(ff)
             raise
-            # t = await sti.create_child_task2(func_name, ff, ze)
-    # outcome = await t.wait_for_outcome_success()
-    # return outcome.result
 
 
 async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str) -> object:
@@ -270,109 +232,3 @@ async def execute(sti: SyncTaskInterface, module_name: PythonModuleName, func_na
         else:
             res = ff()  # Q: are we not calling await it? A: correct.
             return res
-
-
-#
-# if False:
-#
-#     def load_nosetests(self, context, module_name):
-#         #         argv = ['-vv', module_name]
-#         ids = ".noseids"
-#         if os.path.exists(ids):
-#             os.remove(ids)
-#         #
-#         #         collect = CollectOnly()
-#         #         testid = TestId()
-#         #         plugins = []
-#         #         plugins.append(collect)
-#         #         plugins.append(testid)
-#         #         argv = ['nosetests', '--collect-only', '--with-id', module_name]
-#         argv = ["nosetests", "-s", "--nologcapture", module_name]
-#
-#         class FakeResult:
-#             def wasSuccessful(self):
-#                 return False
-#
-#         class Tr(object):
-#             def run(self, what):
-#                 self.what = what
-#                 print(what)
-#                 print("here!")
-#                 return FakeResult()
-#
-#         mytr = Tr()
-#
-#         from nose.core import TestProgram
-#         from nose.suite import ContextSuite
-#
-#         class MyTestProgram(TestProgram):
-#             def runTests(self):
-#                 print("hello")
-#
-#         #         print argv, plugins
-#         tp = MyTestProgram(
-#             module=module_name,
-#             argv=argv,
-#             defaultTest=module_name,
-#             addplugins=[],
-#             exit=False,
-#             testRunner=mytr,
-#         )
-#         self.info("test: %s" % tp.test)
-#
-#         def explore(a):
-#             for b in a._get_tests():
-#
-#                 if isinstance(b, ContextSuite):
-#                     for c in explore(b):
-#                         yield c
-#                 else:
-#                     yield b
-#
-#         # these things are not pickable
-#         for a in explore(tp.test):
-#             # context.comp(run_testcase, a)
-#             pass
-
-
-#
-#             if isinstance(a, FunctionTestCase):
-#                 f = a.test
-#                 args = a.arg
-#                 print('f: %s %s ' % (f, args))
-#                 context.comp(f, *args)
-#             else:
-#                 print('unknown testcase %s' % describe_type(a))
-
-# #
-# #         print describe_value(tp.test, clip=100)
-# #         suite = tp.test
-#         for tc in suite.mcdp_lang_tests:
-#             print describe_value(tc, clip=100)
-#
-
-#         res = nose.run(module=module_name, argv=argv,
-#                        defaultTest=module_name,
-#                        addplugins=plugins)
-
-#         print 'res', res
-#         print module_name
-#         print testid
-#         print collect
-#
-#         if not os.path.exists(ids):
-#             msg = 'module %r did not produce mcdp_lang_tests' % module_name
-#             raise Exception(msg)
-#         d = safe_pickle_load(ids)
-#         for k, v in d['ids'].items():
-#             print describe_value(v)
-#             print k
-#             print v
-#
-
-# from nose.case import FunctionTestCase
-# from nose.core import TestProgram
-# from nose.plugins.collect import CollectOnly
-# from nose.plugins.testid import TestId
-# from nose.suite import ContextSuite
-# import nose
