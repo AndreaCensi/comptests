@@ -1,17 +1,26 @@
 import argparse
-from typing import cast, Literal, Mapping
+import os.path
+from typing import Any, cast, Literal, Mapping
 
 from dataclasses import dataclass
+
+import yaml
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 
 from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
 from zuper_commons.cmds import ExitCode
-from zuper_commons.fs import DirPath
-from zuper_commons.text import remove_escapes
+from zuper_commons.fs import DirPath, make_sure_dir_exists
+from zuper_commons.text import joinlines, remove_escapes
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_zapp import zapp1, ZappEnv
 from zuper_zapp_interfaces import get_fs2
+
+TestStatusString = Literal["test_success", "test_skipped", "test_failed", "test_error"]
+TEST_SUCCESS: TestStatusString = "test_success"
+TEST_SKIPPED: TestStatusString = "test_skipped"
+TEST_FAILED: TestStatusString = "test_failed"
+TEST_ERROR: TestStatusString = "test_error"
 
 
 @zapp1()
@@ -28,6 +37,9 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         action="store_true",
         help="Returns nonzero exit code if there are failed or errored tests",
     )
+    parser.add_argument("--known-failures", type=str, help="yaml file with dict known failures")
+    parser.add_argument("--output-txt", type=str, help="Output file")
+
     parsed, rest = parser.parse_known_args(args=ze.args)
 
     if not rest:
@@ -36,7 +48,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         return ExitCode.WRONG_ARGUMENTS
 
     dirname = cast(DirPath, rest[0])
-    db = StorageFilesystem(dirname, compress=True)
+    db = StorageFilesystem(dirname, compress=True)  # OK: comptests to junit
 
     jobs = sorted(all_jobs(db))
 
@@ -44,6 +56,11 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         msg = "Could not enough jobs, compressed or not."
         logger.error(msg, n=len(jobs), dirname=dirname)
         return ExitCode.WRONG_ARGUMENTS
+
+    if parsed.known_failures:
+        with open(parsed.known_failures) as f:
+            known_failures: dict[CMJobID, Any]
+            known_failures = yaml.load(f, Loader=yaml.FullLoader)
 
     tcr = await junit_xml(ze.sti, db)
     stats_reduce: Mapping[TestStatusString, int] = {k: len(v) for k, v in tcr.stats.items()}
@@ -55,19 +72,43 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     async with fs2.session("comptest_to_junit_main") as fs:
         await fs.write_str(parsed.output, xml)
 
+    if parsed.output_txt:
+        for status in [TEST_SUCCESS, TEST_SKIPPED, TEST_FAILED, TEST_ERROR]:
+            bn, ext = os.path.splitext(parsed.output_txt)
+            fn = f"{bn}_{status}{ext}"
+            res = []
+            tc: TestCase
+            for job_id, cr in tcr.job2cr.items():
+                if cr.status == status:
+                    res.append(job_id)
+            if not res:
+                logger.info(f"{status}: {len(res)} jobs ")
+            else:
+                dn = os.path.dirname(fn)
+                make_sure_dir_exists(dn)
+                with open(fn, "w") as f:
+                    f.write(joinlines(res))
+                logger.info(f"{status:>16}: {len(res):>8} jobs - written to {fn}")
+
     n_should_exit = stats_reduce["test_failed"] + stats_reduce["test_error"]
     if n_should_exit > 0 and parsed.fail_if_failed:
         return ExitCode.OTHER_EXCEPTION
     return ExitCode.OK
 
 
-TestStatusString = Literal["test_success", "test_skipped", "test_failed", "test_error"]
-
-
 @dataclass
 class JUnitResults:
     test_suite: TestSuite
     stats: Mapping[TestStatusString, set[CMJobID]]
+    job2cr: "dict[CMJobID, ClassificationResult]"
+
+
+# @dataclass
+# class DBResults:
+#     jur: JUnitResults
+#
+#     job_statuses: dict[CMJobID, TestStatusString]
+#     known_failures: set[CMJobID]
 
 
 async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> JUnitResults:
@@ -84,14 +125,15 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> J
     stats["test_skipped"] = set()
     stats["test_failed"] = set()
     stats["test_error"] = set()
-
+    job2cr = {}
     for job_id in jobs:
         r = junit_test_case_from_compmake(compmake_db, job_id)
+        job2cr[job_id] = r
         stats[r.status].add(job_id)
         test_cases.append(r.tc)
 
     ts = TestSuite("comptests_test_suite", test_cases)
-    return JUnitResults(ts, dict(stats))
+    return JUnitResults(ts, dict(stats), job2cr)
 
 
 @dataclass
@@ -123,31 +165,31 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> Cla
     )
     if cache.state == Cache.DONE:
         # TODO: look at object - Skipped result
-        return ClassificationResult(tc, "test_success")
+        return ClassificationResult(tc, TEST_SUCCESS)
 
     if cache.state == Cache.FAILED:
         message = cache.exception
         output = (cache.exception or "") + "\n" + (cache.backtrace or "")
         if "SkipTest" in message:
             tc.add_skipped_info(message)
-            return ClassificationResult(tc, "test_skipped")
+            return ClassificationResult(tc, TEST_SKIPPED)
 
         else:
             tc.add_failure_info(message, output)
-            return ClassificationResult(tc, "test_failed")
+            return ClassificationResult(tc, TEST_FAILED)
 
     if cache.state == Cache.PROCESSING:
         message = "Job still processing. Probably interrupted."
         tc.add_error_info(message)
-        return ClassificationResult(tc, "test_error")
+        return ClassificationResult(tc, TEST_ERROR)
     if cache.state == Cache.NOT_STARTED:
         message = "Job not started."
         tc.add_error_info(message)
-        return ClassificationResult(tc, "test_error")
+        return ClassificationResult(tc, TEST_ERROR)
 
     if cache.state == Cache.BLOCKED:
         message = "Job is blocked."
         tc.add_skipped_info(message)
-        return ClassificationResult(tc, "test_skipped")
+        return ClassificationResult(tc, TEST_SKIPPED)
 
-    assert False, f"Unknown state {cache.state}"
+    raise AssertionError(f"Unknown state {cache.state}")

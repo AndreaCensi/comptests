@@ -41,7 +41,7 @@ class CompTests(QuickApp):
 
     """
 
-    global_output_dir = cast(AbsDirPath, os.path.join(os.getcwd(), "out-DEFAULT-comptests"))
+    global_output_dir = cast(AbsDirPath, os.path.join(os.getcwd(), "out/DEFAULT-comptests"))
     output_dir_for_current_test: Optional[AbsDirPath] = None
 
     cmd: str = "comptests"
