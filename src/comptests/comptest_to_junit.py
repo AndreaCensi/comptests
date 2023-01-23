@@ -87,7 +87,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
                 dn = os.path.dirname(fn)
                 make_sure_dir_exists(dn)
                 with open(fn, "w") as f:
-                    f.write(joinlines(res))
+                    f.write(" ".join(sorted(res)))
                 logger.info(f"{status:>16}: {len(res):>8} jobs - written to {fn}")
 
     n_should_exit = stats_reduce["test_failed"] + stats_reduce["test_error"]
