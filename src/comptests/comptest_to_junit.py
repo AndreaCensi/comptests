@@ -57,11 +57,11 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         logger.error(msg, n=len(jobs), dirname=dirname)
         return ExitCode.WRONG_ARGUMENTS
 
+    known_failures: dict[CMJobID, Any] = {}
     if parsed.known_failures:
         with open(parsed.known_failures) as f:
-            known_failures: dict[CMJobID, Any]
             known_failures = yaml.load(f, Loader=yaml.FullLoader)
-
+            logger.info(f"Loadded {len(known_failures)} known failures.")
     tcr = await junit_xml(ze.sti, db, known_failures=set(known_failures))
     stats_reduce: Mapping[TestStatusString, int] = {k: len(v) for k, v in tcr.stats.items()}
     ze.sti.logger.info(output=parsed.output, stats_reduce=stats_reduce)
@@ -137,6 +137,8 @@ async def junit_xml(
                 logger.warning(msg)
             else:
                 msg = f"Job {job_id} is a known failure."
+                logger.warning(msg)
+
                 r.status = TEST_SKIPPED
         stats[r.status].add(job_id)
         test_cases.append(r.tc)
