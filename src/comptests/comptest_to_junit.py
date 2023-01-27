@@ -1,6 +1,6 @@
 import argparse
 import os.path
-from typing import Any, cast, Literal, Mapping
+from typing import Any, cast, Literal, Mapping, Set
 
 from dataclasses import dataclass
 
@@ -62,7 +62,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
             known_failures: dict[CMJobID, Any]
             known_failures = yaml.load(f, Loader=yaml.FullLoader)
 
-    tcr = await junit_xml(ze.sti, db)
+    tcr = await junit_xml(ze.sti, db, known_failures=set(known_failures))
     stats_reduce: Mapping[TestStatusString, int] = {k: len(v) for k, v in tcr.stats.items()}
     ze.sti.logger.info(output=parsed.output, stats_reduce=stats_reduce)
 
@@ -111,7 +111,9 @@ class JUnitResults:
 #     known_failures: set[CMJobID]
 
 
-async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> JUnitResults:
+async def junit_xml(
+    sti: SyncTaskInterface, compmake_db: StorageFilesystem, known_failures: Set[str]
+) -> JUnitResults:
     logger = sti.logger
     from junit_xml import TestSuite
 
@@ -129,6 +131,13 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem) -> J
     for job_id in jobs:
         r = junit_test_case_from_compmake(compmake_db, job_id)
         job2cr[job_id] = r
+        if job_id in known_failures:
+            if r.status == TEST_SUCCESS:
+                msg = f'Job {job_id} was marked as "known failure" but it succeeded.'
+                logger.warning(msg)
+            else:
+                msg = f"Job {job_id} is a known failure."
+                r.status = TEST_SKIPPED
         stats[r.status].add(job_id)
         test_cases.append(r.tc)
 
