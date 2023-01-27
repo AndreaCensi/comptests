@@ -61,7 +61,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     if parsed.known_failures:
         with open(parsed.known_failures) as f:
             known_failures = yaml.load(f, Loader=yaml.FullLoader)
-            logger.info(f"Loadded {len(known_failures)} known failures.")
+            logger.info(f"Loaded {len(known_failures)} known failures.")
     tcr = await junit_xml(ze.sti, db, known_failures=set(known_failures))
     stats_reduce: Mapping[TestStatusString, int] = {k: len(v) for k, v in tcr.stats.items()}
     ze.sti.logger.info(output=parsed.output, stats_reduce=stats_reduce)
@@ -129,17 +129,17 @@ async def junit_xml(
     stats["test_error"] = set()
     job2cr = {}
     for job_id in jobs:
-        r = junit_test_case_from_compmake(compmake_db, job_id)
+        r = junit_test_case_from_compmake(compmake_db, job_id, known_failures)
         job2cr[job_id] = r
-        if job_id in known_failures:
-            if r.status == TEST_SUCCESS:
-                msg = f'Job {job_id} was marked as "known failure" but it succeeded.'
-                logger.warning(msg)
-            else:
-                msg = f"Job {job_id} is a known failure."
-                logger.warning(msg)
-
-                r.status = TEST_SKIPPED
+        # if job_id in known_failures:
+        #     if r.status == TEST_SUCCESS:
+        #         msg = f'Job {job_id} was marked as "known failure" but it succeeded.'
+        #         logger.warning(msg)
+        #     else:
+        #         msg = f"Job {job_id} is a known failure."
+        #         logger.warning(msg)
+        #
+        #         r.status = TEST_SKIPPED
         stats[r.status].add(job_id)
         test_cases.append(r.tc)
 
@@ -153,7 +153,12 @@ class ClassificationResult:
     status: TestStatusString
 
 
-def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> ClassificationResult:
+from . import logger
+
+
+def junit_test_case_from_compmake(
+    db: StorageFilesystem, job_id: CMJobID, known_failures: Set[str]
+) -> ClassificationResult:
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
         # elapsed_sec = cache.walltime_used
@@ -181,7 +186,11 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID) -> Cla
     if cache.state == Cache.FAILED:
         message = cache.exception
         output = (cache.exception or "") + "\n" + (cache.backtrace or "")
-        if "SkipTest" in message:
+        if job_id in known_failures:
+            tc.add_skipped_info(message)
+            logger.info(f"Job {job_id} is a known failure.")
+            return ClassificationResult(tc, TEST_SKIPPED)
+        elif "SkipTest" in message:
             tc.add_skipped_info(message)
             return ClassificationResult(tc, TEST_SKIPPED)
 
