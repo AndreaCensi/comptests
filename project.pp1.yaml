@@ -19,9 +19,9 @@ install_requires:
 - coverage
 - zuper-utils-python-z7
 - zuper-utils-asyncio-z7
-- nose
 - zuper-zapp-z7
 - zuper-zapp-interfaces-z7
+- PyYAML
 
 tests_require: []
 
