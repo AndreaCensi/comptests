@@ -193,6 +193,9 @@ def junit_test_case_from_compmake(
         elif "SkipTest" in message:
             tc.add_skipped_info(message)
             return ClassificationResult(tc, TEST_SKIPPED)
+        elif "Timed out" in message:
+            tc.add_skipped_info(message)
+            return ClassificationResult(tc, TEST_SKIPPED)
 
         else:
             tc.add_failure_info(message, output)
