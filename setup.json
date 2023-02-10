@@ -25,7 +25,10 @@
   },
   "zip_safe": true,
   "include_package_data": true,
-  "modules": [
+  "packages": [
+    "comptests"
+  ],
+  "py_modules": [
     "comptests",
     "comptests.comptest_to_junit",
     "comptests.comptests",
