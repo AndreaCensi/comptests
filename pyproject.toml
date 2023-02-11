@@ -2,7 +2,21 @@
 name = "comptests-z7"
 version = "7.2"
 authors = [{name = "Andrea Censi", email = "info@zupermind.com"}]
-dependencies = ["zuper-commons-z7", "ConfTools-z7", "QuickApp-z7", "SystemCmd-z7", "compmake-z7", "reprep-z7", "junit-xml", "coverage", "zuper-utils-python-z7", "zuper-utils-asyncio-z7", "zuper-zapp-z7", "zuper-zapp-interfaces-z7", "PyYAML"]
+dependencies = [
+    "ConfTools-z7",
+    "PyYAML",
+    "QuickApp-z7",
+    "SystemCmd-z7",
+    "compmake-z7",
+    "coverage",
+    "junit-xml",
+    "reprep-z7",
+    "zuper-commons-z7",
+    "zuper-utils-asyncio-z7",
+    "zuper-utils-python-z7",
+    "zuper-zapp-interfaces-z7",
+    "zuper-zapp-z7",
+    ]
 
 [project.scripts]
 comptests = "comptests:main_comptests"
@@ -14,8 +28,12 @@ name = "comptests-z7"
 version = "7.2"
 description = ""
 authors = ["Andrea Censi <info@zupermind.com>"]
-packages = [{include = "comptests", from = "src"}]
+packages = [
+    {from = "src", include = "comptests"},
+    ]
 
 [tool.setuptools]
-packages = ["comptests"]
+packages = [
+    "comptests",
+    ]
 package-dir = {"" = "src"}
