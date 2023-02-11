@@ -25,8 +25,20 @@
   },
   "zip_safe": true,
   "include_package_data": true,
-  "modules": [
+  "packages": [
     "comptests"
+  ],
+  "py_modules": [
+    "comptests",
+    "comptests.comptest_to_junit",
+    "comptests.comptests",
+    "comptests.find_modules_imp",
+    "comptests.indices",
+    "comptests.junit_compare",
+    "comptests.nose",
+    "comptests.registrar",
+    "comptests.reports",
+    "comptests.results"
   ],
   "version": "7.2",
   "author": "Andrea Censi",
