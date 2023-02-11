@@ -23,6 +23,7 @@ jobs:
       DEPS_INSTALL_TIMEOUT: 10m
       COVER_PACKAGES: comptests,comptests_tests
       TEST_PACKAGES: comptests_tests
+      PIP_INDEX_URL: ${PIP_INDEX_URL_SRC}
       Z_SERVICE_LOG: zuper_loghandle.log
       Z_SERVICE_PROC: zuper_proc_local.proc
       Z_SERVICE_FS: zuper_fs_local.use_local_fs
@@ -185,6 +186,7 @@ jobs:
       DEPS_INSTALL_TIMEOUT: 10m
       COVER_PACKAGES: comptests,comptests_tests
       TEST_PACKAGES: comptests_tests
+      PIP_INDEX_URL: ${PIP_INDEX_URL_SRC}
       Z_SERVICE_LOG: zuper_loghandle.log
       Z_SERVICE_PROC: zuper_proc_local.proc
       Z_SERVICE_FS: zuper_fs_local.use_local_fs
@@ -337,4 +339,4 @@ jobs:
           ./codecov  
     resource_class: small
 
-# sigil 749cb92c56c8edface013156a3b31e34
+# sigil 202e8d40b946a8c0b47573f6779888e2
