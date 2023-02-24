@@ -1,16 +1,16 @@
-import argparse
 import os.path
 import re
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 
+from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
 from zuper_zapp import zapp1, ZappEnv
 
 
 @zapp1()
 async def junit_compare_main(ze: ZappEnv) -> ExitCode:
-    parser = argparse.ArgumentParser()
+    parser = ZArgumentParser()
 
     ignores = [
         ".*_dynreports_.*",
@@ -23,7 +23,7 @@ async def junit_compare_main(ze: ZappEnv) -> ExitCode:
         "^ct-mcdp_tests-jobs_comptests-[^-]+$",
     ]
 
-    parsed, rest = parser.parse_known_args(args=ze.args)
+    parsed, rest = parser.parse_known_args(args=ze.args)  # ok
     jobs: dict[str, set[str]] = {}
     tc2time: dict[str, float] = {}
     tc2bn: dict[str, set[str]] = defaultdict(set)

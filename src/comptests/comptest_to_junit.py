@@ -1,16 +1,15 @@
-import argparse
 import os.path
-from typing import Any, cast, Literal, Mapping, Set
-
 from dataclasses import dataclass
+from typing import Any, cast, Literal, Mapping, Set
 
 import yaml
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 
 from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
+from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
 from zuper_commons.fs import DirPath, make_sure_dir_exists
-from zuper_commons.text import joinlines, remove_escapes
+from zuper_commons.text import remove_escapes
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_zapp import zapp1, ZappEnv
@@ -28,7 +27,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     fs2 = await get_fs2(ze.sti)
     logger = ze.sti.logger
 
-    parser = argparse.ArgumentParser()
+    parser = ZArgumentParser()
     # parser.add_argument("--db", required=True, type=str, help="Output file")
     parser.add_argument("--output", required=True, type=str, help="Output file")
     parser.add_argument(
@@ -40,7 +39,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     parser.add_argument("--known-failures", type=str, help="yaml file with dict known failures")
     parser.add_argument("--output-txt", type=str, help="Output file")
 
-    parsed, rest = parser.parse_known_args(args=ze.args)
+    parsed, rest = parser.parse_known_args(args=ze.args)  # ok
 
     if not rest:
         msg = "Require the path to a Compmake DB."
