@@ -195,20 +195,22 @@ def junit_test_case_from_compmake(
         elif "Timed out" in message:
             tc.add_skipped_info(message)
             return ClassificationResult(tc, TEST_SKIPPED)
-
         else:
             tc.add_failure_info(message, output)
             return ClassificationResult(tc, TEST_FAILED)
 
     if cache.state == Cache.PROCESSING:
         message = "Job still processing. Probably interrupted."
+        if job_id in known_failures:
+            tc.add_skipped_info(message)
+            return ClassificationResult(tc, TEST_SKIPPED)
         tc.add_error_info(message)
         return ClassificationResult(tc, TEST_ERROR)
+
     if cache.state == Cache.NOT_STARTED:
         message = "Job not started."
         tc.add_error_info(message)
         return ClassificationResult(tc, TEST_ERROR)
-
     if cache.state == Cache.BLOCKED:
         message = "Job is blocked."
         tc.add_skipped_info(message)
