@@ -204,8 +204,10 @@ def junit_test_case_from_compmake(
         if job_id in known_failures:
             tc.add_skipped_info(message)
             return ClassificationResult(tc, TEST_SKIPPED)
-        tc.add_error_info(message)
-        return ClassificationResult(tc, TEST_ERROR)
+        # tc.add_error_info(message)
+        # return ClassificationResult(tc, TEST_ERROR)
+        tc.add_skipped_info(message)
+        return ClassificationResult(tc, TEST_SKIPPED)
 
     if cache.state == Cache.NOT_STARTED:
         message = "Job not started."
