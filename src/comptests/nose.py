@@ -38,7 +38,6 @@ def jobs_nosetests(context: QuickAppContext, module: str, do_coverage: bool = Fa
     """Instances the mcdp_lang_tests for the given module."""
     if do_coverage:
         try:
-
             import coverage  # @UnusedImport
 
             logger.info("Loaded coverage module")
@@ -185,7 +184,6 @@ def jobs_nosetests_single(context: QuickAppContext, module: str) -> None:
                     job_id=job_id,
                 )
             else:
-
                 if not hasattr(v, "__original__"):
                     context.comp(v, job_id=job_id)
                 else:

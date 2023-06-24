@@ -199,7 +199,6 @@ def instance_comptests_jobs2_m(context: QuickAppContext, module_name: str, creat
     try:
         module = import_name(module_name)
     except ValueError as e:
-
         msg = f"Could not import module {module_name!r}"
 
         if warn_errors:
