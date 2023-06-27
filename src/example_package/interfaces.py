@@ -1,4 +1,7 @@
-__all__ = ["ExampleClass1", "ExampleClass2"]
+__all__ = [
+    "ExampleClass1",
+    "ExampleClass2",
+]
 
 
 class ExampleClass1:
