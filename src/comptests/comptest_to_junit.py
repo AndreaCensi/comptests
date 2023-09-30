@@ -58,6 +58,10 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
 
     known_failures: dict[CMJobID, Any] = {}
     if parsed.known_failures:
+        if not os.path.exists(parsed.known_failures):
+            msg = f"File {parsed.known_failures} does not exist."
+            logger.error(msg)
+            return ExitCode.WRONG_ARGUMENTS
         with open(parsed.known_failures) as f:
             known_failures = yaml.load(f, Loader=yaml.FullLoader)
             logger.info(f"Loaded {len(known_failures)} known failures.")

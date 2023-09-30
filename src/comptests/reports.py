@@ -75,7 +75,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple
     data = [[None for a in range(len(cols))] for b in range(len(rows))]
     # a nice bug: data = [[None * len(cols)] * len(rows)
 
-    for ((i, id_object1), (j, id_object2)) in itertools.product(enumerate(rows), enumerate(cols)):
+    for (i, id_object1), (j, id_object2) in itertools.product(enumerate(rows), enumerate(cols)):
         res = results[(id_object1, id_object2)]
         data[i][j] = get_string_result(res)
 
@@ -126,7 +126,7 @@ def report_results_pairs_jobs(
     db = context.cc.get_compmake_db()
 
     comb = itertools.product(enumerate(rows), enumerate(cols))
-    for ((i, id_object1), (j, id_object2)) in comb:
+    for (i, id_object1), (j, id_object2) in comb:
         job_id = jobs[(id_object1, id_object2)]
         cache = get_job_cache(job_id, db)
 
