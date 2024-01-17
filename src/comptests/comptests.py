@@ -106,9 +106,7 @@ class CompTests(QuickApp):
             await self.instance_nosesingle_jobs(sti, context.child("ns"), modules)
 
         if not options.nocomp:
-            await self.instance_comptests_jobs(
-                sti, context.child("ct"), modules, create_reports=options.reports
-            )
+            await self.instance_comptests_jobs(sti, context.child("ct"), modules, create_reports=options.reports)
 
         sti.logger.info("Finished defining jobs.")
 
@@ -163,9 +161,7 @@ class CompTests(QuickApp):
             c = context.child(module)
             jobs_nosetests(c, module, do_coverage=do_coverage)
 
-    async def instance_nosesingle_jobs(
-        self, sti: SyncTaskInterface, context: QuickAppContext, modules: list[str]
-    ) -> None:
+    async def instance_nosesingle_jobs(self, sti: SyncTaskInterface, context: QuickAppContext, modules: list[str]) -> None:
         sti.logger.info("instancing nosesingle jobs", modules=modules)
         await asyncio.sleep(0)
         for module in modules:

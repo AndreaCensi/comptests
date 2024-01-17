@@ -89,9 +89,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple
     return r
 
 
-def report_results_pairs_jobs(
-    context: QuickAppContext, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], CMJobID]
-):
+def report_results_pairs_jobs(context: QuickAppContext, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], CMJobID]):
     """This version gets the jobs ID"""
     reason2symbol = {}
 

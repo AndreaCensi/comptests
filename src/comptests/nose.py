@@ -193,9 +193,7 @@ def jobs_nosetests_single(context: QuickAppContext, module: str) -> None:
 #
 
 
-async def execute_wrap_zapp1_test(
-    sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str
-) -> object:
+async def execute_wrap_zapp1_test(sti: SyncTaskInterface, module_name: PythonModuleName, func_name: str) -> object:
     with add_context(module_name=module_name, func_name=func_name) as c:
         f = importlib.import_module(module_name)
         ff: Callable[[ZappTestEnv], Awaitable[Any]]
