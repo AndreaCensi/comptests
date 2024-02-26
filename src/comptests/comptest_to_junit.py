@@ -114,9 +114,7 @@ class JUnitResults:
 #     known_failures: set[CMJobID]
 
 
-async def junit_xml(
-    sti: SyncTaskInterface, compmake_db: StorageFilesystem, known_failures: Set[str]
-) -> JUnitResults:
+async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, known_failures: Set[str]) -> JUnitResults:
     logger = sti.logger
     from junit_xml import TestSuite
 
@@ -159,9 +157,7 @@ class ClassificationResult:
 from . import logger
 
 
-def junit_test_case_from_compmake(
-    db: StorageFilesystem, job_id: CMJobID, known_failures: Set[str]
-) -> ClassificationResult:
+def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_failures: Set[str]) -> ClassificationResult:
     cache = get_job_cache(job_id, db=db)
     if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
         # elapsed_sec = cache.walltime_used

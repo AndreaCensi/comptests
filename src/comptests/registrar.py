@@ -79,9 +79,7 @@ def register_pair(objspec1: ObjectSpec, objspec2: ObjectSpec, f: FT, dynamic: bo
     ts.append(dict(objspec2=objspec2, function=f, dynamic=dynamic))
 
 
-def register_for_some_pairs(
-    objspec1: ObjectSpec, objspec2: ObjectSpec, f: FT, which1: str, which2: str, dynamic: bool
-) -> None:
+def register_for_some_pairs(objspec1: ObjectSpec, objspec2: ObjectSpec, f: FT, which1: str, which2: str, dynamic: bool) -> None:
     ts = ComptestsRegistrar.objspec2testsomepairs[objspec1.name]
     ts.append(dict(objspec2=objspec2, function=f, dynamic=dynamic, which1=which1, which2=which2))
 
@@ -615,9 +613,7 @@ def define_tests_pairs(
 
         db = context.cc.get_compmake_db()
 
-        combinations = iterate_context_names_pair(
-            cx, list(objs1), list(objs2), key1=objspec1.name, key2=objspec2.name
-        )
+        combinations = iterate_context_names_pair(cx, list(objs1), list(objs2), key1=objspec1.name, key2=objspec2.name)
         for c, id_ob1, id_ob2 in combinations:
             assert_job_exists(objs1[id_ob1], db)
             assert_job_exists(objs2[id_ob2], db)
@@ -733,9 +729,7 @@ def define_tests_some_pairs_(
 ):
     results = {}
     jobs = {}
-    combinations = iterate_context_names_pair(
-        cx, list(objs1), list(objs2), key1=objspec1.name, key2=objspec2.name
-    )
+    combinations = iterate_context_names_pair(cx, list(objs1), list(objs2), key1=objspec1.name, key2=objspec2.name)
     for c, id_ob1, id_ob2 in combinations:
         assert_job_exists(objs1[id_ob1], db)
         assert_job_exists(objs2[id_ob2], db)

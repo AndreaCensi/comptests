@@ -33,8 +33,7 @@ def test_example_package() -> None:
 
         fs = [
             f"{MYOUT}/report.html",
-            f"{MYOUT}/report/reportclass1single/"
-            "reportclass1single-c1a-checkclass1dynamic-examplepackage-exampleclass1.html",
+            f"{MYOUT}/report/reportclass1single/" "reportclass1single-c1a-checkclass1dynamic-examplepackage-exampleclass1.html",
         ]
         #
         #         if False:
