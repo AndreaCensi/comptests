@@ -200,6 +200,9 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
         elif "Timed out" in message:
             tc.add_skipped_info(message)
             return ClassificationResult(tc, TEST_SKIPPED)
+        elif message.startswith("OOM"):
+            tc.add_skipped_info(message)
+            return ClassificationResult(tc, TEST_SKIPPED)
         else:
             tc.add_failure_info(message, output)
             return ClassificationResult(tc, TEST_FAILED)
