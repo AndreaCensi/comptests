@@ -1,18 +1,18 @@
 import os.path
 from dataclasses import dataclass
-from typing import Any, cast, Literal, Mapping, Set
+from typing import Any, Literal, Mapping, Set, cast
 
 import yaml
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 
-from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
+from compmake import CMJobID, Cache, StorageFilesystem, all_jobs, get_job_cache
 from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
 from zuper_commons.fs import DirPath, make_sure_dir_exists
 from zuper_commons.text import remove_escapes
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
-from zuper_zapp import zapp1, ZappEnv
+from zuper_zapp import ZappEnv, zapp1
 from zuper_zapp_interfaces import get_fs2
 
 TestStatusString = Literal["test_success", "test_skipped", "test_failed", "test_error"]
@@ -123,11 +123,12 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, know
 
     test_cases = []
 
-    stats: dict[TestStatusString, set[CMJobID]] = {}
-    stats["test_success"] = set()
-    stats["test_skipped"] = set()
-    stats["test_failed"] = set()
-    stats["test_error"] = set()
+    stats: dict[TestStatusString, set[CMJobID]] = {
+        "test_success": set(),
+        "test_skipped": set(),
+        "test_failed": set(),
+        "test_error": set(),
+    }
     job2cr = {}
     for job_id in jobs:
         r = junit_test_case_from_compmake(compmake_db, job_id, known_failures)
@@ -180,6 +181,10 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
     )
     if cache.state == Cache.DONE:
         # TODO: look at object - Skipped result
+        if job_id in known_failures:
+            logger.error(f"Job {job_id} was marked as a known failure but it succeeded.")
+            return ClassificationResult(tc, TEST_ERROR)
+
         return ClassificationResult(tc, TEST_SUCCESS)
 
     if cache.state == Cache.FAILED:
