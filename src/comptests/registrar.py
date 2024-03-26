@@ -41,8 +41,7 @@ class FT(Protocol):
     __name__: str
     __module__: str
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
 
 
 # FT = Callable[..., Any]
