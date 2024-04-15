@@ -12,7 +12,7 @@ from conf_tools.utils import expand_string
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
 from zuper_commons.fs import DirPath, joind
 from zuper_commons.test_utils import nottest
-from zuper_commons.types import add_context, ZException
+from zuper_commons.types import TM, add_context, ZException
 from . import logger
 from .indices import accept, get_test_index
 from .reports import (
@@ -50,7 +50,7 @@ class FT(Protocol):
 class DRegular(TypedDict):
     function: FT
     dynamic: bool
-    args: tuple[Any, ...]
+    args: TM[Any]
     kwargs: dict[str, Any]
 
 
@@ -88,7 +88,7 @@ def register_for_some(objspec: ObjectSpec, f, which, dynamic: bool):
     ts.append(dict(function=f, which=which, dynamic=dynamic))
 
 
-def register_indep(f: FT, dynamic: bool, args: tuple[Any, ...], kwargs: dict[str, Any]):
+def register_indep(f: FT, dynamic: bool, args: TM[Any], kwargs: dict[str, Any]):
     d: DRegular = dict(function=f, dynamic=dynamic, args=args, kwargs=kwargs)
     ComptestsRegistrar.regular.append(d)
 
