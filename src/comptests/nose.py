@@ -5,15 +5,15 @@ import sys
 import tempfile
 import warnings
 from contextlib import contextmanager
-from typing import Any, Awaitable, Callable, cast, Iterator
+from typing import Any, Awaitable, Callable, Iterator, cast
 
 from quickapp import QuickAppContext
 from system_cmd import system_cmd_result
-from zuper_commons.fs import dirname, DirPath, FilePath, getcwd, joinf, read_bytes_from_file
+from zuper_commons.fs import DirPath, FilePath, dirname, getcwd, joinf, read_bytes_from_file
 from zuper_commons.text import PythonModuleName
 from zuper_commons.types import add_context, unwrap
 from zuper_utils_asyncio import SyncTaskInterface
-from zuper_utils_python.listing import get_modules_in_dir_detailed
+from zuper_utils_python import get_modules_in_dir_detailed
 from zuper_zapp.utils import ORIGINAL_ZAPP1_TEST_ATT, ZappTestEnv
 from . import logger
 from .indices import accept_tst_on_this_worker
