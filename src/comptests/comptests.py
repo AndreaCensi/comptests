@@ -1,9 +1,9 @@
 import asyncio
 import os
-from typing import Any, Callable, cast, Iterator, List, Optional
+from typing import Any, Callable, Iterator, List, Optional, cast
 
 from conf_tools import GlobalConfig, import_name, reset_config
-from quickapp import QuickApp, QuickAppContext, DecentParams
+from quickapp import DecentParams, QuickApp, QuickAppContext
 from zuper_commons.fs import AbsDirPath, abspath
 from zuper_commons.types import ZException, ZValueError
 from zuper_utils_asyncio import SyncTaskInterface
@@ -53,6 +53,7 @@ class CompTests(QuickApp):
         params.add_flag("nosesingle", help="Create nose single as tasks")
         params.add_flag("coverage", help="Enable coverage module")
         params.add_flag("nocomp", help="Disable comptests hooks")
+        # params.add_string("prefix", help="Comptests prefix", default=None)
 
         params.add_flag("reports", help="Create reports jobs")
         params.add_flag("circle", help="Do CircleCI optimization")
@@ -83,10 +84,7 @@ class CompTests(QuickApp):
                     if i % total == index:
                         mine.append(modules[i])
 
-                msg = "I am only doing these modules: %s, instead of %s" % (
-                    mine,
-                    modules,
-                )
+                msg = f"I am only doing these modules: {mine}, instead of {modules}"
                 self.info(msg)
                 modules = mine
 
@@ -99,6 +97,9 @@ class CompTests(QuickApp):
         # if do_coverage:
         #     import coverage
         #     coverage.process_startup()
+        # if options.prefix:
+        #     context = context.child(options.prefix)
+
         if not options.nonose:
             await self.instance_nosetests_jobs(sti, context.child("nt"), modules, do_coverage)
 
