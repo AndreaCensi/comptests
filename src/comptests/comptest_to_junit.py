@@ -180,11 +180,17 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
         stderr=stderr,
     )
     if cache.state == Cache.DONE:
-        k
+
         # TODO: look at object - Skipped result
         if job_id in known_failures:
             logger.error(f"Job {job_id} was marked as a known failure but it succeeded.")
             return ClassificationResult(tc, TEST_ERROR)
+
+        if "Skipped" == cache.result_type:
+            message = "Returned Skipped"
+            tc.add_skipped_info(message)
+
+            return ClassificationResult(tc, TEST_SKIPPED)
 
         return ClassificationResult(tc, TEST_SUCCESS)
 
