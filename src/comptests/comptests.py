@@ -156,14 +156,14 @@ class CompTests(QuickApp):
     async def instance_nosetests_jobs(
         self, sti: SyncTaskInterface, context: QuickAppContext, modules: list[str], do_coverage: bool
     ) -> None:
-        sti.logger.info("instancing nosetests jobs", modules=modules)
+        # sti.logger.info("instancing nosetests jobs", modules=modules)
         await asyncio.sleep(0)
         for module in modules:
             c = context.child(module)
             jobs_nosetests(c, module, do_coverage=do_coverage)
 
     async def instance_nosesingle_jobs(self, sti: SyncTaskInterface, context: QuickAppContext, modules: list[str]) -> None:
-        sti.logger.info("instancing nosesingle jobs", modules=modules)
+        # sti.logger.info("instancing nosesingle jobs", modules=modules)
         await asyncio.sleep(0)
         for module in modules:
             c = context.child(module)
@@ -172,7 +172,7 @@ class CompTests(QuickApp):
     async def instance_comptests_jobs(
         self, sti: SyncTaskInterface, context: QuickAppContext, modules: List[str], create_reports: bool
     ):
-        sti.logger.info("instancing jobs", modules=modules)
+        # sti.logger.info("instancing jobs", modules=modules)
         await asyncio.sleep(0)
         for module in modules:
             c = context.child(module)

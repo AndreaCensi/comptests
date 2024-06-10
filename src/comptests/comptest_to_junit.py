@@ -9,17 +9,19 @@ from compmake import CMJobID, Cache, StorageFilesystem, all_jobs, get_job_cache
 from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
 from zuper_commons.fs import DirPath, make_sure_dir_exists
-from zuper_commons.text import remove_escapes
+from zuper_commons.text import joinlines, remove_escapes
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_zapp import ZappEnv, zapp1
 from zuper_zapp_interfaces import get_fs2
 
-TestStatusString = Literal["test_success", "test_skipped", "test_failed", "test_error"]
+TestStatusString = Literal["test_success", "test_skipped", "test_failed", "test_error", "test_not_started", "test_blocked"]
 TEST_SUCCESS: TestStatusString = "test_success"
 TEST_SKIPPED: TestStatusString = "test_skipped"
 TEST_FAILED: TestStatusString = "test_failed"
 TEST_ERROR: TestStatusString = "test_error"
+TEST_NOT_STARTED: TestStatusString = "test_not_started"
+TEST_BLOCKED: TestStatusString = "test_blocked"
 
 
 @zapp1()
@@ -128,22 +130,44 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, know
         "test_skipped": set(),
         "test_failed": set(),
         "test_error": set(),
+        TEST_NOT_STARTED: set(),
+        TEST_BLOCKED: set(),
     }
     job2cr = {}
     for job_id in jobs:
+        cache = get_job_cache(job_id, db=compmake_db)
+        if cache.state == Cache.NOT_STARTED:
+            stats[TEST_NOT_STARTED].add(job_id)
+            continue
+        if cache.state == Cache.BLOCKED:
+            stats[TEST_BLOCKED].add(job_id)
+            continue
+
         r = junit_test_case_from_compmake(compmake_db, job_id, known_failures)
         job2cr[job_id] = r
-        # if job_id in known_failures:
-        #     if r.status == TEST_SUCCESS:
-        #         msg = f'Job {job_id} was marked as "known failure" but it succeeded.'
-        #         logger.warning(msg)
-        #     else:
-        #         msg = f"Job {job_id} is a known failure."
-        #         logger.warning(msg)
-        #
-        #         r.status = TEST_SKIPPED
+
         stats[r.status].add(job_id)
         test_cases.append(r.tc)
+
+    if stats[TEST_NOT_STARTED]:
+        tc = TestCase(
+            name=f"not_started-{len(stats[TEST_NOT_STARTED])}",
+            classname=None,
+            elapsed_sec=None,
+            stdout="",
+            stderr=joinlines(sorted(stats[TEST_NOT_STARTED])),
+        )
+        test_cases.append(tc)
+
+    if stats[TEST_BLOCKED]:
+        tc = TestCase(
+            name=f"blocked-{len(stats[TEST_BLOCKED])}",
+            classname=None,
+            elapsed_sec=None,
+            stdout="",
+            stderr=joinlines(sorted(stats[TEST_BLOCKED])),
+        )
+        test_cases.append(tc)
 
     ts = TestSuite("comptests_test_suite", test_cases)
     return JUnitResults(ts, dict(stats), job2cr)
