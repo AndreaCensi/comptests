@@ -184,11 +184,11 @@ from . import logger
 
 def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_failures: Set[str]) -> ClassificationResult:
     cache = get_job_cache(job_id, db=db)
-    if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
-        # elapsed_sec = cache.walltime_used
-        elapsed_sec = cache.cputime_used
-    else:
-        elapsed_sec = None
+    # if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
+    #     # elapsed_sec = cache.walltime_used
+    #     elapsed_sec = cache.cputime_used
+    # else:
+    elapsed_sec = cache.cputime_used
 
     check_isinstance(cache.captured_stderr, (type(None), str))
     check_isinstance(cache.captured_stdout, (type(None), str))
@@ -210,7 +210,7 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
             logger.error(f"Job {job_id} was marked as a known failure but it succeeded.")
             return ClassificationResult(tc, TEST_ERROR)
 
-        if "Skipped" == cache.result_type:
+        if "Skip" in cache.result_type:
             message = "Returned Skipped"
             tc.add_skipped_info(message)
 

@@ -511,7 +511,8 @@ def define_tests_some(
         it = iterate_context_names(c, objects, key=objspec.name)
         for cc, id_object in it:
             ob_job_id = test_objects[id_object]
-            assert_job_exists(ob_job_id, db)
+            if __debug__:
+                assert_job_exists(ob_job_id, db)
             ob = Promise(ob_job_id)
             # bjob_id = 'f'  # XXX
             job_id = "%s-%s" % (f.__name__, id_object)
@@ -558,7 +559,8 @@ def define_tests_single(
         it = iterate_context_names(c, list(test_objects), key=objspec.name)
         for cc, id_object in it:
             ob_job_id = test_objects[id_object]
-            assert_job_exists(ob_job_id, db)
+            if __debug__:
+                assert_job_exists(ob_job_id, db)
             ob = Promise(ob_job_id)
             job_id = "f"
 
@@ -614,8 +616,9 @@ def define_tests_pairs(
 
         combinations = iterate_context_names_pair(cx, list(objs1), list(objs2), key1=objspec1.name, key2=objspec2.name)
         for c, id_ob1, id_ob2 in combinations:
-            assert_job_exists(objs1[id_ob1], db)
-            assert_job_exists(objs2[id_ob2], db)
+            if __debug__:
+                assert_job_exists(objs1[id_ob1], db)
+                assert_job_exists(objs2[id_ob2], db)
             ob1 = Promise(objs1[id_ob1])
             ob2 = Promise(objs2[id_ob2])
 
@@ -730,8 +733,9 @@ def define_tests_some_pairs_(
     jobs = {}
     combinations = iterate_context_names_pair(cx, list(objs1), list(objs2), key1=objspec1.name, key2=objspec2.name)
     for c, id_ob1, id_ob2 in combinations:
-        assert_job_exists(objs1[id_ob1], db)
-        assert_job_exists(objs2[id_ob2], db)
+        if __debug__:
+            assert_job_exists(objs1[id_ob1], db)
+            assert_job_exists(objs2[id_ob2], db)
         ob1 = Promise(objs1[id_ob1])
         ob2 = Promise(objs2[id_ob2])
 
@@ -809,7 +813,8 @@ def get_testobjects_promises_for_objspec(context: QuickAppContext, objspec: Obje
             )
         promises[id_object] = job.job_id
         db = context.cc.get_compmake_db()
-        assert_job_exists(job.job_id, db)
+        if __debug__:
+            assert_job_exists(job.job_id, db)
         # print('defined %r -> %s' % (id_object, job.job_id))
         if not job.job_id.endswith(params["job_id"]):
             msg = "Wanted %r but got %r" % (params["job_id"], job.job_id)
