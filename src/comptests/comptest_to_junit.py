@@ -126,6 +126,8 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, know
 
     test_cases = []
 
+    add_not_started_as_failed = False  # TODO
+    add_blocked_as_failed = False  # TODO
     stats: dict[TestStatusString, set[CMJobID]] = {
         "test_success": set(),
         "test_skipped": set(),
@@ -152,27 +154,29 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, know
         stats[r.status].add(job_id)
         test_cases.append(r.tc)
 
-    if stats[TEST_NOT_STARTED]:
-        tc = TestCase(
-            name=f"not_started-{len(stats[TEST_NOT_STARTED])}",
-            classname=None,
-            elapsed_sec=None,
-            stdout="",
-            stderr="",
-        )
-        tc.add_error_info(joinlines(sorted(stats[TEST_NOT_STARTED])))
-        test_cases.append(tc)
+    if add_not_started_as_failed:
+        if stats[TEST_NOT_STARTED]:
+            tc = TestCase(
+                name=f"not_started-{len(stats[TEST_NOT_STARTED])}",
+                classname=None,
+                elapsed_sec=None,
+                stdout="",
+                stderr="",
+            )
+            tc.add_error_info(joinlines(sorted(stats[TEST_NOT_STARTED])))
+            test_cases.append(tc)
 
-    if stats[TEST_BLOCKED]:
-        tc = TestCase(
-            name=f"blocked-{len(stats[TEST_BLOCKED])}",
-            classname=None,
-            elapsed_sec=None,
-            stdout="",
-            stderr="",
-        )
-        tc.add_error_info(joinlines(sorted(stats[TEST_BLOCKED])))
-        test_cases.append(tc)
+    if add_blocked_as_failed:
+        if stats[TEST_BLOCKED]:
+            tc = TestCase(
+                name=f"blocked-{len(stats[TEST_BLOCKED])}",
+                classname=None,
+                elapsed_sec=None,
+                stdout="",
+                stderr="",
+            )
+            tc.add_error_info(joinlines(sorted(stats[TEST_BLOCKED])))
+            test_cases.append(tc)
 
     ts = TestSuite("comptests_test_suite", test_cases)
     return JUnitResults(ts, dict(stats), job2cr)
@@ -205,8 +209,8 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
         name=job_id,
         classname=None,
         elapsed_sec=elapsed_sec,
-        stdout=stdout,
-        stderr=stderr,
+        stdout=f"\n\nStdout:\n{stdout}",
+        stderr=f"\n\nStdout:\n{stderr}",
     )
     if cache.state == Cache.DONE:
 
@@ -228,9 +232,11 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
         output = (cache.exception or "") + "\n" + (cache.backtrace or "")
         output = remove_escapes(output)
 
-        max_length = 2048
-        message = message[:max_length] + " ... " if len(message) > max_length else ""
-        output = output[:max_length] + " ... " if len(message) > max_length else ""
+        max_length = 16000
+        message = message[:max_length] + "\n ... clipped ...\n\n" if len(message) > max_length else ""
+
+        output = output[:max_length] + "\n ... clipped ...\n\n " if len(message) > max_length else ""
+
         if job_id in known_failures:
             tc.add_skipped_info(message)
             logger.info(f"Job {job_id} is a known failure.")
