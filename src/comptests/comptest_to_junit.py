@@ -145,6 +145,8 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, know
             continue
 
         r = junit_test_case_from_compmake(compmake_db, job_id, known_failures)
+        # r.tc.stderr = cache.captured_stderr or ""
+        # r.tc.stdout = cache.captured_stdout or ""
         job2cr[job_id] = r
 
         stats[r.status].add(job_id)
@@ -156,8 +158,9 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, know
             classname=None,
             elapsed_sec=None,
             stdout="",
-            stderr=joinlines(sorted(stats[TEST_NOT_STARTED])),
+            stderr="",
         )
+        tc.add_error_info(joinlines(sorted(stats[TEST_NOT_STARTED])))
         test_cases.append(tc)
 
     if stats[TEST_BLOCKED]:
@@ -166,8 +169,9 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, know
             classname=None,
             elapsed_sec=None,
             stdout="",
-            stderr=joinlines(sorted(stats[TEST_BLOCKED])),
+            stderr="",
         )
+        tc.add_error_info(joinlines(sorted(stats[TEST_BLOCKED])))
         test_cases.append(tc)
 
     ts = TestSuite("comptests_test_suite", test_cases)
@@ -194,8 +198,8 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
     check_isinstance(cache.captured_stderr, (type(None), str))
     check_isinstance(cache.captured_stdout, (type(None), str))
     check_isinstance(cache.exception, (type(None), str))
-    stderr: str = remove_escapes(cache.captured_stderr or "")
-    stdout: str = remove_escapes(cache.captured_stdout or "")
+    stderr: str = remove_escapes(cache.captured_stderr or "no stderr")
+    stdout: str = remove_escapes(cache.captured_stdout or "no stdout")
 
     tc = TestCase(
         name=job_id,
@@ -220,7 +224,7 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
         return ClassificationResult(tc, TEST_SUCCESS)
 
     if cache.state == Cache.FAILED:
-        message = remove_escapes(cache.exception)
+        message = remove_escapes(cache.exception or "")
         output = (cache.exception or "") + "\n" + (cache.backtrace or "")
         output = remove_escapes(output)
 
