@@ -11,6 +11,7 @@ from zuper_zapp import zapp1, ZappEnv
 @zapp1()
 async def junit_compare_main(ze: ZappEnv) -> ExitCode:
     logger = ze.sti.logger
+    ze.sti.started()
     parser = ZArgumentParser()
     parser.add_argument("--ignore-std", default=False, action="store_true")
 
