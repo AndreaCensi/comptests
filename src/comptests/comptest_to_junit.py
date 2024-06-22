@@ -27,6 +27,7 @@ TEST_BLOCKED: TestStatusString = "test_blocked"
 @zapp1()
 async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     fs2 = await get_fs2(ze.sti)
+    ze.sti.started()
     logger = ze.sti.logger
 
     parser = ZArgumentParser()
@@ -219,8 +220,13 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
         return ClassificationResult(tc, TEST_SUCCESS)
 
     if cache.state == Cache.FAILED:
-        message = cache.exception
+        message = remove_escapes(cache.exception)
         output = (cache.exception or "") + "\n" + (cache.backtrace or "")
+        output = remove_escapes(output)
+
+        max_length = 2048
+        message = message[:max_length] + " ... " if len(message) > max_length else ""
+        output = output[:max_length] + " ... " if len(message) > max_length else ""
         if job_id in known_failures:
             tc.add_skipped_info(message)
             logger.info(f"Job {job_id} is a known failure.")
