@@ -244,6 +244,9 @@ def junit_test_case_from_compmake(db: StorageFilesystem, job_id: CMJobID, known_
         elif cache.is_oom():
             tc.add_skipped_info(message)
             return ClassificationResult(tc, TEST_SKIPPED)
+        elif cache.is_skipped_test():
+            tc.add_skipped_info(message)
+            return ClassificationResult(tc, TEST_SKIPPED)
         else:
             tc.add_failure_info(message, output)
             return ClassificationResult(tc, TEST_FAILED)
