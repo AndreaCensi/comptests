@@ -245,8 +245,8 @@ def junit_test_case_from_compmake(
         name=job_id,
         classname=None,
         elapsed_sec=elapsed_sec,
-        stdout=f"\n\nStdout:\n{stdout}",
-        stderr=f"\n\nStdout:\n{stderr}",
+        stdout=stdout,
+        stderr=stderr,
     )
     if cache.state == Cache.DONE:
 
@@ -270,9 +270,9 @@ def junit_test_case_from_compmake(
         output = remove_escapes(output)
 
         max_length = 16000
-        message = message[:max_length] + "\n ... clipped ...\n\n" if len(message) > max_length else ""
+        message = message[:max_length] + ("\n ... clipped ...\n\n" if len(message) > max_length else "")
 
-        output = output[:max_length] + "\n ... clipped ...\n\n " if len(message) > max_length else ""
+        output = output[:max_length] + ("\n ... clipped ...\n\n " if len(message) > max_length else "")
 
         if job_id in known_failures:
             tc.add_skipped_info(message)
