@@ -86,7 +86,10 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
 
     xml = to_xml_report_string([tcr.test_suite])
 
-    postfix = "".join(f"-{k}_{v}" for k, v in stats_reduce.items())
+    postfix = "".join(f"-{k}_{v}" for k, v in stats_reduce.items() if v > 0 and k != "test_success")
+
+    if used_known_failures:
+        postfix += f"-used_known_failures_{len(used_known_failures)}"
     postfix = postfix.replace("test_", "")
     xml_fn = os.path.splitext(parsed_output)[0] + postfix + ".xml"
     logger.info(output=xml_fn, stats_reduce=stats_reduce)
