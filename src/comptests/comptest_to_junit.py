@@ -99,7 +99,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         await fs.write_str(xml_fn, xml)
 
     if parsed_output_txt:
-        for status in [TEST_SUCCESS, TEST_SKIPPED, TEST_FAILED, TEST_ERROR]:
+        for status in [TEST_SKIPPED, TEST_FAILED, TEST_ERROR]:  # TEST_SUCCESS,
             bn, ext = os.path.splitext(parsed_output_txt)
 
             res = []
@@ -108,17 +108,18 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
             for job_id, cr in tcr.job2cr.items():
                 if cr.status == status:
                     res.append(job_id)
-                n += 1
+                    n += 1
 
             fn = f"{bn}_{status}_{n}{ext}"
             if not res:
                 logger.info(f"{status}: {len(res)} jobs ")
             else:
-                dn = os.path.dirname(fn)
-                make_sure_dir_exists(dn)
-                with open(fn, "w") as f:
-                    f.write(" ".join(sorted(res)))
-                logger.info(f"{status:>16}: {len(res):>8} jobs - written to {fn}")
+                if n:
+                    dn = os.path.dirname(fn)
+                    make_sure_dir_exists(dn)
+                    with open(fn, "w") as f:
+                        f.write(" ".join(sorted(res)))
+                    logger.info(f"{status:>16}: {len(res):>8} jobs - written to {fn}")
 
     n_should_exit = stats_reduce["test_failed"] + stats_reduce["test_error"]
     if n_should_exit > 0 and parsed_fail_if_failed:
