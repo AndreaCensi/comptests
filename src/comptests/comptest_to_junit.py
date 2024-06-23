@@ -75,7 +75,8 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         with open(parsed_known_failures) as f:
             known_failures = yaml.load(f, Loader=yaml.FullLoader)
             logger.info(f"Loaded {len(known_failures)} known failures.")
-    r = await junit_xml(ze.sti, db, known_failures=set(known_failures))
+    testsuite_name = parsed_output
+    r = await junit_xml(ze.sti, testsuite_name, db, known_failures=set(known_failures))
     tcr = r.jur
 
     used_known_failures = r.used_known_failures
@@ -141,7 +142,9 @@ class ProcRes:
     used_known_failures: set[CMJobID]
 
 
-async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, known_failures: Set[str]) -> ProcRes:
+async def junit_xml(
+    sti: SyncTaskInterface, testsuite_name: str, compmake_db: StorageFilesystem, known_failures: Set[str]
+) -> ProcRes:
     logger = sti.logger
     from junit_xml import TestSuite
 
@@ -203,7 +206,7 @@ async def junit_xml(sti: SyncTaskInterface, compmake_db: StorageFilesystem, know
             tc.add_error_info(joinlines(sorted(stats[TEST_BLOCKED])))
             test_cases.append(tc)
 
-    ts = TestSuite("comptests_test_suite", test_cases)
+    ts = TestSuite(testsuite_name, test_cases)
     jur = JUnitResults(ts, dict(stats), job2cr)
 
     return ProcRes(jur, used_known_failures)
