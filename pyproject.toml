@@ -2,6 +2,20 @@
 name = "comptests-z7"
 version = "7.2"
 authors = [{name = "Andrea Censi", email = "AndreaCensi@users.noreply.github.com"}]
+dependencies = [
+    "ConfTools-z7",
+    "PyYAML",
+    "QuickApp-z7",
+    "SystemCmd-z7",
+    "compmake-z7",
+    "coverage",
+    "junit-xml",
+    "reprep-z7",
+    "zuper-commons-z7",
+    "zuper-utils-asyncio-z7",
+    "zuper-utils-python-z7",
+    "zuper-zapp-interfaces-z7",
+    "zuper-zapp-z7",]
 
 [tool.poetry]
 name = "comptests-z7"
@@ -28,6 +42,7 @@ zuper-zapp-interfaces-z7 = "*"
 zuper-zapp-z7 = "*"
 
 [tool.poetry.group.test.dependencies]
+python = "^3.12"
 
 [tool.poetry.scripts]
 comptests = "comptests:main_comptests"
