@@ -17,6 +17,14 @@ dependencies = [
     "zuper-zapp-interfaces-z7",
     "zuper-zapp-z7",]
 
+[project.scripts]
+comptests = "comptests:main_comptests"
+comptests-to-junit = "comptests.comptest_to_junit:comptest_to_junit_main"
+
+[project.optional-dependencies]
+test = [
+    ]
+
 [tool.poetry]
 name = "comptests-z7"
 version = "7.2"
@@ -42,7 +50,7 @@ zuper-zapp-interfaces-z7 = "*"
 zuper-zapp-z7 = "*"
 
 [tool.poetry.group.test.dependencies]
-python = "^3.12"
+python = ">=3.12"
 
 [tool.poetry.scripts]
 comptests = "comptests:main_comptests"
