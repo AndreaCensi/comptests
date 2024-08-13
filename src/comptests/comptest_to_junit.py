@@ -238,8 +238,8 @@ def junit_test_case_from_compmake(
     check_isinstance(cache.captured_stderr, (type(None), str))
     check_isinstance(cache.captured_stdout, (type(None), str))
     check_isinstance(cache.exception, (type(None), str))
-    stderr: str = remove_escapes(cache.captured_stderr or "no stderr")
-    stdout: str = remove_escapes(cache.captured_stdout or "no stdout")
+    stderr: str = remove_escapes(cache.captured_stderr or "\n[no stderr captured]\n")
+    stdout: str = remove_escapes(cache.captured_stdout or "\n[no stdout captured]\n")
 
     tc = TestCase(
         name=job_id,
