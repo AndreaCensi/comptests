@@ -1,7 +1,7 @@
 import hashlib
 import os
 from functools import lru_cache
-from typing import Any, Callable, Tuple
+from typing import Any, Callable
 
 from . import logger
 
@@ -22,7 +22,7 @@ def int_from_string(s: str) -> int:
 
 
 @lru_cache(None)
-def get_test_index() -> Tuple[int, int]:
+def get_test_index() -> tuple[int, int]:
     """Returns i,n: machine index and mcdp_comp_tests"""
     n = int(os.environ.get("CIRCLE_NODE_TOTAL", 1))
     i = int(os.environ.get("CIRCLE_NODE_INDEX", 0))

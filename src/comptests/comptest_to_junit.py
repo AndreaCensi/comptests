@@ -1,18 +1,18 @@
 import os.path
 from dataclasses import dataclass
-from typing import AbstractSet, Any, Literal, Mapping, Set, cast
+from typing import AbstractSet, Any, cast, Literal, Mapping
 
 import yaml
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 
-from compmake import CMJobID, Cache, StorageFilesystem, all_jobs, get_job_cache
+from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
 from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
 from zuper_commons.fs import DirPath, make_sure_dir_exists
 from zuper_commons.text import joinlines, remove_escapes
 from zuper_commons.types import check_isinstance
 from zuper_utils_asyncio import SyncTaskInterface
-from zuper_zapp import ZappEnv, zapp1
+from zuper_zapp import zapp1, ZappEnv
 from zuper_zapp_interfaces import get_fs2
 
 TestStatusString = Literal["test_success", "test_skipped", "test_failed", "test_error", "test_not_started", "test_blocked"]
@@ -147,7 +147,7 @@ class ProcRes:
 
 
 async def junit_xml(
-    sti: SyncTaskInterface, testsuite_name: str, compmake_db: StorageFilesystem, known_failures: Set[str]
+    sti: SyncTaskInterface, testsuite_name: str, compmake_db: StorageFilesystem, known_failures: set[str]
 ) -> ProcRes:
     logger = sti.logger
     from junit_xml import TestSuite

@@ -1,5 +1,4 @@
 import itertools
-from typing import Dict, Tuple
 
 from compmake import Cache, CMJobID, get_job_cache, get_job_userobject
 from quickapp import QuickAppContext
@@ -14,7 +13,7 @@ __all__ = [
 ]
 
 
-def report_results_single(func, objspec_name, results: Dict[str, object]):
+def report_results_single(func, objspec_name, results: dict[str, object]):
     def get_string_result(res):
         if res is None:
             s = "ok"
@@ -44,7 +43,7 @@ def report_results_single(func, objspec_name, results: Dict[str, object]):
     return r
 
 
-def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple[str, str], object]):
+def report_results_pairs(func, objspec1_name, objspec2_name, results: dict[tuple[str, str], object]):
     reason2symbol = {}
 
     def get_string_result(res):
@@ -89,7 +88,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results: Dict[Tuple
     return r
 
 
-def report_results_pairs_jobs(context: QuickAppContext, func, objspec1_name, objspec2_name, jobs: Dict[Tuple[str, str], CMJobID]):
+def report_results_pairs_jobs(context: QuickAppContext, func, objspec1_name, objspec2_name, jobs: dict[tuple[str, str], CMJobID]):
     """This version gets the jobs ID"""
     reason2symbol = {}
 

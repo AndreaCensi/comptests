@@ -4,7 +4,7 @@ import sys
 import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
-from typing import Any, Callable, Collection, Dict, Optional, ParamSpec, Protocol, TypedDict, TypeVar
+from typing import Any, Callable, Collection, Optional, ParamSpec, Protocol, TypedDict, TypeVar
 
 from compmake import assert_job_exists, CMJobID, JobCompute, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
@@ -12,7 +12,7 @@ from conf_tools.utils import expand_string
 from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
 from zuper_commons.fs import DirPath, joind
 from zuper_commons.test_utils import nottest
-from zuper_commons.types import TM, add_context, ZException
+from zuper_commons.types import add_context, TM, ZException
 from . import logger
 from .indices import accept, get_test_index
 from .reports import (
@@ -423,7 +423,7 @@ class WrapTestAsync:
             CompTests.output_dir_for_current_test = None
 
 
-def get_testobjects_promises(context: QuickAppContext, cm: ConfigMaster) -> Dict[str, Dict[str, str]]:
+def get_testobjects_promises(context: QuickAppContext, cm: ConfigMaster) -> dict[str, dict[str, str]]:
     names2test_objects = {}
     for name in sorted(cm.specs.keys()):
         objspec = cm.specs[name]
@@ -436,7 +436,7 @@ def define_tests_for(
     context: QuickAppContext,
     cm,
     name: str,
-    names2test_objects: Dict[str, Dict[str, CMJobID]],
+    names2test_objects: dict[str, dict[str, CMJobID]],
     pairs,
     functions,
     some,
@@ -474,7 +474,7 @@ class TestFunctionRecord(TypedDict):
 def define_tests_some(
     context: QuickAppContext,
     objspec: ObjectSpec,
-    names2test_objects: Dict[str, Dict[str, CMJobID]],
+    names2test_objects: dict[str, dict[str, CMJobID]],
     some: Collection[TestFunctionRecord],
     create_reports: bool,
 ) -> None:
@@ -532,7 +532,7 @@ def define_tests_some(
 def define_tests_single(
     context: QuickAppContext,
     objspec: ObjectSpec,
-    names2test_objects: Dict[str, Dict[str, CMJobID]],
+    names2test_objects: dict[str, dict[str, CMJobID]],
     functions: Collection[TestFunctionRecord],
     create_reports: bool,
 ) -> None:
@@ -579,11 +579,11 @@ def define_tests_single(
 def define_tests_pairs(
     context: QuickAppContext,
     objspec1: ObjectSpec,
-    names2test_objects: Dict[str, Dict[str, CMJobID]],
+    names2test_objects: dict[str, dict[str, CMJobID]],
     pairs,
     create_reports: bool,
 ):
-    objs1: Dict[str, CMJobID] = names2test_objects[objspec1.name]
+    objs1: dict[str, CMJobID] = names2test_objects[objspec1.name]
 
     if not pairs:
         logger.warn(f"No {objspec1.name}+x pairs mcdp_lang_tests.")
@@ -643,7 +643,7 @@ def define_tests_pairs(
 def define_tests_some_pairs(
     context: QuickAppContext,
     objspec1: ObjectSpec,
-    names2test_objects: Dict[str, Dict[str, CMJobID]],
+    names2test_objects: dict[str, dict[str, CMJobID]],
     some_pairs,
     create_reports: bool,
 ):
@@ -723,8 +723,8 @@ def define_tests_some_pairs_(
     db,
     objspec1,
     objspec2,
-    objs1: Dict[str, CMJobID],
-    objs2: Dict[str, CMJobID],
+    objs1: dict[str, CMJobID],
+    objs2: dict[str, CMJobID],
     func,
     dynamic,
     create_reports,
@@ -777,7 +777,7 @@ def wrap_func_pair(func, id_ob1, ob1, id_ob2, ob2):
     return func(id_ob1, ob1, id_ob2, ob2)
 
 
-def get_testobjects_promises_for_objspec(context: QuickAppContext, objspec: ObjectSpec) -> Dict[str, str]:
+def get_testobjects_promises_for_objspec(context: QuickAppContext, objspec: ObjectSpec) -> dict[str, str]:
     warnings.warn("Need to be smarter here.")
     objspec.master.load()
     warnings.warn("Select test objects here.")

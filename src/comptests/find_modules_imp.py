@@ -1,8 +1,7 @@
 import os
-from typing import List
-from zuper_commons.fs import DirPath
 
 from conf_tools.utils import locate_files
+from zuper_commons.fs import DirPath
 
 __all__ = [
     "find_modules",
@@ -10,13 +9,13 @@ __all__ = [
 ]
 
 
-def find_modules_main(root: DirPath) -> List[str]:
+def find_modules_main(root: DirPath) -> list[str]:
     """Finds the main modules (not '.' in the name)"""
     is_main = lambda d: not "." in d
     return list(filter(is_main, find_modules(root)))
 
 
-def find_modules(root: DirPath) -> List[str]:
+def find_modules(root: DirPath) -> list[str]:
     """
     Looks for modules defined in packages that have the structure: ::
 

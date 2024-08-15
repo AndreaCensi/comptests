@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import Any, Callable, Iterator, List, Optional, cast
+from typing import Any, Callable, cast, Iterator, Optional
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from quickapp import DecentParams, QuickApp, QuickAppContext
@@ -170,7 +170,7 @@ class CompTests(QuickApp):
             c.comp_dynamic(jobs_nosetests_single, module, job_id="nosesingle")
 
     async def instance_comptests_jobs(
-        self, sti: SyncTaskInterface, context: QuickAppContext, modules: List[str], create_reports: bool
+        self, sti: SyncTaskInterface, context: QuickAppContext, modules: list[str], create_reports: bool
     ):
         # sti.logger.info("instancing jobs", modules=modules)
         await asyncio.sleep(0)

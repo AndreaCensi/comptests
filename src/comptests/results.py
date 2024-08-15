@@ -1,4 +1,4 @@
-from typing import Sequence, Set
+from typing import Sequence
 
 __all__ = [
     "PartiallySkipped",
@@ -27,10 +27,10 @@ class PartiallySkipped:
     were skipped.
     """
 
-    skipped: Set[str]
+    skipped: set[str]
 
     def __init__(self, skipped: Sequence[str]):
         self.skipped = set(skipped)
 
-    def get_skipped_parts(self) -> Set[str]:
+    def get_skipped_parts(self) -> set[str]:
         return self.skipped

@@ -5,11 +5,11 @@ import sys
 import tempfile
 import warnings
 from contextlib import contextmanager
-from typing import Any, Awaitable, Callable, Iterator, cast
+from typing import Any, Awaitable, Callable, cast, Iterator
 
 from quickapp import QuickAppContext
 from system_cmd import system_cmd_result
-from zuper_commons.fs import DirPath, FilePath, dirname, getcwd, joinf, read_bytes_from_file
+from zuper_commons.fs import dirname, DirPath, FilePath, getcwd, joinf, read_bytes_from_file
 from zuper_commons.text import PythonModuleName
 from zuper_commons.types import add_context, unwrap
 from zuper_utils_asyncio import SyncTaskInterface
