@@ -15,6 +15,7 @@ __all__ = [
 
 def int_from_string(s: str) -> int:
     m = hashlib.md5()
+    m.update(b"abcd")
     m.update(s.encode())
     d = m.digest()
     b = d[-4:]
