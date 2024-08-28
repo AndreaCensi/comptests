@@ -3,8 +3,6 @@ import os
 from functools import lru_cache
 from typing import Any, Callable
 
-from . import logger
-
 __all__ = [
     "accept",
     "accept_test_string",
@@ -12,10 +10,19 @@ __all__ = [
     "get_test_index",
 ]
 
+ENV_COMPTESTS_HASH = "Z_COMPTESTS_HASH"
+
+
+@lru_cache(None)
+def get_prefix() -> bytes:
+    if ENV_COMPTESTS_HASH in os.environ:
+        return os.environ[ENV_COMPTESTS_HASH].encode()
+    else:
+        return b""
+
 
 def int_from_string(s: str) -> int:
     m = hashlib.md5()
-    m.update(b"abcd")
     m.update(s.encode())
     d = m.digest()
     b = d[-4:]
@@ -27,7 +34,7 @@ def get_test_index() -> tuple[int, int]:
     """Returns i,n: machine index and mcdp_comp_tests"""
     n = int(os.environ.get("CIRCLE_NODE_TOTAL", 1))
     i = int(os.environ.get("CIRCLE_NODE_INDEX", 0))
-    logger.info(worker=i, total=n)
+    # logger.info(worker=i, total=n)
     return i, n
 
 
