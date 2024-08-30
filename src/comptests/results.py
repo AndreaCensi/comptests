@@ -1,8 +1,13 @@
 from typing import Sequence
 
+from unittest import SkipTest
+
+from zuper_commons.types import ZException
+
 __all__ = [
     "PartiallySkipped",
     "Skipped",
+    "ZSkipTest",
 ]
 
 
@@ -34,3 +39,7 @@ class PartiallySkipped:
 
     def get_skipped_parts(self) -> set[str]:
         return self.skipped
+
+
+class ZSkipTest(SkipTest, ZException):
+    pass
