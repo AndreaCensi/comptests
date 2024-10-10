@@ -11,6 +11,7 @@ from zuper_commons.cmds import ExitCode
 from zuper_commons.fs import DirPath, make_sure_dir_exists
 from zuper_commons.text import joinlines, remove_escapes
 from zuper_commons.types import check_isinstance
+from zuper_commons.ui import duration_compact, size_compact
 from zuper_utils_asyncio import SyncTaskInterface
 from zuper_zapp import zapp1, ZappEnv
 from zuper_zapp_interfaces import get_fs2
@@ -280,16 +281,19 @@ def junit_test_case_from_compmake(
             used_known_failures.add(job_id)
             return ClassificationResult(tc, TEST_SKIPPED)
         elif "SkipTest" in message:
-            tc.add_skipped_info(message)
+            tc.add_skipped_info(message, output)
             return ClassificationResult(tc, TEST_SKIPPED)
-        elif cache.is_timed_out():
-            tc.add_skipped_info(message)
+        elif elapsed := cache.is_timed_out():
+            message = "Job timed out after " + duration_compact(elapsed)
+            tc.add_skipped_info(message, output)
             return ClassificationResult(tc, TEST_SKIPPED)
-        elif cache.is_oom():
-            tc.add_skipped_info(message)
+        elif b := cache.is_oom():
+            message = f"OOM: {size_compact(b)}"
+            tc.add_skipped_info(message, output)
             return ClassificationResult(tc, TEST_SKIPPED)
         elif cache.is_skipped_test():
-            tc.add_skipped_info(message)
+            message = "Skipped test."
+            tc.add_skipped_info(message, output)
             return ClassificationResult(tc, TEST_SKIPPED)
         else:
             tc.add_failure_info(message, output)
