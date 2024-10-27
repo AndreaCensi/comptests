@@ -54,7 +54,7 @@ def check_some_class1_class2(id_ob1: str, _: object, id_ob2: str, _2: object) ->
 
 @for_all_class1_class2
 def check_all_class1_class2(id_ob1: str, _: object, id_ob2: str, _2: object) -> None:
-    print("check_class1_class2(%r,%r)" % (id_ob1, id_ob2))
+    print("check_class1_class2({!r},{!r})".format(id_ob1, id_ob2))
 
 
 @for_all_class1_dynamic

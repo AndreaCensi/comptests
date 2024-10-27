@@ -1,6 +1,7 @@
 import asyncio
 import os
-from typing import Any, Callable, cast, Iterator, Optional
+from typing import Any, cast
+from collections.abc import Callable, Iterator
 
 from conf_tools import GlobalConfig, import_name, reset_config
 from quickapp import DecentParams, QuickApp, QuickAppContext
@@ -42,7 +43,7 @@ class CompTests(QuickApp):
     """
 
     global_output_dir = cast(AbsDirPath, os.path.join(os.getcwd(), "out/DEFAULT-comptests"))
-    output_dir_for_current_test: Optional[AbsDirPath] = None
+    output_dir_for_current_test: AbsDirPath | None = None
 
     cmd: str = "comptests"
 
@@ -147,8 +148,7 @@ class CompTests(QuickApp):
                 if not modules:
                     self.warn("No modules found in %r" % m)
 
-                for module in modules:
-                    yield module
+                yield from modules
             else:
                 self.info("Interpreting %r as module." % m)
                 yield m

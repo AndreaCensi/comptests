@@ -5,7 +5,8 @@ import sys
 import tempfile
 import warnings
 from contextlib import contextmanager
-from typing import Any, Awaitable, Callable, cast, Iterator
+from typing import Any, cast
+from collections.abc import Awaitable, Callable, Iterator
 
 from quickapp import QuickAppContext
 from system_cmd import system_cmd_result
@@ -56,10 +57,7 @@ def jobs_nosetests(context: QuickAppContext, module: str, do_coverage: bool = Fa
 
 
 def call_nosetests(module: str) -> None:
-    if sys.version_info < (3, 10):
-        cmd = ["nosetests", module]
-    else:
-        cmd = ["nose2", module]
+    cmd = ["nose2", module]
 
     with create_tmp_dir() as cwd:
         system_cmd_result(

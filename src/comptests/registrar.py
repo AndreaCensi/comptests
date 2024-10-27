@@ -4,7 +4,8 @@ import sys
 import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
-from typing import Any, Callable, Collection, Optional, ParamSpec, Protocol, TypedDict, TypeVar
+from collections.abc import Callable, Collection
+from typing import Any, ParamSpec, Protocol, TypedDict, TypeVar
 
 from compmake import assert_job_exists, CMJobID, JobCompute, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
@@ -306,7 +307,7 @@ def jobs_registrar(context1: QuickAppContext, cm: ConfigMaster, create_reports: 
     # jobs_registrar_simple(context)
 
 
-def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[str] = None) -> int:
+def jobs_registrar_simple(context: QuickAppContext, only_for_module: str | None = None) -> int:
     """Registers the simple "comptest" """
     logger.info(f"job_registrar_simple only_for_module= {only_for_module}")
     worker_i, worker_n = get_test_index()
@@ -321,7 +322,7 @@ def jobs_registrar_simple(context: QuickAppContext, only_for_module: Optional[st
         if only_for_module is not None:
             this = function.__module__.split(".")[0]
             if this != only_for_module:
-                msg = "Skipping function %s in module %s because not in module %r" % (
+                msg = "Skipping function {} in module {} because not in module {!r}".format(
                     function,
                     function.__module__,
                     only_for_module,
@@ -376,7 +377,7 @@ class WrapTest:
     function: Callable
     output_dir: DirPath
 
-    def __init__(self, function: Callable, output_dir: Optional[DirPath]):
+    def __init__(self, function: Callable, output_dir: DirPath | None):
         self.__name__ = function.__name__
         self.__module__ = function.__module__
         self.function = function
@@ -402,7 +403,7 @@ class WrapTestAsync:
     __name__: str
     __module__ = str
 
-    def __init__(self, function: Callable, output_dir: Optional[DirPath]):
+    def __init__(self, function: Callable, output_dir: DirPath | None):
         self.__name__ = function.__name__
         self.__module__ = function.__module__
         self.function = function
@@ -503,10 +504,10 @@ def define_tests_some(
 
         objects = expand_string(which, list(test_objects))
         if not objects:
-            msg = "Which = %r did not give anything in %r." % (which, test_objects)
+            msg = "Which = {!r} did not give anything in {!r}.".format(which, test_objects)
             raise ValueError(msg)
 
-        print("Testing %s for %s" % (f, objects))
+        print("Testing {} for {}".format(f, objects))
 
         it = iterate_context_names(c, objects, key=objspec.name)
         for cc, id_object in it:
@@ -515,7 +516,7 @@ def define_tests_some(
                 assert_job_exists(ob_job_id, db)
             ob = Promise(ob_job_id)
             # bjob_id = 'f'  # XXX
-            job_id = "%s-%s" % (f.__name__, id_object)
+            job_id = "{}-{}".format(f.__name__, id_object)
 
             params = dict(job_id=job_id, command_name=f.__name__)
             if dynamic:
@@ -667,16 +668,16 @@ def define_tests_some_pairs(
         objs2 = expand_string(which2, list(allobjs2))
 
         if not objs1:
-            msg = "No objects %r in %r." % (which1, list(allobjs1))
+            msg = "No objects {!r} in {!r}.".format(which1, list(allobjs1))
             raise ValueError(msg)
 
         if not objs2:
-            msg = "No objects %r in %r." % (which2, list(allobjs2))
+            msg = "No objects {!r} in {!r}.".format(which2, list(allobjs2))
             raise ValueError(msg)
 
         for y in objs1:
             if not y in allobjs1:
-                msg = "%r expanded to %r but %r is not in universe %r." % (
+                msg = "{!r} expanded to {!r} but {!r} is not in universe {!r}.".format(
                     which1,
                     objs1,
                     y,
@@ -686,7 +687,7 @@ def define_tests_some_pairs(
 
         for z in objs2:
             if not z in allobjs2:
-                msg = "%r expanded to %r but %r is not in universe %r." % (
+                msg = "{!r} expanded to {!r} but {!r} is not in universe {!r}.".format(
                     which2,
                     objs2,
                     z,
@@ -703,8 +704,8 @@ def define_tests_some_pairs(
         )
         db = context.cc.get_compmake_db()
 
-        use_objs1 = dict((k, allobjs1[k]) for k in objs1)
-        use_objs2 = dict((k, allobjs2[k]) for k in objs2)
+        use_objs1 = {k: allobjs1[k] for k in objs1}
+        use_objs2 = {k: allobjs2[k] for k in objs2}
         define_tests_some_pairs_(
             cx,
             db,
@@ -792,7 +793,7 @@ def get_testobjects_promises_for_objspec(context: QuickAppContext, objspec: Obje
     promises = {}
     for id_object in objects:
         params = dict(
-            job_id="%s-instance-%s" % (objspec.name, id_object),
+            job_id="{}-instance-{}".format(objspec.name, id_object),
             command_name="instance_%s" % objspec.name,
         )
         if objspec.instance_method is None:
@@ -817,7 +818,7 @@ def get_testobjects_promises_for_objspec(context: QuickAppContext, objspec: Obje
             assert_job_exists(job.job_id, db)
         # print('defined %r -> %s' % (id_object, job.job_id))
         if not job.job_id.endswith(params["job_id"]):
-            msg = "Wanted %r but got %r" % (params["job_id"], job.job_id)
+            msg = "Wanted {!r} but got {!r}".format(params["job_id"], job.job_id)
             raise ValueError(msg)
     return promises
 
@@ -837,7 +838,7 @@ def get_objspec(master_name, objspec_name):
     master = GlobalConfig._masters[master_name]
     specs = master.specs
     if not objspec_name in specs:
-        msg = "%s > %s not found" % (master_name, objspec_name)
+        msg = "{} > {} not found".format(master_name, objspec_name)
         msg += "\n%s" % list(specs.keys())
         raise Exception(msg)
     objspec = master.specs[objspec_name]

@@ -69,8 +69,8 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results: dict[tuple
         r.text("warning", "no test objects defined")
         return r
 
-    rows = sorted(set([a for a, _ in results]))
-    cols = sorted(set([b for _, b in results]))
+    rows = sorted({a for a, _ in results})
+    cols = sorted({b for _, b in results})
     data = [[None for a in range(len(cols))] for b in range(len(rows))]
     # a nice bug: data = [[None * len(cols)] * len(rows)
 
@@ -82,7 +82,7 @@ def report_results_pairs(func, objspec1_name, objspec2_name, results: dict[tuple
 
     expl = ""
     for reason, symbol in list(reason2symbol.items()):
-        expl += "(%s): %s\n" % (symbol, reason)
+        expl += "({}): {}\n".format(symbol, reason)
     r.text("notes", expl)
 
     return r
@@ -115,8 +115,8 @@ def report_results_pairs_jobs(context: QuickAppContext, func, objspec1_name, obj
         r.text("warning", "no test objects defined")
         return r
 
-    rows = sorted(set([a for a, _ in jobs]))
-    cols = sorted(set([b for _, b in jobs]))
+    rows = sorted({a for a, _ in jobs})
+    cols = sorted({b for _, b in jobs})
     data = [[None for a in range(len(cols))] for b in range(len(rows))]
     # a nice bug: data = [[None * len(cols)] * len(rows)
 
@@ -147,7 +147,7 @@ def report_results_pairs_jobs(context: QuickAppContext, func, objspec1_name, obj
 
     expl = ""
     for reason, symbol in list(reason2symbol.items()):
-        expl += "(%s): %s\n" % (symbol, reason)
+        expl += "({}): {}\n".format(symbol, reason)
     r.text("notes", expl)
 
     return r

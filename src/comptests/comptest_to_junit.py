@@ -1,6 +1,7 @@
 import os.path
 from dataclasses import dataclass
-from typing import AbstractSet, Any, cast, Literal, Mapping
+from typing import AbstractSet, Any, cast, Literal
+from collections.abc import Mapping
 
 import yaml
 from junit_xml import TestCase, TestSuite, to_xml_report_string
