@@ -5,7 +5,7 @@ import traceback
 import warnings
 from collections import defaultdict, namedtuple, OrderedDict
 from collections.abc import Callable, Collection
-from typing import Any, ParamSpec, Protocol, TypedDict, TypeVar
+from typing import Any, Protocol, TypedDict, TypeVar
 
 from compmake import assert_job_exists, CMJobID, JobCompute, Promise
 from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
@@ -94,11 +94,7 @@ def register_indep(f: FT, dynamic: bool, args: TM[Any], kwargs: dict[str, Any]):
     ComptestsRegistrar.regular.append(d)
 
 
-P = ParamSpec("P")
-FX = Callable[P, Any]
-
-
-def check_fails(f: FX, *args: P.args, **kwargs: P.kwargs) -> Any:
+def check_fails[**P](f: Callable[P, Any], *args: P.args, **kwargs: P.kwargs) -> Any:
     try:
         f(*args, **kwargs)
     except BaseException as e:
