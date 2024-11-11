@@ -6,7 +6,7 @@ from collections.abc import Mapping
 import yaml
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 
-from compmake import all_jobs, Cache, CMJobID, get_job_cache, StorageFilesystem
+from compmake import all_jobs, Cache, CacheQueryDB, CMJobID, get_job_cache, StorageFilesystem
 from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
 from zuper_commons.fs import DirPath, make_sure_dir_exists
@@ -80,14 +80,20 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
             return ExitCode.WRONG_ARGUMENTS
         with open(parsed_known_failures) as f:
             known_failures = yaml.load(f, Loader=yaml.FullLoader)
-            logger.info(f"Loaded {len(known_failures)} known failures.")
+            logger.user_info(f"Loaded {len(known_failures)} known failures.")
+
+    unknown_known_failures = set(known_failures) - set(jobs)
     testsuite_name = parsed_output
     r = await junit_xml(ze.sti, testsuite_name, db, known_failures=set(known_failures))
     tcr = r.jur
 
     used_known_failures = r.used_known_failures
     if used_known_failures:
-        logger.info(f"Used {len(used_known_failures)} known failures.", used=used_known_failures)
+        logger.user_info(f"Used {len(used_known_failures)} known failures.", used=joinlines(sorted(used_known_failures)))
+
+    if unknown_known_failures:
+        logger.warn(f"Unknown known failures, not present in job list", unknown=joinlines(sorted(unknown_known_failures)))
+
     stats_reduce: Mapping[TestStatusString, int] = {k: len(v) for k, v in tcr.stats.items()}
 
     xml = to_xml_report_string([tcr.test_suite])
@@ -98,34 +104,48 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         postfix += f"-used_known_failures_{len(used_known_failures)}"
     postfix = postfix.replace("test_", "")
     xml_fn = os.path.splitext(parsed_output)[0] + postfix + ".xml"
-    logger.info(output=xml_fn, stats_reduce=stats_reduce)
-    logger.info(f"Writing XML report to {xml_fn}")
+    logger.user_info(output=xml_fn, stats_reduce=stats_reduce)
+    logger.user_info(f"Writing XML report to {xml_fn}")
 
     async with fs2.session("comptest_to_junit_main") as fs:
         await fs.write_str(xml_fn, xml)
 
     if parsed_output_txt:
-        for status in [TEST_SKIPPED, TEST_FAILED, TEST_ERROR, TEST_NOT_STARTED, TEST_TIMEDOUT, TEST_OOM]:  # TEST_SUCCESS,
+        sec2statuses = {
+            TEST_SKIPPED: {TEST_SKIPPED},
+            TEST_FAILED: {TEST_FAILED},
+            TEST_ERROR: {TEST_ERROR},
+            TEST_NOT_STARTED: {TEST_NOT_STARTED},
+            TEST_TIMEDOUT: {TEST_TIMEDOUT},
+            TEST_OOM: {TEST_OOM},
+            TEST_SUCCESS: {TEST_SUCCESS},
+            "test_all": {TEST_SKIPPED, TEST_FAILED, TEST_ERROR, TEST_NOT_STARTED, TEST_TIMEDOUT, TEST_OOM, TEST_SUCCESS},
+        }
+
+        for sec_name, statuses in sec2statuses.items():
+            # for status in [TEST_SKIPPED, TEST_FAILED, TEST_ERROR, TEST_NOT_STARTED, TEST_TIMEDOUT, TEST_OOM, TEST_SUCCESS]:  # TEST_SUCCESS,
             bn, ext = os.path.splitext(parsed_output_txt)
 
             res = []
             tc: TestCase
             n = 0
             for job_id, cr in tcr.job2cr.items():
-                if cr.status == status:
+                if cr.status in statuses:
                     res.append(job_id)
                     n += 1
 
-            fn = f"{bn}_{status}_{n}{ext}"
+            fn = f"{bn}_{sec_name}_{n}{ext}"
             if not res:
-                logger.info(f"{status}: {len(res)} jobs ")
+                logger.user_info(f"{sec_name}: {len(res)} jobs ")
             else:
                 if n:
-                    dn = os.path.dirname(fn)
-                    make_sure_dir_exists(dn)
+                    comment = f" # {fn}"
+                    make_sure_dir_exists(fn)
                     with open(fn, "w") as f:
+                        res = [_.ljust(200) + comment for _ in res]
+
                         f.write(joinlines(sorted(res)))
-                    logger.info(f"{status:>16}: {len(res):>8} jobs - written to {fn}")
+                    logger.user_info(f"{sec_name:>16}: {len(res):>8} jobs - written to {fn}")
 
     n_should_exit = stats_reduce["test_failed"] + stats_reduce["test_error"]
     if n_should_exit > 0 and parsed_fail_if_failed:
@@ -159,7 +179,7 @@ async def junit_xml(
     from junit_xml import TestSuite
 
     jobs = list(all_jobs(compmake_db))
-    logger.info(f"Loaded {len(jobs)} jobs")
+    logger.user_info(f"Loaded {len(jobs)} jobs")
 
     test_cases = []
 
@@ -177,22 +197,26 @@ async def junit_xml(
         TEST_OOM: set(),
     }
     job2cr = {}
-    for job_id in jobs:
-        cache = get_job_cache(job_id, db=compmake_db)
-        if cache.state == Cache.NOT_STARTED:
-            stats[TEST_NOT_STARTED].add(job_id)
-            continue
-        if cache.state == Cache.BLOCKED:
-            stats[TEST_BLOCKED].add(job_id)
-            continue
+    cq = CacheQueryDB(compmake_db)
+    with cq.session() as session:
 
-        r = junit_test_case_from_compmake(compmake_db, job_id, known_failures, used_known_failures)
-        # r.tc.stderr = cache.captured_stderr or ""
-        # r.tc.stdout = cache.captured_stdout or ""
-        job2cr[job_id] = r
+        for job_id in jobs:
+            cache = session.get_job_cache(job_id)
+            # cache = get_job_cache(job_id, db=compmake_db)
+            if cache.state == Cache.NOT_STARTED:
+                stats[TEST_NOT_STARTED].add(job_id)
+                continue
+            if cache.state == Cache.BLOCKED:
+                stats[TEST_BLOCKED].add(job_id)
+                continue
 
-        stats[r.status].add(job_id)
-        test_cases.append(r.tc)
+            r = junit_test_case_from_compmake(cache, job_id, known_failures, used_known_failures)
+            # r.tc.stderr = cache.captured_stderr or ""
+            # r.tc.stdout = cache.captured_stdout or ""
+            job2cr[job_id] = r
+
+            stats[r.status].add(job_id)
+            test_cases.append(r.tc)
 
     if add_not_started_as_failed:
         if stats[TEST_NOT_STARTED]:
@@ -234,20 +258,18 @@ from . import logger as logger0
 
 
 def junit_test_case_from_compmake(
-    db: StorageFilesystem, job_id: CMJobID, known_failures: AbstractSet[str], used_known_failures: set[str]
+    cache: Cache,
+    job_id: CMJobID,
+    known_failures: AbstractSet[str],
+    used_known_failures: set[str],
 ) -> ClassificationResult:
-    cache = get_job_cache(job_id, db=db)
-    # if cache.state == Cache.DONE:  # and cache.done_iterations > 1:
-    #     # elapsed_sec = cache.walltime_used
-    #     elapsed_sec = cache.cputime_used
-    # else:
     elapsed_sec = cache.cputime_used
 
     check_isinstance(cache.captured_stderr, (type(None), str))
     check_isinstance(cache.captured_stdout, (type(None), str))
     check_isinstance(cache.exception, (type(None), str))
-    stderr: str = remove_escapes(cache.captured_stderr or "\n[no stderr captured]\n")
-    stdout: str = remove_escapes(cache.captured_stdout or "\n[no stdout captured]\n")
+    stderr: str = "\n" + remove_escapes(cache.captured_stderr or "[no stderr captured]") + "\n"
+    stdout: str = "\n" + remove_escapes(cache.captured_stdout or "[no stdout captured]") + "\n"
 
     tc = TestCase(
         name=job_id,
@@ -260,7 +282,7 @@ def junit_test_case_from_compmake(
 
         # TODO: look at object - Skipped result
         if job_id in known_failures:
-            logger0.error(f"Job {job_id} was marked as a known failure but it succeeded.")
+            logger0.user_error(f"Job {job_id} was marked as a known failure but it succeeded.")
             used_known_failures.add(job_id)
             return ClassificationResult(tc, TEST_ERROR)
 
@@ -272,7 +294,7 @@ def junit_test_case_from_compmake(
 
         return ClassificationResult(tc, TEST_SUCCESS)
 
-    if cache.state == Cache.FAILED:
+    elif cache.state == Cache.FAILED:
         message = remove_escapes(cache.exception or "")
         output = (cache.exception or "") + "\n" + (cache.backtrace or "")
         output = remove_escapes(output)
@@ -284,7 +306,7 @@ def junit_test_case_from_compmake(
 
         if job_id in known_failures:
             tc.add_skipped_info(message)
-            logger0.info(f"Job {job_id} is a known failure.")
+            logger0.user_info(f"Job {job_id} is a known failure.")
             used_known_failures.add(job_id)
             return ClassificationResult(tc, TEST_SKIPPED)
         elif "SkipTest" in message:
@@ -306,7 +328,7 @@ def junit_test_case_from_compmake(
             tc.add_failure_info(message, output)
             return ClassificationResult(tc, TEST_FAILED)
 
-    if cache.state == Cache.PROCESSING:
+    elif cache.state == Cache.PROCESSING:
         message = "Job still processing. Probably interrupted."
         if job_id in known_failures:
             tc.add_skipped_info(message)
@@ -316,13 +338,13 @@ def junit_test_case_from_compmake(
         tc.add_skipped_info(message)
         return ClassificationResult(tc, TEST_SKIPPED)
 
-    if cache.state == Cache.NOT_STARTED:
+    elif cache.state == Cache.NOT_STARTED:
         message = "Job not started."
         tc.add_error_info(message)
         return ClassificationResult(tc, TEST_ERROR)
-    if cache.state == Cache.BLOCKED:
+    elif cache.state == Cache.BLOCKED:
         message = "Job is blocked."
         tc.add_skipped_info(message)
         return ClassificationResult(tc, TEST_SKIPPED)
-
-    raise AssertionError(f"Unknown state {cache.state}")
+    else:
+        raise AssertionError(f"Unknown state {cache.state}")
