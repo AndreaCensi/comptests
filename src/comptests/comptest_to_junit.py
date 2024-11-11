@@ -17,13 +17,17 @@ from zuper_utils_asyncio import SyncTaskInterface
 from zuper_zapp import zapp1, ZappEnv
 from zuper_zapp_interfaces import get_fs2
 
-TestStatusString = Literal["test_success", "test_skipped", "test_failed", "test_error", "test_not_started", "test_blocked"]
+TestStatusString = Literal[
+    "test_success", "test_skipped", "test_failed", "test_error", "test_not_started", "test_blocked", "test_timedout", "test_oom"
+]
 TEST_SUCCESS: TestStatusString = "test_success"
 TEST_SKIPPED: TestStatusString = "test_skipped"
 TEST_FAILED: TestStatusString = "test_failed"
 TEST_ERROR: TestStatusString = "test_error"
 TEST_NOT_STARTED: TestStatusString = "test_not_started"
 TEST_BLOCKED: TestStatusString = "test_blocked"
+TEST_TIMEDOUT: TestStatusString = "test_timedout"
+TEST_OOM: TestStatusString = "test_oom"
 
 
 @zapp1()
@@ -101,7 +105,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         await fs.write_str(xml_fn, xml)
 
     if parsed_output_txt:
-        for status in [TEST_SKIPPED, TEST_FAILED, TEST_ERROR]:  # TEST_SUCCESS,
+        for status in [TEST_SKIPPED, TEST_FAILED, TEST_ERROR, TEST_NOT_STARTED, TEST_TIMEDOUT]:  # TEST_SUCCESS,
             bn, ext = os.path.splitext(parsed_output_txt)
 
             res = []
@@ -169,6 +173,8 @@ async def junit_xml(
         "test_error": set(),
         TEST_NOT_STARTED: set(),
         TEST_BLOCKED: set(),
+        TEST_TIMEDOUT: set(),
+        TEST_OOM: set(),
     }
     job2cr = {}
     for job_id in jobs:
@@ -287,11 +293,11 @@ def junit_test_case_from_compmake(
         elif elapsed := cache.is_timed_out():
             message = "Job timed out after " + duration_compact(elapsed)
             tc.add_skipped_info(message, output)
-            return ClassificationResult(tc, TEST_SKIPPED)
+            return ClassificationResult(tc, TEST_TIMEDOUT)
         elif b := cache.is_oom():
             message = f"OOM: {size_compact(b)}"
             tc.add_skipped_info(message, output)
-            return ClassificationResult(tc, TEST_SKIPPED)
+            return ClassificationResult(tc, TEST_OOM)
         elif cache.is_skipped_test():
             message = "Skipped test."
             tc.add_skipped_info(message, output)
