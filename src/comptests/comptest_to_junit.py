@@ -105,7 +105,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         await fs.write_str(xml_fn, xml)
 
     if parsed_output_txt:
-        for status in [TEST_SKIPPED, TEST_FAILED, TEST_ERROR, TEST_NOT_STARTED, TEST_TIMEDOUT]:  # TEST_SUCCESS,
+        for status in [TEST_SKIPPED, TEST_FAILED, TEST_ERROR, TEST_NOT_STARTED, TEST_TIMEDOUT, TEST_OOM]:  # TEST_SUCCESS,
             bn, ext = os.path.splitext(parsed_output_txt)
 
             res = []
