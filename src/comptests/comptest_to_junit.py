@@ -46,6 +46,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         help="Returns nonzero exit code if there are failed or errored tests",
     )
     parser.add_argument("--known-failures", type=str, help="yaml file with dict known failures")
+    parser.add_argument("--warn-if-known-failures-unknown", default=False, action="store_true")
     parser.add_argument("--output-txt", type=str, help="Output file")
 
     parsed, rest = parser.parse_known_args(args=ze.args)  # ok
@@ -54,6 +55,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     parsed_output = parsed.output
     parsed_output_txt = parsed.output_txt
     parsed_fail_if_failed = parsed.fail_if_failed
+    warn_if_known_failures_unknown = parsed.warn_if_known_failures_unknown
 
     del parsed
 
@@ -92,13 +94,14 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         logger.user_info(f"Used {len(used_known_failures)} known failures.", used=joinlines(sorted(used_known_failures)))
 
     if unknown_known_failures:
-        logger.warn(f"Unknown known failures, not present in job list", unknown=joinlines(sorted(unknown_known_failures)))
+        if warn_if_known_failures_unknown:
+            logger.warn(f"Unknown known failures, not present in job list", unknown=joinlines(sorted(unknown_known_failures)))
 
     stats_reduce: Mapping[TestStatusString, int] = {k: len(v) for k, v in tcr.stats.items()}
 
     xml = to_xml_report_string([tcr.test_suite])
 
-    postfix = "".join(f"-{k}_{v}" for k, v in stats_reduce.items() if v > 0 and k != "test_success")
+    postfix = "".join(f"-{k}_{v}" for k, v in stats_reduce.items() if v > 0 and k != TEST_SUCCESS)
 
     if used_known_failures:
         postfix += f"-used_known_failures_{len(used_known_failures)}"
@@ -147,7 +150,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
                         f.write(joinlines(sorted(res)))
                     logger.user_info(f"{sec_name:>16}: {len(res):>8} jobs - written to {fn}")
 
-    n_should_exit = stats_reduce["test_failed"] + stats_reduce["test_error"]
+    n_should_exit = stats_reduce[TEST_FAILED] + stats_reduce[TEST_ERROR]
     if n_should_exit > 0 and parsed_fail_if_failed:
         return ExitCode.OTHER_EXCEPTION
     return ExitCode.OK
@@ -184,10 +187,10 @@ async def junit_xml(
     add_not_started_as_failed = False  # TODO
     add_blocked_as_failed = False  # TODO
     stats: dict[TestStatusString, set[CMJobID]] = {
-        "test_success": set(),
-        "test_skipped": set(),
-        "test_failed": set(),
-        "test_error": set(),
+        TEST_SUCCESS: set(),
+        TEST_SKIPPED: set(),
+        TEST_FAILED: set(),
+        TEST_ERROR: set(),
         TEST_NOT_STARTED: set(),
         TEST_BLOCKED: set(),
         TEST_TIMEDOUT: set(),
