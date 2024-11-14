@@ -1,12 +1,12 @@
 import os.path
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import AbstractSet, Any, cast, Literal
-from collections.abc import Mapping
 
 import yaml
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 
-from compmake import all_jobs, Cache, CacheQueryDB, CMJobID, get_job_cache, StorageFilesystem
+from compmake import all_jobs, Cache, CacheQueryDB, CMJobID, StorageFilesystem
 from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
 from zuper_commons.fs import DirPath, make_sure_dir_exists
@@ -178,9 +178,6 @@ async def junit_xml(
     logger = sti.logger
     from junit_xml import TestSuite
 
-    jobs = list(all_jobs(compmake_db))
-    logger.user_info(f"Loaded {len(jobs)} jobs")
-
     test_cases = []
 
     used_known_failures = set()
@@ -199,6 +196,9 @@ async def junit_xml(
     job2cr = {}
     cq = CacheQueryDB(compmake_db)
     with cq.session() as session:
+
+        jobs = session.all_jobs()
+        logger.user_info(f"Loaded {len(jobs)} jobs")
 
         for job_id in jobs:
             cache = session.get_job_cache(job_id)
