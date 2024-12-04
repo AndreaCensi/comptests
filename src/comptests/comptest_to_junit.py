@@ -199,7 +199,6 @@ async def junit_xml(
     job2cr = {}
     cq = CacheQueryDB(compmake_db)
     with cq.session() as session:
-
         jobs = session.all_jobs()
         logger.user_info(f"Loaded {len(jobs)} jobs")
 
@@ -282,7 +281,6 @@ def junit_test_case_from_compmake(
         stderr=stderr,
     )
     if cache.state == Cache.DONE:
-
         # TODO: look at object - Skipped result
         if job_id in known_failures:
             logger0.user_error(f"Job {job_id} was marked as a known failure but it succeeded.")
