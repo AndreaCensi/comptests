@@ -45,7 +45,8 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         action="store_true",
         help="Returns nonzero exit code if there are failed or errored tests",
     )
-    parser.add_argument("--known-failures", type=str, help="yaml file with dict known failures")
+    parser.add_argument("--known-failures", type=str, help="yaml file with dict known failures", default=None)
+    parser.add_argument("--flaky", type=str, help="YAML file with dict flaky tests", default=None)
     parser.add_argument("--warn-if-known-failures-unknown", default=False, action="store_true")
     parser.add_argument("--output-txt", type=str, help="Output file")
     parser.add_argument(
@@ -57,6 +58,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     parsed, rest = parser.parse_known_args(args=ze.args)  # ok
 
     parsed_known_failures = parsed.known_failures
+    parsed_flaky = parsed.flaky
     parsed_output = parsed.output
     parsed_output_txt = parsed.output_txt
     parsed_fail_if_failed = parsed.fail_if_failed
@@ -91,6 +93,16 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
             known_failures = yaml.load(f, Loader=yaml.FullLoader)
             logger.user_info(f"Loaded {len(known_failures)} known failures.")
 
+    flaky: dict[CMJobID, Any] = {}
+    if parsed_flaky:
+        if not os.path.exists(parsed_flaky):
+            msg = f"File {parsed_flaky} does not exist."
+            logger.error(msg)
+            return ExitCode.WRONG_ARGUMENTS
+        with open(parsed_flaky) as f:
+            flaky = yaml.load(f, Loader=yaml.FullLoader)
+            logger.user_info(f"Loaded {len(flaky)} flaky tests.")
+
     unknown_known_failures = set(known_failures) - set(jobs)
     testsuite_name = parsed_output
     r = await junit_xml(
@@ -98,6 +110,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         testsuite_name,
         db,
         known_failures=set(known_failures),
+        flaky=set(flaky),
         timedout_is_failed=parsed_fail_if_timedout,
         oom_is_failed=parsed_fail_if_oom,
     )
@@ -199,6 +212,7 @@ async def junit_xml(
     testsuite_name: str,
     compmake_db: StorageFilesystem,
     known_failures: set[str],
+    flaky: set[str],
     timedout_is_failed: bool,
     oom_is_failed: bool,
 ) -> ProcRes:
@@ -208,6 +222,7 @@ async def junit_xml(
     test_cases = []
 
     used_known_failures = set()
+    used_flaky = set()
     add_not_started_as_failed = False  # TODO
     add_blocked_as_failed = False  # TODO
     stats: dict[TestStatusString, set[CMJobID]] = {
@@ -243,6 +258,8 @@ async def junit_xml(
                 job_id,
                 known_failures,
                 used_known_failures,
+                flaky,
+                used_flaky,
                 timedout_is_failed=timedout_is_failed,
                 oom_is_failed=oom_is_failed,
             )
@@ -298,6 +315,8 @@ def junit_test_case_from_compmake(
     job_id: CMJobID,
     known_failures: AbstractSet[str],
     used_known_failures: set[str],
+    flaky: AbstractSet[str],
+    used_flaky: set[str],
     timedout_is_failed: bool,
     oom_is_failed: bool,
 ) -> ClassificationResult:
@@ -318,6 +337,9 @@ def junit_test_case_from_compmake(
     )
     if cache.state == Cache.DONE:
         # TODO: look at object - Skipped result
+        if job_id in flaky:
+            logger0.user_info(f"Job {job_id} is flaky but it succeeded.")
+
         if job_id in known_failures:
             logger0.user_error(f"Job {job_id} was marked as a known failure but it succeeded.")
             used_known_failures.add(job_id)
@@ -345,6 +367,11 @@ def junit_test_case_from_compmake(
             tc.add_skipped_info(message)
             logger0.user_info(f"Job {job_id} is a known failure.")
             used_known_failures.add(job_id)
+            return ClassificationResult(tc, TEST_SKIPPED)
+        elif job_id in flaky:
+            tc.add_skipped_info(message)
+            logger0.user_info(f"Job {job_id} is flaky.")
+            used_flaky.add(job_id)
             return ClassificationResult(tc, TEST_SKIPPED)
         elif "SkipTest" in message:
             tc.add_skipped_info(message, output)
