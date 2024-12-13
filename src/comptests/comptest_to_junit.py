@@ -6,7 +6,7 @@ from typing import AbstractSet, Any, cast, Literal
 import yaml
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 
-from compmake import all_jobs, Cache, CacheQueryDB, CMJobID, StorageFilesystem
+from compmake import all_jobs, Cache, CacheQueryDB, CMJobID, ExecOutputData, StorageFilesystem
 from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
 from zuper_commons.fs import DirPath, make_sure_dir_exists
@@ -48,13 +48,20 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
     parser.add_argument("--known-failures", type=str, help="yaml file with dict known failures")
     parser.add_argument("--warn-if-known-failures-unknown", default=False, action="store_true")
     parser.add_argument("--output-txt", type=str, help="Output file")
-
+    parser.add_argument(
+        "--fail-if-oom", default=False, action="store_true", help="Returns nonzero exit code if there are OOM tests"
+    )
+    parser.add_argument(
+        "--fail-if-timedout", default=False, action="store_true", help="Returns nonzero exit code if there are timedout tests"
+    )
     parsed, rest = parser.parse_known_args(args=ze.args)  # ok
 
     parsed_known_failures = parsed.known_failures
     parsed_output = parsed.output
     parsed_output_txt = parsed.output_txt
     parsed_fail_if_failed = parsed.fail_if_failed
+    parsed_fail_if_oom = parsed.fail_if_oom
+    parsed_fail_if_timedout = parsed.fail_if_timedout
     warn_if_known_failures_unknown = parsed.warn_if_known_failures_unknown
 
     del parsed
@@ -151,6 +158,11 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
                     logger.user_info(f"{sec_name:>16}: {len(res):>8} jobs - written to {fn}")
 
     n_should_exit = stats_reduce[TEST_FAILED] + stats_reduce[TEST_ERROR]
+    if parsed_fail_if_timedout:
+        n_should_exit += stats_reduce[TEST_TIMEDOUT]
+    if parsed_fail_if_oom:
+        n_should_exit += stats_reduce[TEST_OOM]
+
     if n_should_exit > 0 and parsed_fail_if_failed:
         return ExitCode.OTHER_EXCEPTION
     return ExitCode.OK
@@ -212,7 +224,8 @@ async def junit_xml(
                 stats[TEST_BLOCKED].add(job_id)
                 continue
 
-            r = junit_test_case_from_compmake(cache, job_id, known_failures, used_known_failures)
+            eod = session.get_job_eod(job_id)
+            r = junit_test_case_from_compmake(cache, eod, job_id, known_failures, used_known_failures)
             # r.tc.stderr = cache.captured_stderr or ""
             # r.tc.stdout = cache.captured_stdout or ""
             job2cr[job_id] = r
@@ -261,17 +274,18 @@ from . import logger as logger0
 
 def junit_test_case_from_compmake(
     cache: Cache,
+    eod: ExecOutputData,
     job_id: CMJobID,
     known_failures: AbstractSet[str],
     used_known_failures: set[str],
 ) -> ClassificationResult:
     elapsed_sec = cache.cputime_used
 
-    check_isinstance(cache.captured_stderr, (type(None), str))
-    check_isinstance(cache.captured_stdout, (type(None), str))
-    check_isinstance(cache.exception, (type(None), str))
-    stderr: str = "\n" + remove_escapes(cache.captured_stderr or "[no stderr captured]") + "\n"
-    stdout: str = "\n" + remove_escapes(cache.captured_stdout or "[no stdout captured]") + "\n"
+    check_isinstance(eod.stderr, (type(None), str))
+    check_isinstance(eod.stdout, (type(None), str))
+    check_isinstance(eod.exception, (type(None), str))
+    stderr: str = "\n" + remove_escapes(eod.stderr or "[no stderr captured]") + "\n"
+    stdout: str = "\n" + remove_escapes(eod.stdout or "[no stdout captured]") + "\n"
 
     tc = TestCase(
         name=job_id,
@@ -296,8 +310,8 @@ def junit_test_case_from_compmake(
         return ClassificationResult(tc, TEST_SUCCESS)
 
     elif cache.state == Cache.FAILED:
-        message = remove_escapes(cache.exception or "")
-        output = (cache.exception or "") + "\n" + (cache.backtrace or "")
+        message = remove_escapes(eod.exception or "")
+        output = (eod.exception or "") + "\n" + (eod.backtrace or "")
         output = remove_escapes(output)
 
         max_length = 16000
