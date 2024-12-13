@@ -93,7 +93,14 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
 
     unknown_known_failures = set(known_failures) - set(jobs)
     testsuite_name = parsed_output
-    r = await junit_xml(ze.sti, testsuite_name, db, known_failures=set(known_failures))
+    r = await junit_xml(
+        ze.sti,
+        testsuite_name,
+        db,
+        known_failures=set(known_failures),
+        timedout_is_failed=parsed_fail_if_timedout,
+        oom_is_failed=parsed_fail_if_oom,
+    )
     tcr = r.jur
 
     used_known_failures = r.used_known_failures
@@ -188,7 +195,12 @@ class ProcRes:
 
 
 async def junit_xml(
-    sti: SyncTaskInterface, testsuite_name: str, compmake_db: StorageFilesystem, known_failures: set[str]
+    sti: SyncTaskInterface,
+    testsuite_name: str,
+    compmake_db: StorageFilesystem,
+    known_failures: set[str],
+    timedout_is_failed: bool,
+    oom_is_failed: bool,
 ) -> ProcRes:
     logger = sti.logger
     from junit_xml import TestSuite
@@ -225,7 +237,15 @@ async def junit_xml(
                 continue
 
             eod = session.get_job_eod(job_id)
-            r = junit_test_case_from_compmake(cache, eod, job_id, known_failures, used_known_failures)
+            r = junit_test_case_from_compmake(
+                cache,
+                eod,
+                job_id,
+                known_failures,
+                used_known_failures,
+                timedout_is_failed=timedout_is_failed,
+                oom_is_failed=oom_is_failed,
+            )
             # r.tc.stderr = cache.captured_stderr or ""
             # r.tc.stdout = cache.captured_stdout or ""
             job2cr[job_id] = r
@@ -278,6 +298,8 @@ def junit_test_case_from_compmake(
     job_id: CMJobID,
     known_failures: AbstractSet[str],
     used_known_failures: set[str],
+    timedout_is_failed: bool,
+    oom_is_failed: bool,
 ) -> ClassificationResult:
     elapsed_sec = cache.cputime_used
 
@@ -329,12 +351,20 @@ def junit_test_case_from_compmake(
             return ClassificationResult(tc, TEST_SKIPPED)
         elif elapsed := cache.is_timed_out():
             message = "Job timed out after " + duration_compact(elapsed)
-            tc.add_skipped_info(message, output)
-            return ClassificationResult(tc, TEST_TIMEDOUT)
+            if timedout_is_failed:
+                tc.add_failure_info(message, output)
+                return ClassificationResult(tc, TEST_TIMEDOUT)
+            else:
+                tc.add_skipped_info(message, output)
+                return ClassificationResult(tc, TEST_TIMEDOUT)
         elif b := cache.is_oom():
             message = f"OOM: {size_compact(b)}"
-            tc.add_skipped_info(message, output)
-            return ClassificationResult(tc, TEST_OOM)
+            if oom_is_failed:
+                tc.add_failure_info(message, output)
+                return ClassificationResult(tc, TEST_OOM)
+            else:
+                tc.add_skipped_info(message, output)
+                return ClassificationResult(tc, TEST_OOM)
         elif cache.is_skipped_test():
             message = "Skipped test."
             tc.add_skipped_info(message, output)
