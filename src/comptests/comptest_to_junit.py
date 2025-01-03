@@ -122,7 +122,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
 
     if unknown_known_failures:
         if warn_if_known_failures_unknown:
-            logger.warn(f"Unknown known failures, not present in job list", unknown=joinlines(sorted(unknown_known_failures)))
+            logger.warn("Unknown known failures, not present in job list", unknown=joinlines(sorted(unknown_known_failures)))
 
     stats_reduce: Mapping[TestStatusString, int] = {k: len(v) for k, v in tcr.stats.items()}
 
@@ -243,7 +243,6 @@ async def junit_xml(
 
         for job_id in jobs:
             cache = session.get_job_cache(job_id)
-            # cache = get_job_cache(job_id, db=compmake_db)
             if cache.state == Cache.NOT_STARTED:
                 stats[TEST_NOT_STARTED].add(job_id)
                 continue
@@ -304,6 +303,9 @@ async def junit_xml(
 class ClassificationResult:
     tc: TestCase
     status: TestStatusString
+
+    def __post_init__(self):
+        self.tc.category = self.status.replace("test_", "")
 
 
 from . import logger as logger0
