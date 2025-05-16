@@ -1,12 +1,11 @@
-from comptests import (
-    comptests_for_all,
-    comptests_for_all_dynamic,
-    comptests_for_all_pairs,
-    comptests_for_all_pairs_dynamic,
-    comptests_for_some,
-    comptests_for_some_pairs,
-)
-from example_package import get_conftools_example_class1, get_conftools_example_class2
+from comptests import comptests_for_all
+from comptests import comptests_for_all_dynamic
+from comptests import comptests_for_all_pairs
+from comptests import comptests_for_all_pairs_dynamic
+from comptests import comptests_for_some
+from comptests import comptests_for_some_pairs
+from example_package import get_conftools_example_class1
+from example_package import get_conftools_example_class2
 
 library_class1 = get_conftools_example_class1()
 library_class2 = get_conftools_example_class2()

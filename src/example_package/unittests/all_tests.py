@@ -1,16 +1,18 @@
 from typing import NoReturn
 
-from comptests import comptest, comptest_dynamic, comptest_fails
 from quickapp import QuickAppContext
 from reprep import Report
-from .generation import (
-    for_all_class1,
-    for_all_class1_class2,
-    for_all_class1_class2_dynamic,
-    for_all_class1_dynamic,
-    for_some_class1,
-    for_some_class1_class2,
-)
+
+from comptests import comptest
+from comptests import comptest_dynamic
+from comptests import comptest_fails
+
+from .generation import for_all_class1
+from .generation import for_all_class1_class2
+from .generation import for_all_class1_class2_dynamic
+from .generation import for_all_class1_dynamic
+from .generation import for_some_class1
+from .generation import for_some_class1_class2
 
 
 @comptest

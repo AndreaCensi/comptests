@@ -1,8 +1,8 @@
 import hashlib
 import os
+from collections.abc import Callable
 from functools import lru_cache
 from typing import Any
-from collections.abc import Callable
 
 __all__ = [
     "accept",

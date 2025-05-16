@@ -1,20 +1,33 @@
 import os.path
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import AbstractSet, Any, cast, Literal
+from typing import AbstractSet
+from typing import Any
+from typing import Literal
+from typing import cast
 
 import yaml
-from junit_xml import TestCase, TestSuite, to_xml_report_string
-
-from compmake import all_jobs, Cache, CacheQueryDB, CMJobID, ExecOutputData, StorageFilesystem
+from compmake import Cache
+from compmake import CacheQueryDB
+from compmake import CMJobID
+from compmake import ExecOutputData
+from compmake import StorageFilesystem
+from compmake import all_jobs
+from junit_xml import TestCase
+from junit_xml import TestSuite
+from junit_xml import to_xml_report_string
 from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
-from zuper_commons.fs import DirPath, make_sure_dir_exists
-from zuper_commons.text import joinlines, remove_escapes
+from zuper_commons.fs import DirPath
+from zuper_commons.fs import make_sure_dir_exists
+from zuper_commons.text import joinlines
+from zuper_commons.text import remove_escapes
 from zuper_commons.types import check_isinstance
-from zuper_commons.ui import duration_compact, size_compact
+from zuper_commons.ui import duration_compact
+from zuper_commons.ui import size_compact
 from zuper_utils_asyncio import SyncTaskInterface
-from zuper_zapp import zapp1, ZappEnv
+from zuper_zapp import ZappEnv
+from zuper_zapp import zapp1
 from zuper_zapp_interfaces import get_fs2
 
 TestStatusString = Literal[

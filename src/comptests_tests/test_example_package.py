@@ -2,7 +2,8 @@ import os
 import tempfile
 from contextlib import contextmanager
 
-from zuper_commons.fs import joinf, write_ustring_to_utf8_file
+from zuper_commons.fs import joinf
+from zuper_commons.fs import write_ustring_to_utf8_file
 
 
 def test_example_package() -> None:
@@ -33,7 +34,7 @@ def test_example_package() -> None:
 
         fs = [
             f"{MYOUT}/report.html",
-            f"{MYOUT}/report/reportclass1single/" "reportclass1single-c1a-checkclass1dynamic-examplepackage-exampleclass1.html",
+            f"{MYOUT}/report/reportclass1single/reportclass1single-c1a-checkclass1dynamic-examplepackage-exampleclass1.html",
         ]
         #
         #         if False:

@@ -16,10 +16,10 @@ def jobs_comptests(context: QuickAppContext) -> None:
     GlobalConfig.global_load_dir("example_package.configs")
 
     # mcdp_lang_tests
-    from . import unittests
-
     # instantiation
     from comptests import jobs_registrar
+
+    from . import unittests
 
     jobs_registrar(context, get_example_package_config(), create_reports=True)
 

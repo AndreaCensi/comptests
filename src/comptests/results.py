@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-
 from unittest import SkipTest
 
 from zuper_commons.types import ZException

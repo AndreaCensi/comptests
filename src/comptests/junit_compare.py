@@ -1,11 +1,13 @@
 import os.path
 import re
 import xml.etree.ElementTree as ET
-from collections import Counter, defaultdict
+from collections import Counter
+from collections import defaultdict
 
 from zuper_commons.apps import ZArgumentParser
 from zuper_commons.cmds import ExitCode
-from zuper_zapp import zapp1, ZappEnv
+from zuper_zapp import ZappEnv
+from zuper_zapp import zapp1
 
 
 @zapp1()

@@ -11,7 +11,8 @@ class ExamplePackageConfig(ConfigMaster):
     def __init__(self):
         ConfigMaster.__init__(self, "ExamplePackageConfig")
 
-        from .interfaces import ExampleClass1, ExampleClass2
+        from .interfaces import ExampleClass1
+        from .interfaces import ExampleClass2
 
         self.add_class_generic("example_class1", "*.example_class1.yaml", ExampleClass1)
         self.add_class_generic("example_class2", "*.example_class2.yaml", ExampleClass2)

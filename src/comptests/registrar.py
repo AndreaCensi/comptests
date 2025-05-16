@@ -3,24 +3,40 @@ import os
 import sys
 import traceback
 import warnings
-from collections import defaultdict, namedtuple, OrderedDict
-from collections.abc import Callable, Collection
-from typing import Any, Protocol, TypedDict, TypeVar
+from collections import OrderedDict
+from collections import defaultdict
+from collections import namedtuple
+from collections.abc import Callable
+from collections.abc import Collection
+from typing import Any
+from typing import Protocol
+from typing import TypedDict
+from typing import TypeVar
 
-from compmake import assert_job_exists, CMJobID, JobCompute, Promise
-from conf_tools import ConfigMaster, GlobalConfig, ObjectSpec
+from compmake import CMJobID
+from compmake import JobCompute
+from compmake import Promise
+from compmake import assert_job_exists
+from conf_tools import ConfigMaster
+from conf_tools import GlobalConfig
+from conf_tools import ObjectSpec
 from conf_tools.utils import expand_string
-from quickapp import iterate_context_names, iterate_context_names_pair, QuickAppContext
-from zuper_commons.fs import DirPath, joind
+from quickapp import QuickAppContext
+from quickapp import iterate_context_names
+from quickapp import iterate_context_names_pair
+from zuper_commons.fs import DirPath
+from zuper_commons.fs import joind
 from zuper_commons.test_utils import nottest
-from zuper_commons.types import add_context, TM, ZException
+from zuper_commons.types import TM
+from zuper_commons.types import ZException
+from zuper_commons.types import add_context
+
 from . import logger
-from .indices import accept, get_test_index
-from .reports import (
-    report_results_pairs,
-    report_results_pairs_jobs,
-    report_results_single,
-)
+from .indices import accept
+from .indices import get_test_index
+from .reports import report_results_pairs
+from .reports import report_results_pairs_jobs
+from .reports import report_results_single
 
 __all__ = [
     "comptest",

@@ -1,10 +1,15 @@
 import itertools
 
-from compmake import Cache, CMJobID, get_job_cache, get_job_userobject
+from compmake import Cache
+from compmake import CMJobID
+from compmake import get_job_cache
+from compmake import get_job_userobject
 from quickapp import QuickAppContext
 from reprep import Report
+
 from . import logger
-from .results import PartiallySkipped, Skipped
+from .results import PartiallySkipped
+from .results import Skipped
 
 __all__ = [
     "report_results_pairs",
