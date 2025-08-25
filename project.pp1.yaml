@@ -37,7 +37,7 @@ pypi:
 
 circleci:
   active: true
-  test_python_versions: ['3.12']
+  test_python_versions: ['3.13']
   more_packages:
   - zuper-fs-local-z7
   - zuper-proc-local-z7
