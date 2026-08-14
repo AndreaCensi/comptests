@@ -39,6 +39,9 @@ install-testing-deps:
 		sphinx\
 		sphinx-rtd-theme
 
+test:
+	DISABLE_CONTRACTS=1 python -m nose2 -v comptests_tests
+
 coverage-combine:
 	coverage combine
 
@@ -47,4 +50,4 @@ docs:
 
 -include extra.mk
 
-# sigil e48f93a5c1a91fb3259bb57500a37877
+# sigil 5e704daa74c80049874ff72419aa9f66
