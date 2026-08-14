@@ -3,29 +3,15 @@ name = "comptests-z7"
 version = "7.2"
 readme = ""
 description = ""
-authors = [{name = "Andrea Censi", email = "AndreaCensi@users.noreply.github.com"}]
-dependencies = [
-    "ConfTools-z7",
-    "PyYAML",
-    "QuickApp-z7",
-    "SystemCmd-z7",
-    "compmake-z7",
-    "coverage",
-    "junit-xml",
-    "reprep-z7",
-    "zuper-commons-z7",
-    "zuper-utils-asyncio-z7",
-    "zuper-utils-python-z7",
-    "zuper-zapp-interfaces-z7",
-    "zuper-zapp-z7",]
+authors = [{ name = "Andrea Censi", email = "AndreaCensi@users.noreply.github.com" }]
+dependencies = ["ConfTools-z7", "PyYAML", "QuickApp-z7", "SystemCmd-z7", "compmake-z7", "coverage", "junit-xml", "reprep-z7", "zuper-commons-z7", "zuper-utils-asyncio-z7", "zuper-utils-python-z7", "zuper-zapp-interfaces-z7", "zuper-zapp-z7"]
 
 [project.scripts]
 comptests = "comptests:main_comptests"
 comptests-to-junit = "comptests.comptest_to_junit:comptest_to_junit_main"
 
 [project.optional-dependencies]
-test = [
-    ]
+test = []
 
 [tool.poetry]
 name = "comptests-z7"
@@ -33,8 +19,8 @@ version = "7.2"
 description = ""
 authors = ["Andrea Censi <AndreaCensi@users.noreply.github.com>"]
 packages = [
-    {from = "src", include = "comptests"},
-    ]
+    { from = "src", include = "comptests" },
+]
 
 [tool.poetry.dependencies]
 ConfTools-z7 = "*"
@@ -59,6 +45,5 @@ comptests = "comptests:main_comptests"
 comptests-to-junit = "comptests.comptest_to_junit:comptest_to_junit_main"
 
 [build-system]
-requires = [
-    "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
