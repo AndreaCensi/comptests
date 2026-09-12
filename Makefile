@@ -2,6 +2,15 @@ all:
 	@echo
 
 out=out
+tested_packages := comptests_tests
+deployed_packages := comptests
+test_environment := DISABLE_CONTRACTS=1
+
+ifneq ($(filter contracts,$(deployed_packages)),)
+test_environment :=
+endif
+
+.PHONY: all template bump upload black install-deps install-testing-deps test coverage-combine docs
 
 
 template:
@@ -40,14 +49,21 @@ install-testing-deps:
 		sphinx-rtd-theme
 
 test:
-	DISABLE_CONTRACTS=1 python -m nose2 -v comptests_tests
+	$(test_environment) python -m nose2 -v $(tested_packages)
 
 coverage-combine:
 	coverage combine
 
+ifneq (,)
+docs:
+	$(MAKE) -C docs
+else
 docs:
 	sphinx-build src $(out)/docs
+endif
 
 -include extra.mk
 
-# sigil 5e704daa74c80049874ff72419aa9f66
+# sigil f18f1e67251c3f680bd8a938909480ab
+# template-meta template-version=2.1
+# template-meta zuper-templating-version=8.36.2901010000
