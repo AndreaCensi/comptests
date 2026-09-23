@@ -122,7 +122,7 @@ async def comptest_to_junit_main(ze: ZappEnv) -> ExitCode:
         ze.sti,
         testsuite_name,
         db,
-        known_failures=set(known_failures),
+        known_failures=known_failures,
         flaky=set(flaky),
         timedout_is_failed=parsed_fail_if_timedout,
         oom_is_failed=parsed_fail_if_oom,
@@ -224,7 +224,7 @@ async def junit_xml(
     sti: SyncTaskInterface,
     testsuite_name: str,
     compmake_db: StorageFilesystem,
-    known_failures: set[str],
+    known_failures: Mapping[CMJobID, object],
     flaky: set[str],
     timedout_is_failed: bool,
     oom_is_failed: bool,
@@ -324,11 +324,23 @@ class ClassificationResult:
 from . import logger as logger0
 
 
+def known_failure_matches(expected: object, cache: Cache, exception_message: str) -> bool:
+    if expected is None or expected is True:
+        return True
+    if not isinstance(expected, str) or not expected.strip():
+        return False
+    if expected.strip() == "OOM":
+        return cache.is_oom() is not None
+    if cache.is_oom() is not None or cache.is_timed_out() is not None:
+        return False
+    return " ".join(expected.split()) in " ".join(exception_message.split())
+
+
 def junit_test_case_from_compmake(
     cache: Cache,
     eod: ExecOutputData,
     job_id: CMJobID,
-    known_failures: AbstractSet[str],
+    known_failures: Mapping[CMJobID, object],
     used_known_failures: set[str],
     flaky: AbstractSet[str],
     used_flaky: set[str],
@@ -369,7 +381,8 @@ def junit_test_case_from_compmake(
         return ClassificationResult(tc, TEST_SUCCESS)
 
     elif cache.state == Cache.FAILED:
-        message = remove_escapes(eod.exception or "")
+        exception_message = remove_escapes(eod.exception or "")
+        message = exception_message
         output = (eod.exception or "") + "\n" + (eod.backtrace or "")
         output = remove_escapes(output)
 
@@ -379,10 +392,22 @@ def junit_test_case_from_compmake(
         output = output[:max_length] + ("\n ... clipped ...\n\n " if len(message) > max_length else "")
 
         if job_id in known_failures:
-            tc.add_skipped_info(message)
-            logger0.user_info(f"Job {job_id} is a known failure.")
-            used_known_failures.add(job_id)
-            return ClassificationResult(tc, TEST_SKIPPED)
+            expected = known_failures[job_id]
+            if known_failure_matches(expected, cache, exception_message):
+                tc.add_skipped_info(message)
+                logger0.user_info(f"Job {job_id} is a known failure.")
+                used_known_failures.add(job_id)
+                return ClassificationResult(tc, TEST_SKIPPED)
+            if cache.is_oom() is not None:
+                observed = "OOM"
+            elif cache.is_timed_out() is not None:
+                observed = "timed out"
+            else:
+                observed = " ".join(exception_message.split())[:300] or "no exception message"
+            mismatch = f"Known failure changed: expected {expected!r}; observed {observed}"
+            logger0.user_error(f"Job {job_id}: {mismatch}")
+            tc.add_failure_info(mismatch, output)
+            return ClassificationResult(tc, TEST_FAILED)
         elif job_id in flaky:
             tc.add_skipped_info(message)
             logger0.user_info(f"Job {job_id} is flaky.")
